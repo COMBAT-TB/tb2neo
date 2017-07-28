@@ -44,7 +44,7 @@ class Feature(GraphObject):
     ontology_id = Property()
 
     belongs_to = RelatedTo("Organism", "BELONGS_TO")
-    location = RelatedTo("FeatureLoc", "LOCATED_AT")
+    location = RelatedTo("Location", "LOCATED_AT")
     # related_to = RelatedTo("Feature", "RELATED_TO")
     published_in = RelatedTo("Publication", "PUBLISHED_IN")
     dbxref = RelatedTo("DbXref", "XREF")
@@ -197,7 +197,7 @@ class Protein(Feature):
         self.so_id = so_id
 
 
-class FeatureLoc(GraphObject):
+class Location(GraphObject):
     """
     FeatureLoc not used
     """

@@ -51,7 +51,6 @@ def create_gene_nodes(feature):
     biotype = feature.qualifiers['biotype'][0]
 
     gene = Gene()
-    # gene.ontology_id = gene.so_id
     gene.name = name
     gene.uniquename = unique_name
     gene.biotype = biotype
@@ -71,7 +70,6 @@ def create_transcript_nodes(feature):
     biotype = feature.qualifiers['biotype'][0]
 
     transcript = Transcript()
-    # transcript.ontology_id = transcript.so_id
     transcript.name = name
     transcript.uniquename = unique_name
     transcript.biotype = biotype
@@ -91,7 +89,6 @@ def create_pseudogene_nodes(feature):
     biotype = feature.qualifiers['biotype'][0]
 
     pseudogene = PseudoGene()
-    # pseudogene.ontology_id = pseudogene.so_id
     pseudogene.name = name
     pseudogene.uniquename = unique_name
     pseudogene.description = description
@@ -110,7 +107,6 @@ def create_exon_nodes(feature):
     unique_name = names.get("UniqueName", name)
 
     exon = Exon()
-    # exon.ontology_id = exon.so_id
     exon.name = name
     exon.uniquename = unique_name
     graph.create(exon)
@@ -128,19 +124,16 @@ def create_rna_nodes(feature):
 
     if feature.type == 'tRNA_gene':
         trna = TRna()
-        # trna.ontology_id = trna.so_id
         trna.name = name
         trna.uniquename = unique_name
         graph.create(trna)
     if feature.type == 'ncRNA_gene':
         ncrna = NCRna()
-        # ncrna.ontology_id = ncrna.so_id
         ncrna.name = name
         ncrna.uniquename = unique_name
         graph.create(ncrna)
     if feature.type == 'rRNA_gene':
         rrna = RRna()
-        # rrna.ontology_id = rrna.so_id
         rrna.name = name
         rrna.uniquename = unique_name
         graph.create(rrna)
@@ -159,7 +152,6 @@ def create_cds_nodes(feature):
     cds = CDS()
     cds.name = name
     cds.uniquename = unique_name
-    # cds.ontology_id = cds.so_id
     graph.create(cds)
 
 
@@ -193,8 +185,8 @@ def create_featureloc_nodes(feature):
     :return:
     """
     srcfeature_id = get_feature_name(feature).get("UniqueName")
-    feature_loc = FeatureLoc(srcfeature_id=srcfeature_id, fmin=feature.location.start, fmax=feature.location.end,
-                             strand=feature.location.strand)
+    feature_loc = Location(srcfeature_id=srcfeature_id, fmin=feature.location.start, fmax=feature.location.end,
+                           strand=feature.location.strand)
     graph.create(feature_loc)
 
 
@@ -285,10 +277,43 @@ def build_relationships():
 
         # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
         # LOCATED_AT
-        _feature = FeatureLoc.select(graph, feature.uniquename).first()
+        _feature = Location.select(graph, feature.uniquename).first()
         if _feature:
             feature.location.add(_feature)
         graph.push(feature)
+
+
+def map_to_location(feature):
+    # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
+    # LOCATED_AT
+    srcfeature_id = get_feature_name(feature).get("UniqueName")
+    location = Location.select(graph, srcfeature_id).first()
+    rna = ["tRNA_gene", "ncRNA_gene", "rRNA_gene"]
+    if location:
+        if feature.type == 'gene':
+            _feature = Gene.select(graph, srcfeature_id).first()
+            _feature.location.add(location)
+            graph.push(_feature)
+        elif feature.type == 'pseudogene':
+            _feature = PseudoGene.select(graph, srcfeature_id).first()
+            _feature.location.add(location)
+            graph.push(_feature)
+        elif feature.type == 'exon':
+            _feature = Exon.select(graph, srcfeature_id).first()
+            _feature.location.add(location)
+            graph.push(_feature)
+        # elif feature.type in rna:
+        #     _feature = NCRna.select(graph, srcfeature_id).first()
+        #     _feature.location.add(location)
+        #     graph.push(_feature)
+        elif feature.type == 'transcript':
+            _feature = Transcript.select(graph, srcfeature_id).first()
+            _feature.location.add(location)
+            graph.push(_feature)
+        elif feature.type == 'CDS':
+            _feature = CDS.select(graph, srcfeature_id).first()
+            _feature.location.add(location)
+            graph.push(_feature)
 
 
 def create_cv_term_nodes(Protein, bp, cc, mf):

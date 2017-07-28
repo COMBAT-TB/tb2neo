@@ -77,18 +77,24 @@ def load_gff_data(gff_file, limit):
         for feature in tqdm(rec.features):
             rna = ["tRNA_gene", "ncRNA_gene", "rRNA_gene"]
             # create_feature_nodes(feature)
-            # create_featureloc_nodes(feature)
+            create_featureloc_nodes(feature)
             if feature.type == 'gene':
                 create_gene_nodes(feature)
+                map_to_location(feature)
             elif feature.type == 'pseudogene':
                 create_pseudogene_nodes(feature)
+                map_to_location(feature)
             elif feature.type == 'exon':
                 create_exon_nodes(feature)
+                map_to_location(feature)
             elif feature.type in rna:
                 create_rna_nodes(feature)
+                # map_to_location(feature)
             elif feature.type == 'transcript':
                 create_transcript_nodes(feature)
+                map_to_location(feature)
             elif feature.type == 'CDS':
                 create_cds_nodes(feature)
+                map_to_location(feature)
 
     in_file.close()

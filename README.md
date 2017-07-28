@@ -6,5 +6,6 @@ Loading H37Rv GFF to Neo4j
 ```
 $ docker-compose up -d
 ```
+and `docker-compose -f logs` for the logs.
 
-and go to [localhost:7474](http://0.0.0.0:7474).
+ [localhost:7474](http://0.0.0.0:7474).
