@@ -1,0 +1,21 @@
+version: '2'
+services:
+  web:
+    build: .
+    image: gff2neo
+    container_name: gff2neo
+    environment:
+      DB: db
+#    env_file: .env
+    depends_on:
+      - db
+  db:
+    restart: always
+    image: neo4j:3.2.2
+    container_name: gff2neo_db
+    environment:
+      NEO4J_AUTH: none
+#    env_file: .env
+    ports:
+      - "7687:7687"
+      - "7474:7474"

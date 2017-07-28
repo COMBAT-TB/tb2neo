@@ -99,3 +99,7 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+#Dev
+.idea
+.vscode
