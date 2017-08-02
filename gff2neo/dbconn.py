@@ -38,6 +38,19 @@ def create_organism_nodes():
     graph.create(organism)
 
 
+def create_chromosome_nodes():
+    """
+    Create Chromosome Nodes
+    :return:
+    """
+    name = "Chr1"
+    uniquename = "Chr1"
+    chromosome = Chromosome()
+    chromosome.name = name
+    chromosome.uniquename = uniquename
+    graph.create(chromosome)
+
+
 def create_gene_nodes(feature):
     """
     Create Gene Nodes
@@ -49,10 +62,12 @@ def create_gene_nodes(feature):
     unique_name = names.get("UniqueName", name)
     description = feature.qualifiers["description"]
     biotype = feature.qualifiers['biotype'][0]
+    parent = get_feature_parent(feature)
 
     gene = Gene()
     gene.name = name
     gene.uniquename = unique_name
+    gene.parent = parent
     gene.biotype = biotype
     gene.description = description
     graph.create(gene)
@@ -68,9 +83,11 @@ def create_transcript_nodes(feature):
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
     biotype = feature.qualifiers['biotype'][0]
+    parent = get_feature_parent(feature)
 
     transcript = Transcript()
     transcript.name = name
+    transcript.parent = parent
     transcript.uniquename = unique_name
     transcript.biotype = biotype
     graph.create(transcript)
@@ -87,10 +104,12 @@ def create_pseudogene_nodes(feature):
     unique_name = names.get("UniqueName", name)
     description = feature.qualifiers["description"][0]
     biotype = feature.qualifiers['biotype'][0]
+    parent = get_feature_parent(feature)
 
     pseudogene = PseudoGene()
     pseudogene.name = name
     pseudogene.uniquename = unique_name
+    pseudogene.parent = parent
     pseudogene.description = description
     pseudogene.biotype = biotype
     graph.create(pseudogene)
@@ -105,10 +124,12 @@ def create_exon_nodes(feature):
     names = get_feature_name(feature)
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
+    parent = get_feature_parent(feature)
 
     exon = Exon()
     exon.name = name
     exon.uniquename = unique_name
+    exon.parent = parent
     graph.create(exon)
 
 
@@ -121,20 +142,24 @@ def create_rna_nodes(feature):
     names = get_feature_name(feature)
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
+    parent = get_feature_parent(feature)
 
     if feature.type == 'tRNA_gene':
         trna = TRna()
         trna.name = name
+        trna.parent = parent
         trna.uniquename = unique_name
         graph.create(trna)
     if feature.type == 'ncRNA_gene':
         ncrna = NCRna()
         ncrna.name = name
+        ncrna.parent = parent
         ncrna.uniquename = unique_name
         graph.create(ncrna)
     if feature.type == 'rRNA_gene':
         rrna = RRna()
         rrna.name = name
+        rrna.parent = parent
         rrna.uniquename = unique_name
         graph.create(rrna)
 
@@ -148,34 +173,45 @@ def create_cds_nodes(feature):
     names = get_feature_name(feature)
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
+    parent = get_feature_parent(feature)
 
     cds = CDS()
     cds.name = name
+    cds.parent = parent
     cds.uniquename = unique_name
     graph.create(cds)
 
 
-def create_feature_nodes(feature):
-    """
-    Create Feature Nodes
-    :param feature:
-    :return:
-    """
-    names = get_feature_name(feature)
-    name = names.get("Name", names.get("UniqueName"))
-    unique_name = names.get("UniqueName", name)
-
+def get_feature_parent(feature):
     if feature.qualifiers.get('Parent'):
         parent = feature.qualifiers['Parent'][0]
-    # [feature.qualifiers['Parent'][0].find(":") + 1:]
+        # [feature.qualifiers['Parent'][0].find(":") + 1:]
     else:
         parent = None
+    return parent
 
-    _feature = Feature()
-    _feature.name = name
-    _feature.parent = parent
-    _feature.uniquename = unique_name
-    graph.create(_feature)
+
+# def create_feature_nodes(feature):
+#     """
+#     Create Feature Nodes
+#     :param feature:
+#     :return:
+#     """
+#     names = get_feature_name(feature)
+#     name = names.get("Name", names.get("UniqueName"))
+#     unique_name = names.get("UniqueName", name)
+#
+#     if feature.qualifiers.get('Parent'):
+#         parent = feature.qualifiers['Parent'][0]
+#     # [feature.qualifiers['Parent'][0].find(":") + 1:]
+#     else:
+#         parent = None
+#
+#     _feature = Feature()
+#     _feature.name = name
+#     _feature.parent = parent
+#     _feature.uniquename = unique_name
+#     graph.create(_feature)
 
 
 def create_featureloc_nodes(feature):
@@ -214,6 +250,7 @@ def build_relationships():
     """
     # TODO: Try optimize this
     print("Building Relationships...")
+
     features = Feature.select(graph)
     for feature in features:
         # Find organism via __primarykey__ and link with feature via BELONGS_TO
@@ -266,21 +303,17 @@ def build_relationships():
                     cds.part_of.add(transcript)
                     graph.push(cds)
 
-        exon = Exon.select(graph, feature.uniquename).first()
-        if exon:
-            exon.is_a.add(feature)
-            graph.push(exon)
         cds = CDS.select(graph, feature.uniquename).first()
         if cds:
             cds.is_a.add(feature)
             graph.push(cds)
 
-        # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
-        # LOCATED_AT
-        _feature = Location.select(graph, feature.uniquename).first()
-        if _feature:
-            feature.location.add(_feature)
-        graph.push(feature)
+            # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
+            # LOCATED_AT
+            # _feature = Location.select(graph, feature.uniquename).first()
+            # if _feature:
+            #     feature.location.add(_feature)
+            # graph.push(feature)
 
 
 def map_to_location(feature):
@@ -288,32 +321,59 @@ def map_to_location(feature):
     # LOCATED_AT
     srcfeature_id = get_feature_name(feature).get("UniqueName")
     location = Location.select(graph, srcfeature_id).first()
+    organism = Organism.select(graph).first()
+    chromosome = Chromosome.select(graph).first()
     rna = ["tRNA_gene", "ncRNA_gene", "rRNA_gene"]
     if location:
         if feature.type == 'gene':
             _feature = Gene.select(graph, srcfeature_id).first()
             _feature.location.add(location)
+            _feature.belongs_to.add(organism)
+            _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'pseudogene':
             _feature = PseudoGene.select(graph, srcfeature_id).first()
             _feature.location.add(location)
+            _feature.belongs_to.add(organism)
+            _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'exon':
             _feature = Exon.select(graph, srcfeature_id).first()
             _feature.location.add(location)
+            _feature.belongs_to.add(organism)
+            _feature.located_on.add(chromosome)
             graph.push(_feature)
         # elif feature.type in rna:
         #     _feature = NCRna.select(graph, srcfeature_id).first()
         #     _feature.location.add(location)
         #     graph.push(_feature)
-        elif feature.type == 'transcript':
-            _feature = Transcript.select(graph, srcfeature_id).first()
-            _feature.location.add(location)
-            graph.push(_feature)
         elif feature.type == 'CDS':
             _feature = CDS.select(graph, srcfeature_id).first()
             _feature.location.add(location)
+            _feature.belongs_to.add(organism)
+            _feature.located_on.add(chromosome)
             graph.push(_feature)
+        elif feature.type == 'transcript':
+            _feature = Transcript.select(graph, srcfeature_id).first()
+            _feature.location.add(location)
+            _feature.belongs_to.add(organism)
+            _feature.located_on.add(chromosome)
+            graph.push(_feature)
+
+            # Find feature with this transcript's uniquename as a parent
+            exon = Exon.select(graph).where(
+                "_.parent = '{}'".format(_feature.uniquename)).first()
+            if exon:
+                # Find exon: A transcript is a parent to it
+                exon.part_of.add(_feature)
+                graph.push(exon)
+            else:
+                # Find cds: A transcript is a parent to it
+                cds = CDS.select(graph).where(
+                    "_.parent = '{}'".format(_feature.uniquename)).first()
+                if cds:
+                    cds.part_of.add(_feature)
+                    graph.push(cds)
 
 
 def create_cv_term_nodes(Protein, bp, cc, mf):

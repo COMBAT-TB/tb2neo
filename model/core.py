@@ -45,6 +45,7 @@ class Feature(GraphObject):
 
     belongs_to = RelatedTo("Organism", "BELONGS_TO")
     location = RelatedTo("Location", "LOCATED_AT")
+    located_on = RelatedTo("Chromosome", "LOCATED_ON")
     # related_to = RelatedTo("Feature", "RELATED_TO")
     published_in = RelatedTo("Publication", "PUBLISHED_IN")
     dbxref = RelatedTo("DbXref", "XREF")
@@ -170,7 +171,7 @@ class Chromosome(Feature):
     _so_id = "SO:0000340"
     so_id = Property()
 
-    is_a = RelatedTo("Feature", "IS_A")
+    # is_a = RelatedTo("Feature", "IS_A")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
@@ -214,8 +215,8 @@ class Location(GraphObject):
     locgroup = Property()
     rank = Property()
 
-    feature = RelatedFrom("Feature", "ON")
-    published_in = RelatedTo("Publication", "PUBLISHED_IN")
+    # feature = RelatedFrom("Feature", "ON")
+    # published_in = RelatedTo("Publication", "PUBLISHED_IN")
 
     def __init__(self, srcfeature_id, fmin=None, is_fmin_partial=None, fmax=None, is_fmax_partial=None, strand=None,
                  phase=None, residue_info=None, locgroup=None,
