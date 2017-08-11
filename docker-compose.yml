@@ -6,7 +6,6 @@ services:
     container_name: gff2neo
     environment:
       DB: db
-#    env_file: .env
     depends_on:
       - db
   db:
@@ -15,12 +14,10 @@ services:
     container_name: gff2neo_db
     environment:
       NEO4J_AUTH: none
-#    env_file: .env
     volumes:
       - db_data:/data
     ports:
       - "7687:7687"
       - "7474:7474"
-
 volumes:
   db_data:

@@ -8,4 +8,4 @@ $ docker-compose up -d
 ```
 and `docker-compose -f logs` for the logs.
 
- [localhost:7474](http://0.0.0.0:7474).
+Point your browser to [localhost:7474](http://0.0.0.0:7474) to access the database.

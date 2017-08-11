@@ -36,9 +36,11 @@ def parse_gff(gff_file):
     limits = [["gene", "CDS", "tRNA_gene", "ncRNA_gene", "rRNA_gene"],
               ["transcript"], ["pseudogene"]]
     for limit in limits:
-        print("Loading", limit, "...")
+        sys.stdout.write("\nLoading", limit, "...")
+        # print("\nLoading", limit, "...")
         load_gff_data(gff_file, limit)
-    print("Done.")
+    # print("Done.")
+    sys.stdout.write("Done.")
 
 
 def get_locus_tags(gff_file, chunk):
@@ -48,7 +50,7 @@ def get_locus_tags(gff_file, chunk):
     :param chunk
     :return:
     """
-    print("Getting locus_tags...")
+    sys.stdout.write("Getting locus_tags...")
     count = 0
     locus_tags = []
     for rec in GFF.parse(gff_file, limit_info=dict(gff_type=['gene'])):
@@ -73,7 +75,6 @@ def load_gff_data(gff_file, limit):
     sys.stdout.write("Extract and load features to Neo4j.")
     in_file = open(gff_file)
     limit_info = dict(gff_type=limit)
-    # transaction = graph.begin()
     for rec in GFF.parse(gff_file, limit_info=limit_info):
         for feature in tqdm(rec.features):
             rna = ["tRNA_gene", "ncRNA_gene", "rRNA_gene"]

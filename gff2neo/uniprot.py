@@ -3,6 +3,7 @@ Interface to the `UniProt <http://www.uniprot.org>`_ service.
 """
 
 from __future__ import print_function
+
 try:
     from StringIO import StringIO
 except ImportError:
