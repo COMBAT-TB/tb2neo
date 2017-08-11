@@ -168,18 +168,21 @@ def create_rna_nodes(feature):
         trna.parent = parent
         trna.uniquename = unique_name
         graph.create(trna)
+        trna_dict[unique_name] = trna
     if feature.type == 'ncRNA_gene':
         ncrna = NCRna()
         ncrna.name = name
         ncrna.parent = parent
         ncrna.uniquename = unique_name
         graph.create(ncrna)
+        ncrna_dict[unique_name] = ncrna
     if feature.type == 'rRNA_gene':
         rrna = RRna()
         rrna.name = name
         rrna.parent = parent
         rrna.uniquename = unique_name
         graph.create(rrna)
+        rrna_dict[unique_name] = rrna
 
 
 def create_cds_nodes(feature):
@@ -208,29 +211,6 @@ def get_feature_parent(feature):
     else:
         parent = None
     return parent
-
-
-# def create_feature_nodes(feature):
-#     """
-#     Create Feature Nodes
-#     :param feature:
-#     :return:
-#     """
-#     names = get_feature_name(feature)
-#     name = names.get("Name", names.get("UniqueName"))
-#     unique_name = names.get("UniqueName", name)
-#
-#     if feature.qualifiers.get('Parent'):
-#         parent = feature.qualifiers['Parent'][0]
-#     # [feature.qualifiers['Parent'][0].find(":") + 1:]
-#     else:
-#         parent = None
-#
-#     _feature = Feature()
-#     _feature.name = name
-#     _feature.parent = parent
-#     _feature.uniquename = unique_name
-#     graph.create(_feature)
 
 
 def create_featureloc_nodes(feature):
@@ -341,46 +321,55 @@ def map_to_location(feature):
     # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
     # LOCATED_AT
     srcfeature_id = get_feature_name(feature).get("UniqueName")
-    # location = Location.select(graph, srcfeature_id).first()
     location = location_dict.get(srcfeature_id)
     organism = Organism.select(graph).first()
     chromosome = Chromosome.select(graph).first()
     rna = ["tRNA_gene", "ncRNA_gene", "rRNA_gene"]
     if location:
         if feature.type == 'gene':
-            # _feature = Gene.select(graph, srcfeature_id).first()
             _feature = gene_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'pseudogene':
-            # _feature = PseudoGene.select(graph, srcfeature_id).first()
             _feature = pseudogene_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'exon':
-            # _feature = Exon.select(graph, srcfeature_id).first()
             _feature = exon_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
-        # elif feature.type in rna:
-        #     _feature = NCRna.select(graph, srcfeature_id).first()
-        #     _feature.location.add(location)
-        #     graph.push(_feature)
+        elif feature.type in rna:
+            if feature.type == 'tRNA_gene':
+                _feature = trna_dict.get(srcfeature_id)
+                _feature.location.add(location)
+                _feature.belongs_to.add(organism)
+                _feature.located_on.add(chromosome)
+                graph.push(_feature)
+            if feature.type == 'ncRNA_gene':
+                _feature = ncrna_dict.get(srcfeature_id)
+                _feature.location.add(location)
+                _feature.belongs_to.add(organism)
+                _feature.located_on.add(chromosome)
+                graph.push(_feature)
+            if feature.type == 'rRNA_gene':
+                _feature = rrna_dict.get(srcfeature_id)
+                _feature.location.add(location)
+                _feature.belongs_to.add(organism)
+                _feature.located_on.add(chromosome)
+                graph.push(_feature)
         elif feature.type == 'CDS':
-            # _feature = CDS.select(graph, srcfeature_id).first()
             _feature = cds_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'transcript':
-            # _feature = Transcript.select(graph, srcfeature_id).first()
             _feature = transcript_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)

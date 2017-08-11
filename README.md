@@ -1,5 +1,5 @@
 # gff2neo
-Loading H37Rv GFF to Neo4j
+Loading H37Rv GFF data to Neo4j
 
 ## Up and running
 
