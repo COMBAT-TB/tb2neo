@@ -202,8 +202,9 @@ class Location(GraphObject):
     """
     FeatureLoc not used
     """
-    __primarykey__ = 'srcfeature_id'  # used feature.uniquename
+    __primarykey__ = 'pk'  # used feature.uniquename
 
+    pk = Property()
     srcfeature_id = Property()
     fmin = Property()
     is_fmin_partial = Property()
@@ -218,10 +219,10 @@ class Location(GraphObject):
     # feature = RelatedFrom("Feature", "ON")
     # published_in = RelatedTo("Publication", "PUBLISHED_IN")
 
-    def __init__(self, srcfeature_id, fmin=None, is_fmin_partial=None, fmax=None, is_fmax_partial=None, strand=None,
+    def __init__(self, pk, fmin=None, is_fmin_partial=None, fmax=None, is_fmax_partial=None, strand=None,
                  phase=None, residue_info=None, locgroup=None,
                  rank=None):
-        self.srcfeature_id = srcfeature_id
+        self.pk = pk
         self.fmin = fmin
         self.is_fmin_partial = is_fmin_partial
         self.fmax = fmax
@@ -292,6 +293,7 @@ class GOTerm(GraphObject):
     namespace = Property()
 
     is_a = RelatedTo("GOTerm", "IS_A")
+
     # part_of = RelatedTo("GOTerm", "PART_OF")
     # feature = RelatedFrom("Feature", "ASSOC_WITH")
 

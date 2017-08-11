@@ -1,6 +1,8 @@
 """
 Interface to the Neo4j Database
 """
+import sys
+
 from model.core import *
 from ncbi import fetch_publication_list
 from py2neo import Graph, getenv, watch
@@ -10,7 +12,17 @@ from uniprot import *
 graph = Graph(host=getenv("DB", "localhost"), bolt=True,
               password=getenv("NEO4J_PASSWORD", ""))
 
-watch("neo4j.bolt")
+# watch("neo4j.bolt")
+
+gene_dict = dict()
+transcript_dict = dict()
+pseudogene_dict = dict()
+cds_dict = dict()
+exon_dict = dict()
+rrna_dict = dict()
+trna_dict = dict()
+ncrna_dict = dict()
+location_dict = dict()
 
 
 def delete_data():
@@ -18,7 +30,9 @@ def delete_data():
     Delete existing data.
     :return:
     """
-    print("Deleting all nodes and relationships in {}".format(graph))
+    # print("Deleting all nodes and relationships in {}".format(graph))
+    sys.stdout.write("Deleting all nodes and relationships in {}".format(graph))
+
     graph.delete_all()
 
 
@@ -71,6 +85,7 @@ def create_gene_nodes(feature):
     gene.biotype = biotype
     gene.description = description
     graph.create(gene)
+    gene_dict[unique_name] = gene
 
 
 def create_transcript_nodes(feature):
@@ -91,6 +106,7 @@ def create_transcript_nodes(feature):
     transcript.uniquename = unique_name
     transcript.biotype = biotype
     graph.create(transcript)
+    transcript_dict[unique_name] = transcript
 
 
 def create_pseudogene_nodes(feature):
@@ -113,6 +129,7 @@ def create_pseudogene_nodes(feature):
     pseudogene.description = description
     pseudogene.biotype = biotype
     graph.create(pseudogene)
+    pseudogene_dict[unique_name] = pseudogene
 
 
 def create_exon_nodes(feature):
@@ -131,6 +148,7 @@ def create_exon_nodes(feature):
     exon.uniquename = unique_name
     exon.parent = parent
     graph.create(exon)
+    exon_dict[unique_name] = exon
 
 
 def create_rna_nodes(feature):
@@ -180,6 +198,7 @@ def create_cds_nodes(feature):
     cds.parent = parent
     cds.uniquename = unique_name
     graph.create(cds)
+    cds_dict[unique_name] = cds
 
 
 def get_feature_parent(feature):
@@ -221,9 +240,11 @@ def create_featureloc_nodes(feature):
     :return:
     """
     srcfeature_id = get_feature_name(feature).get("UniqueName")
-    feature_loc = Location(srcfeature_id=srcfeature_id, fmin=feature.location.start, fmax=feature.location.end,
+    pk = feature.location.start + feature.location.end
+    feature_loc = Location(pk=pk, fmin=feature.location.start, fmax=feature.location.end,
                            strand=feature.location.strand)
     graph.create(feature_loc)
+    location_dict[srcfeature_id] = feature_loc
 
 
 def get_feature_name(feature):
@@ -320,25 +341,29 @@ def map_to_location(feature):
     # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
     # LOCATED_AT
     srcfeature_id = get_feature_name(feature).get("UniqueName")
-    location = Location.select(graph, srcfeature_id).first()
+    # location = Location.select(graph, srcfeature_id).first()
+    location = location_dict.get(srcfeature_id)
     organism = Organism.select(graph).first()
     chromosome = Chromosome.select(graph).first()
     rna = ["tRNA_gene", "ncRNA_gene", "rRNA_gene"]
     if location:
         if feature.type == 'gene':
-            _feature = Gene.select(graph, srcfeature_id).first()
+            # _feature = Gene.select(graph, srcfeature_id).first()
+            _feature = gene_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'pseudogene':
-            _feature = PseudoGene.select(graph, srcfeature_id).first()
+            # _feature = PseudoGene.select(graph, srcfeature_id).first()
+            _feature = pseudogene_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'exon':
-            _feature = Exon.select(graph, srcfeature_id).first()
+            # _feature = Exon.select(graph, srcfeature_id).first()
+            _feature = exon_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
@@ -348,13 +373,15 @@ def map_to_location(feature):
         #     _feature.location.add(location)
         #     graph.push(_feature)
         elif feature.type == 'CDS':
-            _feature = CDS.select(graph, srcfeature_id).first()
+            # _feature = CDS.select(graph, srcfeature_id).first()
+            _feature = cds_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'transcript':
-            _feature = Transcript.select(graph, srcfeature_id).first()
+            # _feature = Transcript.select(graph, srcfeature_id).first()
+            _feature = transcript_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
