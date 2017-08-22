@@ -18,6 +18,7 @@ u = UniProt(verbose=False)
 def search_uniprot(query, columns, taxonomy='83332', proteome='UP000001584'):
     """
     Search UniProt and return results as list
+    :param taxonomy:
     :param query:
     :param columns:
     :param proteome:
@@ -39,6 +40,8 @@ def search_uniprot(query, columns, taxonomy='83332', proteome='UP000001584'):
 def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
     """
     Get data from UniProt
+    :param proteome:
+    :param taxonomy:
     :param locus_tags:
     :return:
     """
@@ -52,14 +55,14 @@ def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
               " genes(ALTERNATIVE), genes(ORF), version(sequence)"
     uniprot_data = []
     results = []
-    for tag_list in locus_tags:
-        query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
-        result = search_uniprot(query, columns, taxonomy=taxonomy,
-                                proteome=proteome)
-        for row in result:
-            print(row[9], row[0], row[2], row[3])
-        uniprot_data.append(result)
-
+    with open("data/uniprot_data.csv", "w") as csv_file:
+        writer = csv.writer(csv_file)
+        for tag_list in locus_tags:
+            query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
+            result = search_uniprot(query, columns, taxonomy=taxonomy,
+                                    proteome=proteome)
+            writer.writerows(result)
+            uniprot_data.append(result)
     for data in uniprot_data:
         for entry in data:
             results.append(entry)

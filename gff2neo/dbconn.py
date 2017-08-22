@@ -3,6 +3,8 @@ Interface to the Neo4j Database
 """
 import sys
 
+from tqdm import tqdm
+
 from model.core import *
 from ncbi import fetch_publication_list
 from py2neo import Graph, getenv, watch
@@ -250,71 +252,24 @@ def build_relationships():
     :return:
     """
     # TODO: Try optimize this
-    print("Building Relationships...")
-
-    features = Feature.select(graph)
-    for feature in features:
-        # Find organism via __primarykey__ and link with feature via BELONGS_TO
-        org = Organism.select(graph, 'Mycobacterium').first()
-        feature.belongs_to.add(org)
-
-        # Find feature with a parent attr. matching this features uniquename
-        # and link them via RELATED_TO
-        _feature = Feature.select(graph).where(
-            "_.parent = '{}'".format(feature.uniquename)).first()
-        if _feature:
-            feature.related_to.add(_feature)
-
-        # Building is_a relationships
-        gene = Gene.select(graph, feature.uniquename).first()
-        if gene:
-            gene.is_a.add(feature)
-            graph.push(gene)
-            # Find feature with this gene's uniquename as a parent
-            _feature = Feature.select(graph).where(
-                "_.parent = '{}'".format(gene.uniquename)).first()
-            if _feature:
-                # Find transcript: A gene is a parent to it.
-                transcript = Transcript.select(
-                    graph, _feature.uniquename).first()
-                if transcript:
-                    transcript.part_of.add(gene)
-                    graph.push(transcript)
-
-        p_gene = PseudoGene.select(graph, feature.uniquename).first()
-        if p_gene:
-            p_gene.is_a.add(feature)
-            graph.push(p_gene)
-        transcript = Transcript.select(graph, feature.uniquename).first()
-        if transcript:
-            transcript.is_a.add(feature)
+    print("\nBuilding Relationships...")
+    for t, transcript in transcript_dict.iteritems():
+        if transcript.parent in gene_dict.keys():
+            gene = gene_dict.get(transcript.parent)
+            transcript.part_of_g.add(gene)
             graph.push(transcript)
-            # Find feature with this transcript's uniquename as a parent
-            _feature = Feature.select(graph).where(
-                "_.parent = '{}'".format(transcript.uniquename)).first()
-            if _feature:
-                # Find exon: A transcript is a parent to it
-                exon = Exon.select(graph, _feature.uniquename).first()
-                if exon:
-                    exon.part_of.add(transcript)
-                    graph.push(exon)
-                # Find cds: A transcript is a parent to it
-                cds = CDS.select(graph, _feature.uniquename).first()
-                if cds:
-                    cds.part_of.add(transcript)
-                    graph.push(cds)
-
-        cds = CDS.select(graph, feature.uniquename).first()
-        if cds:
-            cds.is_a.add(feature)
-            graph.push(cds)
-
-            # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
-            # LOCATED_AT
-            # _feature = Location.select(graph, feature.uniquename).first()
-            # if _feature:
-            #     feature.location.add(_feature)
-            # graph.push(feature)
+        for g, gene in gene_dict.iteritems():
+            if transcript.parent == gene.uniquename:
+                transcript.part_of_g.add(gene)
+                graph.push(transcript)
+        for p, pseudogene in pseudogene_dict.iteritems():
+            if transcript.parent == pseudogene.uniquename:
+                transcript.part_of_pg.add(pseudogene)
+                graph.push(transcript)
+        for c, cds in cds_dict.iteritems():
+            if transcript.parent == cds.uniquename:
+                cds.part_of.add(transcript)
+                graph.push(cds)
 
 
 def map_to_location(feature):
@@ -375,21 +330,6 @@ def map_to_location(feature):
             _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
-
-            # Find feature with this transcript's uniquename as a parent
-            exon = Exon.select(graph).where(
-                "_.parent = '{}'".format(_feature.uniquename)).first()
-            if exon:
-                # Find exon: A transcript is a parent to it
-                exon.part_of.add(_feature)
-                graph.push(exon)
-            else:
-                # Find cds: A transcript is a parent to it
-                cds = CDS.select(graph).where(
-                    "_.parent = '{}'".format(_feature.uniquename)).first()
-                if cds:
-                    cds.part_of.add(_feature)
-                    graph.push(cds)
 
 
 def create_cv_term_nodes(Protein, bp, cc, mf):

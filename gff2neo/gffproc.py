@@ -4,8 +4,6 @@ Interface for GFF processing.
 from __future__ import print_function
 
 import pprint
-import sys
-
 from BCBio import GFF
 from BCBio.GFF import GFFExaminer
 from dbconn import *
@@ -33,7 +31,7 @@ def parse_gff(gff_file):
     create_organism_nodes()
     create_chromosome_nodes()
     # we are not interested in exons as this is a bacterial genome
-    limits = [["gene", "transcript", "CDS", "tRNA_gene", "ncRNA_gene", "rRNA_gene"], ["pseudogene"]]
+    limits = [["transcript"], ["gene", "CDS", "tRNA_gene", "ncRNA_gene", "rRNA_gene"], ["pseudogene"]]
     for limit in limits:
         sys.stdout.write("\nLoading {}...".format(limit))
         # print("\nLoading", limit, "...")

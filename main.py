@@ -11,5 +11,5 @@ if __name__ == '__main__':
     delete_data()
     examine(gff_file)
     parse_gff(gff_file)
-    # build_relationships()
-    # query_uniprot(get_locus_tags(gff_file, 400))
+    build_relationships()
+    query_uniprot(get_locus_tags(gff_file, 400))

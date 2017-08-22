@@ -97,7 +97,8 @@ class Transcript(Feature):
     so_id = Property()
     biotype = Property()
 
-    part_of = RelatedTo("Gene", "PART_OF")
+    part_of_g = RelatedTo("Gene", "PART_OF")
+    part_of_pg = RelatedTo("PseudoGene", "PART_OF")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
