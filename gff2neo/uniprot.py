@@ -42,7 +42,8 @@ def write_to_csv(results):
     fieldnames = [
         'Entry', 'Entry_Name', 'Gene_Names_OL', 'Gene_Name', 'GO_IDs', 'InterPro', 'Interacts_With',
         'Gene_Names_Prim', 'Domain_FT', 'Protein_Names', 'GO', 'PubMed', '3D', 'Function_CC', 'Sequence',
-        'Mass', 'Length', 'Protein_Families', 'GO_BP', 'GO_MF', 'GO_CC', 'Gene_SYN', 'Gene_Name_ORF', 'SeqVersion'
+        'Mass', 'Length', 'Protein_Families', 'GO_BP', 'GO_MF', 'GO_CC', 'Gene_SYN', 'Gene_Name_ORF',
+        'SeqVersion'
     ]
     print(len(fieldnames))
     with open("data/uniprot_data.csv", "w") as csv_file:
@@ -54,6 +55,15 @@ def write_to_csv(results):
             inner_dict = dict(zip(fieldnames, row))
             mapped_list.append(inner_dict)
         writer.writerows(mapped_list)
+
+
+def read_csv():
+    with open("data/uniprot_data.csv", 'rb') as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=',')
+        for row in reader:
+            print(row['Entry'], '-', row['3D'])
+            if len(row['3D']) > 0:
+                print(map_ue_to_pdb(row['Entry']))
 
 
 def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):

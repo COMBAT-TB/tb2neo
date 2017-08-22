@@ -3,11 +3,10 @@ Interface to the Neo4j Database
 """
 import sys
 
-from tqdm import tqdm
+from py2neo import Graph, getenv
 
 from model.core import *
 from ncbi import fetch_publication_list
-from py2neo import Graph, getenv, watch
 from quickgo import fetch_quick_go_data
 from uniprot import *
 
@@ -332,10 +331,10 @@ def map_to_location(feature):
             graph.push(_feature)
 
 
-def create_cv_term_nodes(Protein, bp, cc, mf):
+def create_cv_term_nodes(protein, bp, cc, mf):
     """
     Create CvTerm Nodes and build Polypetide relationships.
-    :param Protein:
+    :param protein:
     :param bp:
     :param cc:
     :param mf:
@@ -359,8 +358,8 @@ def create_cv_term_nodes(Protein, bp, cc, mf):
             cv.definition = _def
             cv.namespace = "biological process"
             graph.create(cv)
-            Protein.cvterm.add(cv)
-            graph.push(Protein)
+            protein.cvterm.add(cv)
+            graph.push(protein)
 
     for _id in go_mf_ids:
         cv = GOTerm()
@@ -369,8 +368,8 @@ def create_cv_term_nodes(Protein, bp, cc, mf):
             cv.definition = _def
             cv.namespace = "cellular component"
             graph.create(cv)
-            Protein.cvterm.add(cv)
-            graph.push(Protein)
+            protein.cvterm.add(cv)
+            graph.push(protein)
     for _id in go_cc_ids:
         cv = GOTerm()
         for _def in go_cc_defs:
@@ -378,14 +377,14 @@ def create_cv_term_nodes(Protein, bp, cc, mf):
             cv.definition = _def
             cv.namespace = "molecular function"
             graph.create(cv)
-            Protein.cvterm.add(cv)
-            graph.push(Protein)
+            protein.cvterm.add(cv)
+            graph.push(protein)
 
 
-def create_interpro_term_nodes(Protein, entry):
+def create_interpro_term_nodes(protein, entry):
     """
     Create InterPro Term Nodes.
-    :param Protein:
+    :param protein:
     :param entry:
     :return:
     """
@@ -395,7 +394,7 @@ def create_interpro_term_nodes(Protein, entry):
         import time
         dbxref = DbXref(db="InterPro", accession=interpro, version=time.time())
         graph.create(dbxref)
-        Protein.dbxref.add(dbxref)
+        protein.dbxref.add(dbxref)
         graph.push(Protein)
 
 
@@ -479,10 +478,10 @@ def update_pub_nodes():
         record_loaded_count += 1
 
 
-def create_pub_nodes(Protein, pubs):
+def create_pub_nodes(protein, pubs):
     """
     Create Publication Nodes
-    :param Protein:
+    :param protein:
     :param pubs:
     :return:
     """
@@ -492,7 +491,7 @@ def create_pub_nodes(Protein, pubs):
         pub = Publication()
         pub.pmid = citation
 
-        Protein.published_in.add(pub)
+        protein.published_in.add(pub)
         graph.push(Protein)
 
 
@@ -554,19 +553,19 @@ def create_uniprot_nodes(uniprot_data):
         dbxref = DbXref(db="UniProt", accession=entry[1], version=entry[0])
         graph.create(dbxref)
         pdb_id = map_ue_to_pdb(entry[0])
-        Protein = Protein()
-        Protein.name = entry[9]
-        Protein.uniquename = entry[0]
-        Protein.ontology_id = Protein.so_id
-        Protein.seqlen = entry[16]
-        Protein.residues = entry[14]
-        Protein.parent = entry[2]
-        Protein.family = entry[17]
-        Protein.function = entry[13]
-        Protein.pdb_id = pdb_id
-        Protein.mass = entry[15]
-        Protein.three_d = entry[12]
-        graph.create(Protein)
+        protein = Protein()
+        protein.name = entry[9]
+        protein.uniquename = entry[0]
+        protein.ontology_id = protein.so_id
+        protein.seqlen = entry[16]
+        protein.residues = entry[14]
+        protein.parent = entry[2]
+        protein.family = entry[17]
+        protein.function = entry[13]
+        protein.pdb_id = pdb_id
+        protein.mass = entry[15]
+        protein.three_d = entry[12]
+        graph.create(protein)
 
         gene = Gene.select(graph, "gene:" + entry[2]).first()
         if gene:
@@ -580,16 +579,16 @@ def create_uniprot_nodes(uniprot_data):
                         graph, "CDS" + transcript.uniquename[transcript.uniquename.find(":"):]).first()
                     if cds:
                         # Polypetide-derives_from->CDS
-                        Protein.derives_from.add(cds)
-                        cds.Protein.add(Protein)
-                        graph.push(Protein)
+                        protein.derives_from.add(cds)
+                        cds.Protein.add(protein)
+                        graph.push(protein)
                         graph.push(cds)
 
-        Protein.dbxref.add(dbxref)
-        graph.push(Protein)
+        protein.dbxref.add(dbxref)
+        graph.push(protein)
 
-        create_cv_term_nodes(Protein, entry[18], entry[19], entry[20])
-        create_interpro_term_nodes(Protein, entry[5])
-        create_pub_nodes(Protein, entry[11])
+        create_cv_term_nodes(protein, entry[18], entry[19], entry[20])
+        create_interpro_term_nodes(protein, entry[5])
+        create_pub_nodes(protein, entry[11])
     build_protein_interaction_rels(protein_interaction_dict)
     print ("TOTAL:", count)
