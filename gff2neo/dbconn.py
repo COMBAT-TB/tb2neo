@@ -358,7 +358,7 @@ def create_cv_term_nodes(protein, bp, cc, mf):
             cv.definition = _def
             cv.namespace = "biological process"
             graph.create(cv)
-            protein.cvterm.add(cv)
+            protein.assoc_goterm.add(cv)
             graph.push(protein)
 
     for _id in go_mf_ids:
@@ -368,7 +368,7 @@ def create_cv_term_nodes(protein, bp, cc, mf):
             cv.definition = _def
             cv.namespace = "cellular component"
             graph.create(cv)
-            protein.cvterm.add(cv)
+            protein.assoc_goterm.add(cv)
             graph.push(protein)
     for _id in go_cc_ids:
         cv = GOTerm()
@@ -377,7 +377,7 @@ def create_cv_term_nodes(protein, bp, cc, mf):
             cv.definition = _def
             cv.namespace = "molecular function"
             graph.create(cv)
-            protein.cvterm.add(cv)
+            protein.assoc_goterm.add(cv)
             graph.push(protein)
 
 

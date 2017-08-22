@@ -194,6 +194,7 @@ class Protein(Feature):
 
     derives_from = RelatedTo("CDS", "DERIVES_FROM")
     interacts_with = RelatedTo("Protein", "INTERACTS_WITH")
+    assoc_goterm = RelatedTo("GOTerm", 'ASSOCIATED_WITH')
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
