@@ -17,6 +17,8 @@ import dbconn
 
 u = UniProt(verbose=False)
 
+uniprot_data_csv = "data/uniprot_data.csv"
+
 
 def search_uniprot(query, columns, taxonomy='83332', proteome='UP000001584'):
     """
@@ -49,7 +51,7 @@ def write_to_csv(results):
         'SeqVersion'
     ]
     print(len(fieldnames))
-    with open("data/uniprot_data.csv", "w") as csv_file:
+    with open(uniprot_data_csv, "w") as csv_file:
         writer = csv.DictWriter(csv_file, delimiter=',', fieldnames=fieldnames)
         writer.writeheader()
         mapped_list = []
@@ -60,15 +62,13 @@ def write_to_csv(results):
 
 
 def read_csv():
-    uniprot_data_csv = "data/uniprot_data.csv"
     if os.path.exists(uniprot_data_csv):
-        with open("data/uniprot_data.csv", 'rb') as csv_file:
+        with open(uniprot_data_csv, 'rb') as csv_file:
             reader = csv.DictReader(csv_file, delimiter=',')
             # Create UniProt Nodes
             dbconn.create_uniprot_nodes(reader)
     else:
-        import sys
-        sys.stderr.write("Couldn't find {}!".format(uniprot_data_csv))
+        raise Exception("Couldn't find {}!".format(uniprot_data_csv))
 
 
 def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
@@ -79,33 +79,36 @@ def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
     :param locus_tags:
     :return:
     """
-    print("Querying UniProt...")
-    start = time()
-    columns = "id, entry name, genes(OLN), genes, go-id, interpro, " \
-              "interactor, genes(PREFERRED), feature(DOMAIN EXTENT), " \
-              "protein names, go, citation, 3d, comment(FUNCTION), " \
-              "sequence, mass, length, families, go(biological process), " \
-              "go(molecular function), go(cellular component), " \
-              " genes(ALTERNATIVE), genes(ORF), version(sequence)"
-    uniprot_data = []
-    results = []
-    # print("\nWriting to csv...")
-    # with open("data/uniprot_data.csv", "w") as csv_file:
-    #     writer = csv.writer(csv_file)
-    for tag_list in locus_tags:
-        query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
-        result = search_uniprot(query, columns, taxonomy=taxonomy,
-                                proteome=proteome)
-        # writer.writerows(result)
-        uniprot_data.append(result)
 
-    for data in uniprot_data:
-        for entry in data:
-            results.append(entry)
-    end = time()
-    print("\nDone fetching data from UniProt in ", end - start, "secs.")
-    write_to_csv(results)
-    return results
+    if not os.path.exists(uniprot_data_csv):
+        print("Querying UniProt...")
+        start = time()
+        uniprot_data = []
+        results = []
+        columns = "id, entry name, genes(OLN), genes, go-id, interpro, " \
+                  "interactor, genes(PREFERRED), feature(DOMAIN EXTENT), " \
+                  "protein names, go, citation, 3d, comment(FUNCTION), " \
+                  "sequence, mass, length, families, go(biological process), " \
+                  "go(molecular function), go(cellular component), " \
+                  " genes(ALTERNATIVE), genes(ORF), version(sequence)"
+        # print("\nWriting to csv...")
+        # with open("data/uniprot_data.csv", "w") as csv_file:
+        #     writer = csv.writer(csv_file)
+        for tag_list in locus_tags:
+            query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
+            result = search_uniprot(query, columns, taxonomy=taxonomy,
+                                    proteome=proteome)
+            # writer.writerows(result)
+            uniprot_data.append(result)
+
+        for data in uniprot_data:
+            for entry in data:
+                results.append(entry)
+        end = time()
+        print("\nDone fetching data from UniProt in ", end - start, "secs.")
+        write_to_csv(results)
+    else:
+        read_csv()
 
 
 def map_ue_to_pdb(ue):

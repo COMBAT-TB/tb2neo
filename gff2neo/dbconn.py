@@ -395,7 +395,7 @@ def create_interpro_term_nodes(protein, entry):
         dbxref = DbXref(db="InterPro", accession=interpro, version=time.time())
         graph.create(dbxref)
         protein.dbxref.add(dbxref)
-        graph.push(Protein)
+        graph.push(protein)
 
 
 def create_author_nodes(publication, full_author):
@@ -492,7 +492,7 @@ def create_pub_nodes(protein, pubs):
         pub.pmid = citation
 
         protein.published_in.add(pub)
-        graph.push(Protein)
+        graph.push(protein)
 
 
 def create_is_a_cv_term_rel():

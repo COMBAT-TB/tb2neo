@@ -13,4 +13,3 @@ if __name__ == '__main__':
     parse_gff(gff_file)
     build_relationships()
     query_uniprot(get_locus_tags(gff_file, 400))
-    read_csv()
