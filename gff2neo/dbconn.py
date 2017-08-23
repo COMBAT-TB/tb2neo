@@ -3,7 +3,7 @@ Interface to the Neo4j Database
 """
 import sys
 
-from py2neo import Graph, getenv
+from py2neo import Graph, getenv, watch
 
 from model.core import *
 from ncbi import fetch_publication_list
@@ -13,7 +13,7 @@ from uniprot import *
 graph = Graph(host=getenv("DB", "localhost"), bolt=True,
               password=getenv("NEO4J_PASSWORD", ""))
 
-# watch("neo4j.bolt")
+watch("neo4j.bolt")
 
 gene_dict = dict()
 transcript_dict = dict()
@@ -547,48 +547,50 @@ def create_uniprot_nodes(uniprot_data):
     count = 0
     protein_interaction_dict = dict()
     for entry in uniprot_data:
-        protein_interaction_dict[entry[0]] = entry[6]
+        protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
         count += 1
 
-        dbxref = DbXref(db="UniProt", accession=entry[1], version=entry[0])
+        dbxref = DbXref(db="UniProt", accession=entry['Entry_Name'], version=entry['Entry'])
         graph.create(dbxref)
-        pdb_id = map_ue_to_pdb(entry[0])
+        pdb_id = None
+        if len(entry['3D']) > 0:
+            pdb_id = map_ue_to_pdb(entry['Entry'])
         protein = Protein()
-        protein.name = entry[9]
-        protein.uniquename = entry[0]
+        protein.name = entry['Protein_Names']
+        protein.uniquename = entry['Entry']
         protein.ontology_id = protein.so_id
-        protein.seqlen = entry[16]
-        protein.residues = entry[14]
-        protein.parent = entry[2]
-        protein.family = entry[17]
-        protein.function = entry[13]
+        protein.seqlen = entry['Length']
+        protein.residues = entry['Sequence']
+        protein.parent = entry['Gene_Names_OL']
+        protein.family = entry['Protein_Families']
+        protein.function = entry['Function_CC']
         protein.pdb_id = pdb_id
-        protein.mass = entry[15]
-        protein.three_d = entry[12]
+        protein.mass = entry['Mass']
+        protein.three_d = entry['3D']
         graph.create(protein)
 
-        gene = Gene.select(graph, "gene:" + entry[2]).first()
-        if gene:
-            _feature = Feature.select(graph).where(
-                "_.parent = '{}'".format(gene.uniquename)).first()
-            if _feature:
-                transcript = Transcript.select(
-                    graph, _feature.uniquename).first()
-                if transcript:
-                    cds = CDS.select(
-                        graph, "CDS" + transcript.uniquename[transcript.uniquename.find(":"):]).first()
-                    if cds:
-                        # Polypetide-derives_from->CDS
-                        protein.derives_from.add(cds)
-                        cds.Protein.add(protein)
-                        graph.push(protein)
-                        graph.push(cds)
-
+        #     gene = Gene.select(graph, "gene:" + entry['Gene_Names_OL']).first()
+        #     if gene:
+        #         _feature = Feature.select(graph).where(
+        #             "_.parent = '{}'".format(gene.uniquename)).first()
+        #         if _feature:
+        #             transcript = Transcript.select(
+        #                 graph, _feature.uniquename).first()
+        #             if transcript:
+        #                 cds = CDS.select(
+        #                     graph, "CDS" + transcript.uniquename[transcript.uniquename.find(":"):]).first()
+        #                 if cds:
+        #                     # Polypetide-derives_from->CDS
+        #                     protein.derives_from.add(cds)
+        #                     cds.Protein.add(protein)
+        #                     graph.push(protein)
+        #                     graph.push(cds)
+        #
         protein.dbxref.add(dbxref)
         graph.push(protein)
-
-        create_cv_term_nodes(protein, entry[18], entry[19], entry[20])
-        create_interpro_term_nodes(protein, entry[5])
-        create_pub_nodes(protein, entry[11])
+        #
+        create_cv_term_nodes(protein, entry['GO_BP'], entry['GO_MF'], entry['GO_CC'])
+        create_interpro_term_nodes(protein, entry['InterPro'])
+        create_pub_nodes(protein, entry['PubMed'])
     build_protein_interaction_rels(protein_interaction_dict)
     print ("TOTAL:", count)

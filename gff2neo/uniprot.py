@@ -4,6 +4,8 @@ Interface to the `UniProt <http://www.uniprot.org>`_ service.
 
 from __future__ import print_function
 
+import os
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -11,6 +13,7 @@ except ImportError:
 import csv
 from time import time
 from bioservices import UniProt
+import dbconn
 
 u = UniProt(verbose=False)
 
@@ -49,7 +52,6 @@ def write_to_csv(results):
     with open("data/uniprot_data.csv", "w") as csv_file:
         writer = csv.DictWriter(csv_file, delimiter=',', fieldnames=fieldnames)
         writer.writeheader()
-        # writer = csv.writer(csv_file)
         mapped_list = []
         for row in results:
             inner_dict = dict(zip(fieldnames, row))
@@ -58,12 +60,15 @@ def write_to_csv(results):
 
 
 def read_csv():
-    with open("data/uniprot_data.csv", 'rb') as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=',')
-        for row in reader:
-            print(row['Entry'], '-', row['3D'])
-            if len(row['3D']) > 0:
-                print(map_ue_to_pdb(row['Entry']))
+    uniprot_data_csv = "data/uniprot_data.csv"
+    if os.path.exists(uniprot_data_csv):
+        with open("data/uniprot_data.csv", 'rb') as csv_file:
+            reader = csv.DictReader(csv_file, delimiter=',')
+            # Create UniProt Nodes
+            dbconn.create_uniprot_nodes(reader)
+    else:
+        import sys
+        sys.stderr.write("Couldn't find {}!".format(uniprot_data_csv))
 
 
 def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
