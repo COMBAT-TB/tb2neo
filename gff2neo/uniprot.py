@@ -4,8 +4,6 @@ Interface to the `UniProt <http://www.uniprot.org>`_ service.
 
 from __future__ import print_function
 
-import os
-
 try:
     from StringIO import StringIO
 except ImportError:
@@ -13,7 +11,6 @@ except ImportError:
 import csv
 from time import time
 from bioservices import UniProt
-import dbconn
 
 u = UniProt(verbose=False)
 
@@ -61,14 +58,14 @@ def write_to_csv(results):
         writer.writerows(mapped_list)
 
 
-def read_csv():
-    if os.path.exists(uniprot_data_csv):
-        with open(uniprot_data_csv, 'rb') as csv_file:
-            reader = csv.DictReader(csv_file, delimiter=',')
-            # Create UniProt Nodes
-            dbconn.create_uniprot_nodes(reader)
-    else:
-        raise Exception("Couldn't find {}!".format(uniprot_data_csv))
+# def read_csv():
+#     if os.path.exists(uniprot_data_csv):
+#         with open(uniprot_data_csv, 'rb') as csv_file:
+#             reader = csv.DictReader(csv_file, delimiter=',')
+#             # Create UniProt Nodes
+#             dbconn.create_uniprot_nodes(reader)
+#     else:
+#         raise Exception("Couldn't find {}!".format(uniprot_data_csv))
 
 
 def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
@@ -79,36 +76,46 @@ def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
     :param locus_tags:
     :return:
     """
+    print("Querying UniProt...")
+    start = time()
+    uniprot_data = []
+    results = []
+    columns = "id, entry name, genes(OLN), genes, go-id, interpro, " \
+              "interactor, genes(PREFERRED), feature(DOMAIN EXTENT), " \
+              "protein names, go, citation, 3d, comment(FUNCTION), " \
+              "sequence, mass, length, families, go(biological process), " \
+              "go(molecular function), go(cellular component), " \
+              " genes(ALTERNATIVE), genes(ORF), version(sequence)"
+    # print("\nWriting to csv...")
+    # with open("data/uniprot_data.csv", "w") as csv_file:
+    #     writer = csv.writer(csv_file)
+    for tag_list in locus_tags:
+        query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
+        result = search_uniprot(query, columns, taxonomy=taxonomy,
+                                proteome=proteome)
+        # writer.writerows(result)
+        uniprot_data.append(result)
 
-    if not os.path.exists(uniprot_data_csv):
-        print("Querying UniProt...")
-        start = time()
-        uniprot_data = []
-        results = []
-        columns = "id, entry name, genes(OLN), genes, go-id, interpro, " \
-                  "interactor, genes(PREFERRED), feature(DOMAIN EXTENT), " \
-                  "protein names, go, citation, 3d, comment(FUNCTION), " \
-                  "sequence, mass, length, families, go(biological process), " \
-                  "go(molecular function), go(cellular component), " \
-                  " genes(ALTERNATIVE), genes(ORF), version(sequence)"
-        # print("\nWriting to csv...")
-        # with open("data/uniprot_data.csv", "w") as csv_file:
-        #     writer = csv.writer(csv_file)
-        for tag_list in locus_tags:
-            query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
-            result = search_uniprot(query, columns, taxonomy=taxonomy,
-                                    proteome=proteome)
-            # writer.writerows(result)
-            uniprot_data.append(result)
+    for data in uniprot_data:
+        for entry in data:
+            results.append(entry)
+    end = time()
+    print("\nDone fetching data from UniProt in ", end - start, "secs.")
+    write_to_csv(results)
 
-        for data in uniprot_data:
-            for entry in data:
-                results.append(entry)
-        end = time()
-        print("\nDone fetching data from UniProt in ", end - start, "secs.")
-        write_to_csv(results)
-    else:
-        read_csv()
+
+def eu_mapping(ue, to):
+    """
+    Mapping UniProt entry to XREF
+    :param to:
+    :param ue:
+    :return:
+    """
+    xref_id = None
+    _map = u.mapping(fr='ID', to=to, query=ue)
+    if len(_map) != 0:
+        xref_id = _map[ue]
+    return xref_id
 
 
 def map_ue_to_pdb(ue):
@@ -122,3 +129,16 @@ def map_ue_to_pdb(ue):
     if len(_pdb) != 0:
         pdb_id = _pdb[ue]
     return pdb_id
+
+
+def map_ue_to_ens_trs(ue):
+    """
+    Mapping UniProt entry to Ensembl Genomes Transcript
+    :param ue:
+    :return:
+    """
+    trs_id = None
+    _trs = u.mapping(fr='ID', to='ENSEMBLGENOME_TRS_ID', query=ue)
+    if len(_trs) != 0:
+        trs_id = _trs[ue]
+    return trs_id

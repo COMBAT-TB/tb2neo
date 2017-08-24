@@ -158,8 +158,7 @@ class CDS(Feature):
     so_id = Property()
 
     part_of = RelatedTo("Transcript", "PART_OF")
-
-    # protein = RelatedFrom('Protein', "DERIVES_FROM")
+    derived = RelatedFrom('Protein', "DERIVES_FROM")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
@@ -195,6 +194,8 @@ class Protein(Feature):
     derives_from = RelatedTo("CDS", "DERIVES_FROM")
     interacts_with = RelatedTo("Protein", "INTERACTS_WITH")
     assoc_goterm = RelatedTo("GOTerm", 'ASSOCIATED_WITH')
+    assoc_intterm = RelatedTo("InterProTerm", "ASSOCIATED_WITH")
+    drug = RelatedFrom("Drug", "TARGET")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
@@ -309,22 +310,38 @@ class InterProTerm(GraphObject):
     """
     InterPro Terms
     """
-    __primarykey__ = 'name'
+    __primarykey__ = 'accession'
 
+    accession = Property()
     name = Property()
     definition = Property()
-    is_obsolete = Property()
-    namespace = Property()
 
     dbxref = RelatedTo("DbXref", "XREF")
-    is_a = RelatedTo("GOTerm", "IS_A")
-    part_of = RelatedTo("GOTerm", "PART_OF")
+    assoc_protein = RelatedFrom("Protein", "ASSOCIATED_WITH")
     feature = RelatedFrom("Feature", "ASSOC_WITH")
 
-    def __init__(self, name=None, definition=None, is_obsolete=None):
+    def __init__(self, accession=None, name=None, definition=None):
+        self.accession = accession
         self.name = name
         self.definition = definition
-        self.is_obsolete = is_obsolete
+
+
+class Drug(GraphObject):
+    """
+    InterPro Terms
+    """
+    __primarykey__ = 'accession'
+
+    accession = Property()
+    name = Property()
+    definition = Property()
+
+    target = RelatedTo("Protein", "TARGET")
+
+    def __init__(self, accession, name=None, definition=None):
+        self.accession = accession
+        self.name = name
+        self.definition = definition
 
 
 class DbXref(GraphObject):
@@ -338,7 +355,10 @@ class DbXref(GraphObject):
     db = Property()
     description = Property()
 
-    def __init__(self, db, accession, version, description=None):
+    # adding target rel for drugbank data
+    target = RelatedTo("Protein", "TARGET")
+
+    def __init__(self, db, accession, version=None, description=None):
         self.accession = accession
         self.version = version
         self.db = db

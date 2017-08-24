@@ -3,7 +3,7 @@ Interface to the Neo4j Database
 """
 import sys
 
-from py2neo import Graph, getenv, watch
+from py2neo import Graph, getenv
 
 from model.core import *
 from ncbi import fetch_publication_list
@@ -13,7 +13,7 @@ from uniprot import *
 graph = Graph(host=getenv("DB", "localhost"), bolt=True,
               password=getenv("NEO4J_PASSWORD", ""))
 
-watch("neo4j.bolt")
+# watch("neo4j.bolt")
 
 gene_dict = dict()
 transcript_dict = dict()
@@ -395,7 +395,12 @@ def create_interpro_term_nodes(protein, entry):
         dbxref = DbXref(db="InterPro", accession=interpro, version=time.time())
         graph.create(dbxref)
         protein.dbxref.add(dbxref)
+        interproterm = InterProTerm(accession=interpro)
+        graph.create(interproterm)
+        protein.assoc_intterm.add(interproterm)
         graph.push(protein)
+        interproterm.assoc_protein.add(protein)
+        graph.push(interproterm)
 
 
 def create_author_nodes(publication, full_author):
@@ -534,63 +539,72 @@ def build_protein_interaction_rels(protein_interaction_dict):
                     graph.push(poly)
 
 
-def create_uniprot_nodes(uniprot_data):
+def create_uniprot_nodes():
     """
     Build DbXref nodes from UniProt results.
-    :param uniprot_data:
     :return:
     """
-    print("=========================================")
-    print("About to create Nodes from UniProt data.")
-    print("=========================================")
+    print("Creating UniProt Nodes from CSV...")
     # time.sleep(2)
     count = 0
     protein_interaction_dict = dict()
-    for entry in uniprot_data:
-        protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
-        count += 1
+    with open(uniprot_data_csv, 'rb') as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=',')
+        # total = len(list(reader))
+        for entry in reader:
+            protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
+            count += 1
+            dbxref = DbXref(db="UniProt", accession=entry['Entry_Name'], version=entry['Entry'])
+            graph.create(dbxref)
 
-        dbxref = DbXref(db="UniProt", accession=entry['Entry_Name'], version=entry['Entry'])
-        graph.create(dbxref)
-        pdb_id = None
-        if len(entry['3D']) > 0:
-            pdb_id = map_ue_to_pdb(entry['Entry'])
-        protein = Protein()
-        protein.name = entry['Protein_Names']
-        protein.uniquename = entry['Entry']
-        protein.ontology_id = protein.so_id
-        protein.seqlen = entry['Length']
-        protein.residues = entry['Sequence']
-        protein.parent = entry['Gene_Names_OL']
-        protein.family = entry['Protein_Families']
-        protein.function = entry['Function_CC']
-        protein.pdb_id = pdb_id
-        protein.mass = entry['Mass']
-        protein.three_d = entry['3D']
-        graph.create(protein)
+            pdb_id = None
+            if len(entry['3D']) > 0:
+                # pdb_id = map_ue_to_pdb(entry['Entry'])
+                pdb_id = eu_mapping(entry['Entry'], to='PDB_ID')
+            protein = Protein()
+            protein.name = entry['Protein_Names']
+            protein.uniquename = entry['Entry']
+            protein.ontology_id = protein.so_id
+            protein.seqlen = entry['Length']
+            protein.residues = entry['Sequence']
+            protein.parent = entry['Gene_Names_OL']
+            protein.family = entry['Protein_Families']
+            protein.function = entry['Function_CC']
+            protein.pdb_id = pdb_id
+            protein.mass = entry['Mass']
+            protein.three_d = entry['3D']
+            graph.create(protein)
+            protein.dbxref.add(dbxref)
+            graph.push(protein)
+            # Map CDS to Protein
+            # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
+            ens_id = eu_mapping(entry['Entry'], to='ENSEMBLGENOME_TRS_ID')[0]
+            drugbank_id = eu_mapping(entry['Entry'], to='DRUGBANK_ID')
+            if drugbank_id:
+                print("DrugBank", drugbank_id)
+                dbxref = DbXref(db="DrugBank", accession=drugbank_id)
+                graph.create(dbxref)
+                drug = Drug(accession=drugbank_id)
+                graph.create(drug)
+                drug.target.add(protein)
+                graph.push(drug)
+                protein.drug.add(drug)
+                protein.dbxref.add(dbxref)
+                graph.push(protein)
+            ortho = eu_mapping(entry['Entry'], to='ORTHODB_ID')
+            if ortho:
+                print("ORTHODB_ID", ortho)
 
-        #     gene = Gene.select(graph, "gene:" + entry['Gene_Names_OL']).first()
-        #     if gene:
-        #         _feature = Feature.select(graph).where(
-        #             "_.parent = '{}'".format(gene.uniquename)).first()
-        #         if _feature:
-        #             transcript = Transcript.select(
-        #                 graph, _feature.uniquename).first()
-        #             if transcript:
-        #                 cds = CDS.select(
-        #                     graph, "CDS" + transcript.uniquename[transcript.uniquename.find(":"):]).first()
-        #                 if cds:
-        #                     # Polypetide-derives_from->CDS
-        #                     protein.derives_from.add(cds)
-        #                     cds.Protein.add(protein)
-        #                     graph.push(protein)
-        #                     graph.push(cds)
-        #
-        protein.dbxref.add(dbxref)
-        graph.push(protein)
-        #
-        create_cv_term_nodes(protein, entry['GO_BP'], entry['GO_MF'], entry['GO_CC'])
-        create_interpro_term_nodes(protein, entry['InterPro'])
-        create_pub_nodes(protein, entry['PubMed'])
+            cds = CDS.select(graph, "CDS:" + ens_id).first()
+            if cds:
+                # Polypetide-derives_from->CDS
+                protein.derives_from.add(cds)
+                cds.derived.add(protein)
+                graph.push(protein)
+                graph.push(cds)
+
+            # create_cv_term_nodes(protein, entry['GO_BP'], entry['GO_MF'], entry['GO_CC'])
+            create_interpro_term_nodes(protein, entry['InterPro'])
+            # create_pub_nodes(protein, entry['PubMed'])
     build_protein_interaction_rels(protein_interaction_dict)
     print ("TOTAL:", count)
