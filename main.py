@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-from gff2neo.dbconn import *
+import os
+
 from gff2neo.gffproc import *
 
 gff_file = "data/MTB_H37rv.gff3"

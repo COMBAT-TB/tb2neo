@@ -577,31 +577,35 @@ def create_uniprot_nodes():
             protein.dbxref.add(dbxref)
             graph.push(protein)
             # Map CDS to Protein
-            # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
-            ens_id = eu_mapping(entry['Entry'], to='ENSEMBLGENOME_TRS_ID')[0]
+
             drugbank_id = eu_mapping(entry['Entry'], to='DRUGBANK_ID')
-            if drugbank_id:
+            if drugbank_id is not None:
                 print("DrugBank", drugbank_id)
-                dbxref = DbXref(db="DrugBank", accession=drugbank_id)
-                graph.create(dbxref)
-                drug = Drug(accession=drugbank_id)
-                graph.create(drug)
-                drug.target.add(protein)
-                graph.push(drug)
-                protein.drug.add(drug)
-                protein.dbxref.add(dbxref)
-                graph.push(protein)
+                for _id in drugbank_id:
+                    dbxref = DbXref(db="DrugBank", accession=_id)
+                    graph.create(dbxref)
+                    drug = Drug(accession=_id)
+                    graph.create(drug)
+                    drug.target.add(protein)
+                    graph.push(drug)
+                    protein.drug.add(drug)
+                    protein.dbxref.add(dbxref)
+                    graph.push(protein)
             ortho = eu_mapping(entry['Entry'], to='ORTHODB_ID')
-            if ortho:
+            if ortho is not None:
                 print("ORTHODB_ID", ortho)
 
-            cds = CDS.select(graph, "CDS:" + ens_id).first()
-            if cds:
-                # Polypetide-derives_from->CDS
-                protein.derives_from.add(cds)
-                cds.derived.add(protein)
-                graph.push(protein)
-                graph.push(cds)
+            # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
+            ens_id = eu_mapping(entry['Entry'], to='ENSEMBLGENOME_TRS_ID')[0]
+            if ens_id is not None and 'CCP' in ens_id:
+                print("ENSEMBLGENOME_TRS_ID", ens_id)
+                cds = CDS.select(graph, "CDS:" + ens_id).first()
+                if cds:
+                    # Polypetide-derives_from->CDS
+                    protein.derives_from.add(cds)
+                    cds.derived.add(protein)
+                    graph.push(protein)
+                    graph.push(cds)
 
             # create_cv_term_nodes(protein, entry['GO_BP'], entry['GO_MF'], entry['GO_CC'])
             create_interpro_term_nodes(protein, entry['InterPro'])
