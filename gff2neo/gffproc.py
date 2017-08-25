@@ -95,5 +95,4 @@ def load_gff_data(gff_file, limit):
             elif feature.type == 'transcript':
                 create_transcript_nodes(feature)
                 map_to_location(feature)
-
     in_file.close()

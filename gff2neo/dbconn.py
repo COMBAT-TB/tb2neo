@@ -2,7 +2,7 @@
 Interface to the Neo4j Database
 """
 import sys
-
+import os
 from py2neo import Graph, getenv
 
 from model.core import *
@@ -10,8 +10,8 @@ from ncbi import fetch_publication_list
 from quickgo import fetch_quick_go_data
 from uniprot import *
 
-graph = Graph(host=getenv("DB", "localhost"), bolt=True,
-              password=getenv("NEO4J_PASSWORD", ""))
+graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
+              password=os.environ.get("NEO4J_PASSWORD", ""))
 
 # watch("neo4j.bolt")
 
@@ -32,7 +32,8 @@ def delete_data():
     :return:
     """
     # print("Deleting all nodes and relationships in {}".format(graph))
-    sys.stdout.write("Deleting all nodes and relationships in {}".format(graph))
+    sys.stdout.write(
+        "Deleting all nodes and relationships in {}".format(graph))
 
     graph.delete_all()
 
@@ -539,6 +540,42 @@ def build_protein_interaction_rels(protein_interaction_dict):
                     graph.push(poly)
 
 
+def create_drug_nodes(protein, entry):
+    """
+    Create Drug nodes from UniProt results.
+    :return:
+    """
+    drugbank_id = eu_mapping(entry, to='DRUGBANK_ID')
+    if drugbank_id is not None:
+        print("DrugBank", drugbank_id)
+        for _id in drugbank_id:
+            dbxref = DbXref(db="DrugBank", accession=_id)
+            graph.create(dbxref)
+            drug = Drug(accession=_id)
+            graph.create(drug)
+            drug.target.add(protein)
+            graph.push(drug)
+            protein.drug.add(drug)
+            protein.dbxref.add(dbxref)
+            graph.push(protein)
+
+
+def map_cds_to_protein(protein, entry):
+    # Map CDS to Protein
+    # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
+    print("Entry:", entry)
+    ens_id = eu_mapping(entry, to='ENSEMBLGENOME_TRS_ID')
+    if ens_id is not None and 'CCP' in ens_id[0]:
+        print("ENSEMBLGENOME_TRS_ID", ens_id)
+        cds = CDS.select(graph, "CDS:" + ens_id[0]).first()
+        if cds:
+            # Polypetide-derives_from->CDS
+            protein.derives_from.add(cds)
+            cds.derived.add(protein)
+            graph.push(protein)
+            graph.push(cds)
+
+
 def create_uniprot_nodes():
     """
     Build DbXref nodes from UniProt results.
@@ -554,7 +591,8 @@ def create_uniprot_nodes():
         for entry in reader:
             protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
             count += 1
-            dbxref = DbXref(db="UniProt", accession=entry['Entry_Name'], version=entry['Entry'])
+            dbxref = DbXref(db="UniProt", accession=entry[
+                'Entry_Name'], version=entry['Entry'])
             graph.create(dbxref)
 
             pdb_id = None
@@ -576,36 +614,9 @@ def create_uniprot_nodes():
             graph.create(protein)
             protein.dbxref.add(dbxref)
             graph.push(protein)
-            # Map CDS to Protein
 
-            drugbank_id = eu_mapping(entry['Entry'], to='DRUGBANK_ID')
-            if drugbank_id is not None:
-                print("DrugBank", drugbank_id)
-                for _id in drugbank_id:
-                    dbxref = DbXref(db="DrugBank", accession=_id)
-                    graph.create(dbxref)
-                    drug = Drug(accession=_id)
-                    graph.create(drug)
-                    drug.target.add(protein)
-                    graph.push(drug)
-                    protein.drug.add(drug)
-                    protein.dbxref.add(dbxref)
-                    graph.push(protein)
-            ortho = eu_mapping(entry['Entry'], to='ORTHODB_ID')
-            if ortho is not None:
-                print("ORTHODB_ID", ortho)
-
-            # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
-            ens_id = eu_mapping(entry['Entry'], to='ENSEMBLGENOME_TRS_ID')[0]
-            if ens_id is not None and 'CCP' in ens_id:
-                print("ENSEMBLGENOME_TRS_ID", ens_id)
-                cds = CDS.select(graph, "CDS:" + ens_id).first()
-                if cds:
-                    # Polypetide-derives_from->CDS
-                    protein.derives_from.add(cds)
-                    cds.derived.add(protein)
-                    graph.push(protein)
-                    graph.push(cds)
+            create_drug_nodes(protein, entry['Entry'])
+            map_cds_to_protein(protein, entry['Entry'])
 
             # create_cv_term_nodes(protein, entry['GO_BP'], entry['GO_MF'], entry['GO_CC'])
             create_interpro_term_nodes(protein, entry['InterPro'])

@@ -58,16 +58,6 @@ def write_to_csv(results):
         writer.writerows(mapped_list)
 
 
-# def read_csv():
-#     if os.path.exists(uniprot_data_csv):
-#         with open(uniprot_data_csv, 'rb') as csv_file:
-#             reader = csv.DictReader(csv_file, delimiter=',')
-#             # Create UniProt Nodes
-#             dbconn.create_uniprot_nodes(reader)
-#     else:
-#         raise Exception("Couldn't find {}!".format(uniprot_data_csv))
-
-
 def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
     """
     Get data from UniProt
@@ -116,29 +106,3 @@ def eu_mapping(ue, to):
     if len(_map) != 0:
         xref_id = _map[ue]
     return xref_id
-
-
-def map_ue_to_pdb(ue):
-    """
-    Mapping UniProt entry to PDB
-    :param ue:
-    :return:
-    """
-    pdb_id = None
-    _pdb = u.mapping(fr='ID', to='PDB_ID', query=ue)
-    if len(_pdb) != 0:
-        pdb_id = _pdb[ue]
-    return pdb_id
-
-
-def map_ue_to_ens_trs(ue):
-    """
-    Mapping UniProt entry to Ensembl Genomes Transcript
-    :param ue:
-    :return:
-    """
-    trs_id = None
-    _trs = u.mapping(fr='ID', to='ENSEMBLGENOME_TRS_ID', query=ue)
-    if len(_trs) != 0:
-        trs_id = _trs[ue]
-    return trs_id

@@ -21,3 +21,8 @@ services:
       - "7474:7474"
 volumes:
   db_data:
+
+networks:
+  default:
+    external:
+      name: goget2neo_default
