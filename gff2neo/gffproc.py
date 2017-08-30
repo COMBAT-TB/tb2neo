@@ -4,10 +4,12 @@ Interface for GFF processing.
 from __future__ import print_function
 
 import pprint
+
 from BCBio import GFF
 from BCBio.GFF import GFFExaminer
-from dbconn import *
 from tqdm import tqdm
+
+from dbconn import *
 
 
 def examine(gff_file):
@@ -47,7 +49,7 @@ def get_locus_tags(gff_file, chunk):
     :param chunk
     :return:
     """
-    sys.stdout.write("Getting locus_tags...")
+    sys.stdout.write("Getting locus_tags...\n")
     count = 0
     locus_tags = []
     for rec in GFF.parse(gff_file, limit_info=dict(gff_type=['gene'])):
@@ -96,3 +98,17 @@ def load_gff_data(gff_file, limit):
                 create_transcript_nodes(feature)
                 map_to_location(feature)
     in_file.close()
+
+# def scrap_tbdtdb(locus_tags):
+#     "http://www.bioinformatics.org/tbdtdb/tdetail.php?tid=Rv0005"
+#     url = "http://www.bioinformatics.org/tbdtdb/tdetail.php?tid="
+#     with open("tbdtdb_res.txt", "w") as tbdtdb:
+#         for tag_list in locus_tags:
+#             for lt in tqdm(tag_list):
+#                 html = urlopen(url + "{}".format(lt))
+#                 bs_obj = BeautifulSoup(html.read(), "html.parser")
+#                 links = (bs_obj.find_all(href=re.compile('ddetail')))
+#                 if len(links) > 0:
+#                     for drug in links:
+#                         print("\n", lt, "is targeted by", drug.text)
+#                         tbdtdb.write("\ngene: {}, drug: {}".format(lt, drug.text))

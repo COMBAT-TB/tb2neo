@@ -335,6 +335,10 @@ class Drug(GraphObject):
     accession = Property()
     name = Property()
     definition = Property()
+    # attr. from tbdtdb
+    _class = Property()
+    toxicity = Property()
+    cost = Property()
 
     target = RelatedTo("Protein", "TARGET")
 

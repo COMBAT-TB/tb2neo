@@ -1,15 +1,14 @@
 #!/usr/bin/env python
-import os
-import time
 from gff2neo.gffproc import *
 
 gff_file = "data/MTB_H37rv.gff3"
 
 
 def main():
-    if os.path.isdir(os.getcwd() + "data") and os.path.exists(gff_file):
+    if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file):
+        import time
         time.sleep(10)
-        delete_data()
+        # delete_data()
         examine(gff_file)
         parse_gff(gff_file)
         build_relationships()

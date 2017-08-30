@@ -1,9 +1,11 @@
 """
 Interface to the Neo4j Database
 """
-import sys
 import os
-from py2neo import Graph, getenv
+import sys
+
+from bioservices import ChEMBL
+from py2neo import Graph
 
 from model.core import *
 from ncbi import fetch_publication_list
@@ -12,6 +14,8 @@ from uniprot import *
 
 graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
+
+chembl = ChEMBL(verbose=False)
 
 # watch("neo4j.bolt")
 
@@ -545,6 +549,8 @@ def create_drug_nodes(protein, entry):
     Create Drug nodes from UniProt results.
     :return:
     """
+    drug, dbxref = None, None
+    target = chembl.get_target_by_uniprotId(entry)
     drugbank_id = eu_mapping(entry, to='DRUGBANK_ID')
     if drugbank_id is not None:
         print("DrugBank", drugbank_id)
@@ -553,11 +559,16 @@ def create_drug_nodes(protein, entry):
             graph.create(dbxref)
             drug = Drug(accession=_id)
             graph.create(drug)
-            drug.target.add(protein)
-            graph.push(drug)
-            protein.drug.add(drug)
-            protein.dbxref.add(dbxref)
-            graph.push(protein)
+    if not isinstance(target, int):
+        dbxref = DbXref(db="ChEMBL", accession=target['chemblId'])
+        graph.create(dbxref)
+        drug = Drug(accession=target['chemblId'])
+        graph.create(drug)
+    drug.target.add(protein)
+    graph.push(drug)
+    protein.drug.add(drug)
+    protein.dbxref.add(dbxref)
+    graph.push(protein)
 
 
 def map_cds_to_protein(protein, entry):
