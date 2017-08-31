@@ -2,7 +2,6 @@ appdirs==1.4.3
 bcbio-gff==0.6.4
 beautifulsoup4==4.6.0
 biopython==1.70
-bioservices==1.4.17
 certifi==2017.4.17
 chardet==3.0.4
 colorama==0.3.9

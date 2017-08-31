@@ -256,7 +256,8 @@ def build_relationships():
     :return:
     """
     # TODO: Try optimize this
-    print("\nBuilding Relationships...")
+    print("\nBuilding GFF Relationships...")
+    sys.stderr.write("\nBuilding GFF Relationships...")
     for t, transcript in transcript_dict.iteritems():
         if transcript.parent in gene_dict.keys():
             gene = gene_dict.get(transcript.parent)
@@ -279,6 +280,7 @@ def build_relationships():
 def map_to_location(feature):
     # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
     # LOCATED_AT
+    sys.stderr.write("Mapping to location... ")
     srcfeature_id = get_feature_name(feature).get("UniqueName")
     location = location_dict.get(srcfeature_id)
     organism = Organism.select(graph).first()
@@ -549,9 +551,11 @@ def create_drug_nodes(protein, entry):
     Create Drug nodes from UniProt results.
     :return:
     """
+    sys.stderr.write("\nCreating Drug Node...")
     drug, dbxref = None, None
     target = chembl.get_target_by_uniprotId(entry)
     drugbank_id = eu_mapping(entry, to='DRUGBANK_ID')
+    chembl_id = eu_mapping(entry, to='CHEMBL_ID')
     if drugbank_id is not None:
         print("DrugBank", drugbank_id)
         for _id in drugbank_id:
@@ -564,11 +568,12 @@ def create_drug_nodes(protein, entry):
         graph.create(dbxref)
         drug = Drug(accession=target['chemblId'])
         graph.create(drug)
-    drug.target.add(protein)
-    graph.push(drug)
-    protein.drug.add(drug)
-    protein.dbxref.add(dbxref)
-    graph.push(protein)
+    if drug is not None and dbxref is not None:
+        drug.target.add(protein)
+        graph.push(drug)
+        protein.drug.add(drug)
+        protein.dbxref.add(dbxref)
+        graph.push(protein)
 
 
 def map_cds_to_protein(protein, entry):
@@ -592,7 +597,8 @@ def create_uniprot_nodes():
     Build DbXref nodes from UniProt results.
     :return:
     """
-    print("Creating UniProt Nodes from CSV...")
+    print("\nCreating UniProt Nodes from CSV...")
+    sys.stderr.write("\nCreating UniProt Nodes from CSV...")
     # time.sleep(2)
     count = 0
     protein_interaction_dict = dict()

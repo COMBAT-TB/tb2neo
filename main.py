@@ -8,7 +8,7 @@ def main():
     if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file):
         import time
         time.sleep(10)
-        # delete_data()
+        delete_data()
         examine(gff_file)
         parse_gff(gff_file)
         build_relationships()

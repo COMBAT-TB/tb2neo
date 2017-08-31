@@ -71,7 +71,7 @@ def load_gff_data(gff_file, limit):
     :param limit:
     :return:
     """
-    sys.stdout.write("Extract and load features to Neo4j.")
+    sys.stdout.write("\nExtract and load features to Neo4j.")
     in_file = open(gff_file)
     limit_info = dict(gff_type=limit)
     for rec in GFF.parse(gff_file, limit_info=limit_info):
