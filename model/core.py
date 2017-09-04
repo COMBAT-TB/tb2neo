@@ -288,14 +288,17 @@ class GOTerm(GraphObject):
     """
     Gene Ontology Terms
     """
-    __primarykey__ = 'name'
+    __primarykey__ = 'accession'
 
+    accession = Property()
     name = Property()
     definition = Property()
     is_obsolete = Property()
+    ontology = Property()  # same as namespace
     namespace = Property()
 
     is_a = RelatedTo("GOTerm", "IS_A")
+    protein = RelatedFrom("Protein", "ASSOCIATED_WITH")
 
     # part_of = RelatedTo("GOTerm", "PART_OF")
     # feature = RelatedFrom("Feature", "ASSOC_WITH")

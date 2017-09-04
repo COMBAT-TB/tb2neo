@@ -4,7 +4,7 @@ Interface to the Neo4j Database
 import os
 import sys
 
-from bioservices import ChEMBL
+from bioservices import ChEMBL, QuickGO
 from py2neo import Graph
 
 from model.core import *
@@ -16,6 +16,7 @@ graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
 
 chembl = ChEMBL(verbose=False)
+quick_go = QuickGO(verbose=False)
 
 # watch("neo4j.bolt")
 
@@ -28,6 +29,7 @@ rrna_dict = dict()
 trna_dict = dict()
 ncrna_dict = dict()
 location_dict = dict()
+go_term_set = set()
 
 
 def delete_data():
@@ -338,7 +340,7 @@ def map_to_location(feature):
             graph.push(_feature)
 
 
-def create_cv_term_nodes(protein, bp, cc, mf):
+def create_go_term_nodes():
     """
     Create CvTerm Nodes and build Polypetide relationships.
     :param protein:
@@ -347,45 +349,33 @@ def create_cv_term_nodes(protein, bp, cc, mf):
     :param mf:
     :return:
     """
-    # go(biological process)
-    go_bp_ids = [t[t.find('G'):-1] for t in bp.split('; ') if t is not '']
-    go_bp_defs = [t[:t.find('[') - 1] for t in bp.split('; ') if t is not '']
-    # go(cellular component)
-    go_cc_ids = [t[t.find('G'):-1] for t in cc.split('; ') if t is not '']
-    go_cc_defs = [t[:t.find('[') - 1] for t in cc.split('; ') if t is not '']
-    # go(molecular function)
-    go_mf_ids = [t[t.find('G'):-1] for t in mf.split('; ') if t is not '']
-    go_mf_defs = [t[:t.find('[') - 1] for t in mf.split('; ') if t is not '']
-
-    # TODO: Find a way to refactor this.
-    for _id in go_bp_ids:
-        cv = GOTerm()
-        for _def in go_bp_defs:
-            cv.name = _id
-            cv.definition = _def
-            cv.namespace = "biological process"
-            graph.create(cv)
-            protein.assoc_goterm.add(cv)
-            graph.push(protein)
-
-    for _id in go_mf_ids:
-        cv = GOTerm()
-        for _def in go_mf_defs:
-            cv.name = _id
-            cv.definition = _def
-            cv.namespace = "cellular component"
-            graph.create(cv)
-            protein.assoc_goterm.add(cv)
-            graph.push(protein)
-    for _id in go_cc_ids:
-        cv = GOTerm()
-        for _def in go_cc_defs:
-            cv.name = _id
-            cv.definition = _def
-            cv.namespace = "molecular function"
-            graph.create(cv)
-            protein.assoc_goterm.add(cv)
-            graph.push(protein)
+    with open(uniprot_data_csv, 'rb') as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=',')
+        # total = len(list(reader))
+        for entry in reader:
+            protein_entry = entry['Entry']
+            protein = None
+            if protein_entry is not '':
+                protein = Protein.select(graph, protein_entry).first()
+            go_term = GOTerm()
+            go_ids = [g for g in entry['GO_IDs'].split("; ") if g is not '']
+            for go_id in go_ids:
+                print(go_id)
+                # will map is_a
+                go_term_set.add(go_id)
+                result = quick_go.Term(go_id, frmt="obo").split('\n')
+                name = result[2].split(":")[1]
+                _def = result[3].split(":")[1]
+                print(name, _def)
+                go_term.accession = go_id
+                go_term.name = name
+                go_term.definition = _def
+                graph.create(go_term)
+                if protein is not None:
+                    protein.assoc_goterm.add(go_term)
+                    graph.push(protein)
+                    go_term.protein.add(protein)
+                    graph.push(go_term)
 
 
 def create_interpro_term_nodes(protein, entry):
@@ -635,7 +625,7 @@ def create_uniprot_nodes():
             create_drug_nodes(protein, entry['Entry'])
             map_cds_to_protein(protein, entry['Entry'])
 
-            # create_cv_term_nodes(protein, entry['GO_BP'], entry['GO_MF'], entry['GO_CC'])
+            create_go_term_nodes(protein, entry['GO_BP'], entry['GO_MF'], entry['GO_CC'])
             create_interpro_term_nodes(protein, entry['InterPro'])
             # create_pub_nodes(protein, entry['PubMed'])
     build_protein_interaction_rels(protein_interaction_dict)
