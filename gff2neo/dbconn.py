@@ -625,7 +625,6 @@ def create_uniprot_nodes():
             create_drug_nodes(protein, entry['Entry'])
             map_cds_to_protein(protein, entry['Entry'])
 
-            create_go_term_nodes(protein, entry['GO_BP'], entry['GO_MF'], entry['GO_CC'])
             create_interpro_term_nodes(protein, entry['InterPro'])
             # create_pub_nodes(protein, entry['PubMed'])
     build_protein_interaction_rels(protein_interaction_dict)
