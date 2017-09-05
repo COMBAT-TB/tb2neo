@@ -8,7 +8,7 @@ def main():
     if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file):
         import time
         time.sleep(10)
-        # delete_data()
+        delete_data()
         examine(gff_file)
         parse_gff(gff_file)
         build_relationships()
@@ -20,7 +20,7 @@ def main():
             create_uniprot_nodes()
             create_go_term_nodes()
     else:
-        raise Exception("Couldn't find {}!".format(gff_file))
+        raise Exception("Couldn't find H37Rv GFF file: {}!".format(gff_file))
 
 
 if __name__ == '__main__':

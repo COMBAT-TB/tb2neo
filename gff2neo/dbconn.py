@@ -376,6 +376,7 @@ def create_go_term_nodes():
                     graph.push(protein)
                     go_term.protein.add(protein)
                     graph.push(go_term)
+    create_is_a_cv_term_rel(go_term_set)
 
 
 def create_interpro_term_nodes(protein, entry):
@@ -488,7 +489,6 @@ def create_pub_nodes(protein, pubs):
     :return:
     """
     citations = [c for c in pubs.split("; ") if c is not '']
-
     for citation in citations:
         pub = Publication()
         pub.pmid = citation
@@ -497,21 +497,21 @@ def create_pub_nodes(protein, pubs):
         graph.push(protein)
 
 
-def create_is_a_cv_term_rel():
+def create_is_a_cv_term_rel(go_set):
     """
     Creating IS_A relationships between CVTerms
     :return:
     """
-    cv_terms = GOTerm.select(graph)
-    for cv in cv_terms:
-        is_a_list = fetch_quick_go_data(cv.name)
-        # cv = CvTerm.select(graph, _id).first()
+    for go_id in go_set:
+        is_a_list = fetch_quick_go_data(go_id)
+        go_term = GOTerm.select(graph, go_id).first()
+        print(go_id, is_a_list)
         for go in is_a_list:
             goid = go[go.find('G'):go.find('!')].strip()
-            cv_term = GOTerm.select(graph, goid).first()
-            if cv_term:
-                cv.is_a.add(cv_term)
-                graph.push(cv)
+            term = GOTerm.select(graph, goid).first()
+            if term and go_term:
+                go_term.is_a.add(term)
+                graph.push(go_term)
 
 
 def build_protein_interaction_rels(protein_interaction_dict):
@@ -626,6 +626,6 @@ def create_uniprot_nodes():
             map_cds_to_protein(protein, entry['Entry'])
 
             create_interpro_term_nodes(protein, entry['InterPro'])
-            # create_pub_nodes(protein, entry['PubMed'])
+            create_pub_nodes(protein, entry['PubMed'])
     build_protein_interaction_rels(protein_interaction_dict)
     print ("TOTAL:", count)
