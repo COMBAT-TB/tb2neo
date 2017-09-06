@@ -343,6 +343,7 @@ def map_to_location(feature):
 def create_is_a_cv_term_rel(go_set):
     """
     Creating IS_A relationships between CVTerms
+    :param go_set: set of GO ids
     :return:
     """
     for go_id in go_set:
@@ -370,7 +371,6 @@ def create_go_term_nodes():
         import time
         start = time.time()
         reader = csv.DictReader(csv_file, delimiter=',')
-        # total = len(list(reader))
         for entry in reader:
             protein_entry = entry['Entry']
             protein = None
@@ -391,9 +391,8 @@ def create_go_term_nodes():
                     graph.push(protein)
                     go_term.protein.add(protein)
                     graph.push(go_term)
-        db_go = GOTerm.select(graph)
         end = time.time()
-        print("Created {} in {} seconds.".format(len(list(db_go)), end - start))
+        print("Created {} in {} seconds.".format(len(go_term_set), end - start))
     create_is_a_cv_term_rel(go_term_set)
 
 
@@ -441,15 +440,32 @@ def create_author_nodes(publication, full_author):
 # TODO: Fetch data from PubMed
 
 def update_pub_nodes():
-    publications = Publication.select(graph)
-    print(len(list(publications)))
-    pmids = [publication.pmid for publication in publications]
-    publication_by_id = dict(zip(pmids, publications))
-    num_ids = len(pmids)
+    p_id_set = set()
+    import time
+    start = time.time()
+    with open(uniprot_data_csv, 'rb') as csv_file:
+
+        reader = csv.DictReader(csv_file, delimiter=',')
+        for entry in reader:
+            protein_entry = entry['Entry']
+            protein = None
+            if protein_entry is not '':
+                protein = Protein.select(graph, protein_entry).first()
+            pubmed_ids = [p for p in entry['PubMed'].split("; ") if p is not '']
+            for p_id in pubmed_ids:
+                pub = Publication()
+                pub.pmid = p_id
+                graph.create(pub)
+                p_id_set.add(p_id)
+                if protein:
+                    protein.published_in.add(pub)
+                    graph.push(protein)
+    # D
+    num_ids = len(p_id_set)
     chunksize = 500
     records = []
     for start in range(0, num_ids, chunksize):
-        subset = pmids[start:start + chunksize]
+        subset = list(p_id_set)[start:start + chunksize]
         records.extend(fetch_publication_list(subset))
     record_loaded_count = 0
     for record in records:
@@ -486,7 +502,7 @@ def update_pub_nodes():
             full_author = record.get('FAU', None)
 
         # Publication.select(graph, pm_id).first()
-        publication = publication_by_id[pm_id]
+        publication = Publication.select(graph, pm_id).first()
         publication.title = title
         publication.volume = volume
         publication.issue = issue
@@ -495,6 +511,7 @@ def update_pub_nodes():
         publication.pubplace = pub_place
         publication.publisher = publisher
         graph.push(publication)
+        print("Updated: {}".format(pm_id))
         create_author_nodes(publication, full_author)
         record_loaded_count += 1
 
@@ -510,9 +527,10 @@ def create_pub_nodes(protein, pubs):
     for citation in citations:
         pub = Publication()
         pub.pmid = citation
+        graph.create(pub)
 
-        protein.published_in.add(pub)
-        graph.push(protein)
+        # protein.published_in.add(pub)
+        # graph.push(protein)
 
 
 def build_protein_interaction_rels(protein_interaction_dict):

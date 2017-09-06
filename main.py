@@ -21,10 +21,12 @@ def main():
         if os.path.exists(uniprot_data_csv) and os.stat(uniprot_data_csv).st_size > 0:
             create_uniprot_nodes()
             create_go_term_nodes()
+            update_pub_nodes()
         else:
             query_uniprot(get_locus_tags(gff_file, 400))
             create_uniprot_nodes()
             create_go_term_nodes()
+            update_pub_nodes()
     else:
         raise Exception("Couldn't find H37Rv GFF file: {}!".format(gff_file))
 

@@ -19,7 +19,7 @@ def fetch_publications(citation):
     :return:
     """
     print("=========================================")
-    print("About to fetch Publication data from PubMed.")
+    print("Fetching publication data from PubMed.")
     print("=========================================")
     time.sleep(2)
     Entrez.email = 'A.N.Other@example.com'
@@ -39,9 +39,9 @@ def fetch_publication_list(citations, rettype='medline'):
     :param citations:
     :return:
     """
-    print("=====================================================================")
-    print("About to fetch Publication data for {} publications from PubMed.".format(len(citations)))
-    print("=====================================================================")
+    print("=====================================")
+    print("Fetching {} publications from PubMed.".format(len(citations)))
+    print("=====================================")
     citation_string = ','.join(citations)
     Entrez.email = 'support@sanbi.ac.za'
     retries = 5
