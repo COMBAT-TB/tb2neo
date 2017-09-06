@@ -303,7 +303,8 @@ class GOTerm(GraphObject):
     # part_of = RelatedTo("GOTerm", "PART_OF")
     # feature = RelatedFrom("Feature", "ASSOC_WITH")
 
-    def __init__(self, name=None, definition=None, is_obsolete=None):
+    def __init__(self, accession, name=None, definition=None, is_obsolete=None):
+        self.accession = accession
         self.name = name
         self.definition = definition
         self.is_obsolete = is_obsolete

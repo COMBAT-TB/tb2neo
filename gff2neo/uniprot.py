@@ -53,8 +53,8 @@ def write_to_csv(results):
         writer.writeheader()
         mapped_list = []
         for row in results:
-            inner_dict = dict(zip(fieldnames, row))
-            mapped_list.append(inner_dict)
+            fn_row = dict(zip(fieldnames, row))
+            mapped_list.append(fn_row)
         writer.writerows(mapped_list)
 
 

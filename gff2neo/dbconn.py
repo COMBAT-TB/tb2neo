@@ -340,6 +340,23 @@ def map_to_location(feature):
             graph.push(_feature)
 
 
+def create_is_a_cv_term_rel(go_set):
+    """
+    Creating IS_A relationships between CVTerms
+    :return:
+    """
+    for go_id in go_set:
+        is_a_list = fetch_quick_go_data(go_id)
+        go_term = GOTerm.select(graph, go_id).first()
+        print(go_id, is_a_list)
+        for go in is_a_list:
+            goid = go[go.find('G'):go.find('!')].strip()
+            term = GOTerm.select(graph, goid).first()
+            if term and go_term:
+                go_term.is_a.add(term)
+                graph.push(go_term)
+
+
 def create_go_term_nodes():
     """
     Create CvTerm Nodes and build Polypetide relationships.
@@ -350,6 +367,8 @@ def create_go_term_nodes():
     :return:
     """
     with open(uniprot_data_csv, 'rb') as csv_file:
+        import time
+        start = time.time()
         reader = csv.DictReader(csv_file, delimiter=',')
         # total = len(list(reader))
         for entry in reader:
@@ -357,25 +376,24 @@ def create_go_term_nodes():
             protein = None
             if protein_entry is not '':
                 protein = Protein.select(graph, protein_entry).first()
-            go_term = GOTerm()
             go_ids = [g for g in entry['GO_IDs'].split("; ") if g is not '']
             for go_id in go_ids:
-                print(go_id)
                 # will map is_a
                 go_term_set.add(go_id)
                 result = quick_go.Term(go_id, frmt="obo").split('\n')
                 name = result[2].split(":")[1]
                 _def = result[3].split(":")[1]
-                print(name, _def)
-                go_term.accession = go_id
-                go_term.name = name
-                go_term.definition = _def
+                print(go_id, name, _def)
+                go_term = GOTerm(accession=go_id, name=name, definition=_def)
                 graph.create(go_term)
                 if protein is not None:
                     protein.assoc_goterm.add(go_term)
                     graph.push(protein)
                     go_term.protein.add(protein)
                     graph.push(go_term)
+        db_go = GOTerm.select(graph)
+        end = time.time()
+        print("Created {} in {} seconds.".format(len(list(db_go)), end - start))
     create_is_a_cv_term_rel(go_term_set)
 
 
@@ -497,23 +515,6 @@ def create_pub_nodes(protein, pubs):
         graph.push(protein)
 
 
-def create_is_a_cv_term_rel(go_set):
-    """
-    Creating IS_A relationships between CVTerms
-    :return:
-    """
-    for go_id in go_set:
-        is_a_list = fetch_quick_go_data(go_id)
-        go_term = GOTerm.select(graph, go_id).first()
-        print(go_id, is_a_list)
-        for go in is_a_list:
-            goid = go[go.find('G'):go.find('!')].strip()
-            term = GOTerm.select(graph, goid).first()
-            if term and go_term:
-                go_term.is_a.add(term)
-                graph.push(go_term)
-
-
 def build_protein_interaction_rels(protein_interaction_dict):
     """
     Build protein-protein interactions
@@ -541,19 +542,19 @@ def create_drug_nodes(protein, entry):
     Create Drug nodes from UniProt results.
     :return:
     """
-    sys.stderr.write("\nCreating Drug Node...")
     drug, dbxref = None, None
     target = chembl.get_target_by_uniprotId(entry)
     drugbank_id = eu_mapping(entry, to='DRUGBANK_ID')
     chembl_id = eu_mapping(entry, to='CHEMBL_ID')
     if drugbank_id is not None:
-        print("DrugBank", drugbank_id)
+        print("Entry", entry, "DrugBank", drugbank_id)
         for _id in drugbank_id:
             dbxref = DbXref(db="DrugBank", accession=_id)
             graph.create(dbxref)
             drug = Drug(accession=_id)
             graph.create(drug)
     if not isinstance(target, int):
+        print("Entry", entry, "ChEMBL", target)
         dbxref = DbXref(db="ChEMBL", accession=target['chemblId'])
         graph.create(dbxref)
         drug = Drug(accession=target['chemblId'])
@@ -627,5 +628,5 @@ def create_uniprot_nodes():
 
             create_interpro_term_nodes(protein, entry['InterPro'])
             create_pub_nodes(protein, entry['PubMed'])
-    build_protein_interaction_rels(protein_interaction_dict)
     print ("TOTAL:", count)
+    build_protein_interaction_rels(protein_interaction_dict)
