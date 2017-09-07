@@ -2,7 +2,14 @@ import click
 
 from gffproc import *
 
-GFF_FILE = "data/MTB_H37rv.gff3"
+
+def default_gff():
+    gff_file_ = "data/MTB_H37rv.gff3"
+    if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file_):
+        click.echo("\nUsing {}.\n".format(gff_file_), nl=True, err=True)
+    else:
+        raise OSError("Couldn't find GFF file: {}!".format(gff_file_))
+    return gff_file_
 
 
 @click.group()
@@ -22,8 +29,7 @@ def examine_gff(gff_file):
     :return
     """
     if gff_file is None:
-        click.echo("\nUsing {}.".format(GFF_FILE), nl=True, err=True)
-        gff_file = GFF_FILE
+        gff_file = default_gff()
     examine(gff_file=gff_file)
 
 
@@ -38,8 +44,7 @@ def load_gff(gff_file):
     # Deleting existing data
     delete_data()
     if gff_file is None:
-        click.echo("\nUsing {}.".format(GFF_FILE), nl=True, err=True)
-        gff_file = GFF_FILE
+        gff_file = default_gff()
     parse_gff(gff_file)
     build_relationships()
 
@@ -56,10 +61,9 @@ def load_uniprot_data(gff_file):
         create_uniprot_nodes()
     else:
         if gff_file is None:
-            click.echo("\nUsing {}.".format(GFF_FILE), nl=True, err=True)
-            gff_file = GFF_FILE
-            query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
-            create_uniprot_nodes()
+            gff_file = default_gff()
+        query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
+        create_uniprot_nodes()
 
 
 @cli.command()
@@ -74,10 +78,9 @@ def load_go_terms(gff_file):
         create_go_term_nodes()
     else:
         if gff_file is None:
-            click.echo("\nUsing {}.".format(GFF_FILE), nl=True, err=True)
-            gff_file = GFF_FILE
-            query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
-            create_go_term_nodes()
+            gff_file = default_gff()
+        query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
+        create_go_term_nodes()
 
 
 @cli.command()
@@ -92,9 +95,9 @@ def load_publications(gff_file):
         create_pub_nodes()
     else:
         if gff_file is None:
-            click.echo("\nUsing {}.".format(GFF_FILE), nl=True, err=True)
-            gff_file = GFF_FILE
-            query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
+            gff_file = default_gff()
+        query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
+        create_pub_nodes()
 
 
 if __name__ == '__main__':
