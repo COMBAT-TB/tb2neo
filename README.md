@@ -36,4 +36,4 @@ We used a [GFF file from EnsemblBacteria](ftp://ftp.ensemblgenomes.org/pub/bacte
 
 ## `db.schema()`
 
-![Neo4j_IE](https://raw.githubusercontent.com/thobalose/gff2neo/master/data/img/dbschema.png)
+![Neo4j_IE](./data/img/dbschema.png)
