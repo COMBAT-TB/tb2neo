@@ -33,3 +33,7 @@ $ gff2neo --help
 Point your browser to [localhost:7474](http://localhost:7474]) and run `call db.schema()`.
 
 We used a [GFF file from EnsemblBacteria](ftp://ftp.ensemblgenomes.org/pub/bacteria/release-30/gff3/bacteria_0_collection/mycobacterium_tuberculosis_h37rv).
+
+## `db.schema()`
+
+![Neo4j_IE](https://raw.githubusercontent.com/thobalose/gff2neo/master/data/img/dbschema.png)
