@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='gff2neo',
-    version='0.1',
+    version='0.0.1',
     description='Parses M.tuberculosis annotation (in GFF file and online sources) '
                 'and builds a Neo4j graph database storing the annotate features. '
                 'It also maps these features to external services such as UniProt, CheMBL, DrugBank, etc.',
