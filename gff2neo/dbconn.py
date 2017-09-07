@@ -259,7 +259,7 @@ def build_relationships():
     """
     # TODO: Try optimize this
     print("\nBuilding GFF Relationships...")
-    sys.stderr.write("\nBuilding GFF Relationships...")
+    sys.stdout.write("\nBuilding GFF Relationships...")
     for t, transcript in transcript_dict.iteritems():
         if transcript.parent in gene_dict.keys():
             gene = gene_dict.get(transcript.parent)
@@ -282,7 +282,6 @@ def build_relationships():
 def map_to_location(feature):
     # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
     # LOCATED_AT
-    sys.stderr.write("Mapping to location... ")
     srcfeature_id = get_feature_name(feature).get("UniqueName")
     location = location_dict.get(srcfeature_id)
     organism = Organism.select(graph).first()
@@ -437,9 +436,7 @@ def create_author_nodes(publication, full_author):
             graph.push(publication)
 
 
-# TODO: Fetch data from PubMed
-
-def update_pub_nodes():
+def create_pub_nodes():
     p_id_set = set()
     import time
     start = time.time()
@@ -452,7 +449,7 @@ def update_pub_nodes():
             if protein_entry is not '':
                 protein = Protein.select(graph, protein_entry).first()
             pubmed_ids = [p for p in entry['PubMed'].split("; ") if p is not '']
-            for p_id in pubmed_ids:
+            for p_id in set(pubmed_ids):
                 pub = Publication()
                 pub.pmid = p_id
                 graph.create(pub)
@@ -460,7 +457,7 @@ def update_pub_nodes():
                 if protein:
                     protein.published_in.add(pub)
                     graph.push(protein)
-    # D
+    # Let's build a set before calling API and DB
     num_ids = len(p_id_set)
     chunksize = 500
     records = []
@@ -511,26 +508,10 @@ def update_pub_nodes():
         publication.pubplace = pub_place
         publication.publisher = publisher
         graph.push(publication)
-        print("Updated: {}".format(pm_id))
+        end = time.time()
+        print("Created Publications in {} seconds.".format(end - start))
         create_author_nodes(publication, full_author)
         record_loaded_count += 1
-
-
-def create_pub_nodes(protein, pubs):
-    """
-    Create Publication Nodes
-    :param protein:
-    :param pubs:
-    :return:
-    """
-    citations = [c for c in pubs.split("; ") if c is not '']
-    for citation in citations:
-        pub = Publication()
-        pub.pmid = citation
-        graph.create(pub)
-
-        # protein.published_in.add(pub)
-        # graph.push(protein)
 
 
 def build_protein_interaction_rels(protein_interaction_dict):
@@ -645,6 +626,5 @@ def create_uniprot_nodes():
             map_cds_to_protein(protein, entry['Entry'])
 
             create_interpro_term_nodes(protein, entry['InterPro'])
-            create_pub_nodes(protein, entry['PubMed'])
     print ("TOTAL:", count)
     build_protein_interaction_rels(protein_interaction_dict)

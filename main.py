@@ -14,19 +14,21 @@ def main():
         parse_gff(gff_file)
         gff_p_end = time.time()
         sys.stdout.write("Done parsing GFF in {} seconds.".format(gff_p_end - gff_p_st))
+        print("Done parsing GFF in {} seconds.".format(gff_p_end - gff_p_st))
         rel_st = time.time()
         build_relationships()
         rel_end = time.time()
         sys.stdout.write("Built GFF relationships in {} seconds.".format(rel_end - rel_st))
+        print("Built GFF relationships in {} seconds.".format(rel_end - rel_st))
         if os.path.exists(uniprot_data_csv) and os.stat(uniprot_data_csv).st_size > 0:
             create_uniprot_nodes()
             create_go_term_nodes()
-            update_pub_nodes()
+            create_pub_nodes()
         else:
             query_uniprot(get_locus_tags(gff_file, 400))
             create_uniprot_nodes()
             create_go_term_nodes()
-            update_pub_nodes()
+            create_pub_nodes()
     else:
         raise Exception("Couldn't find H37Rv GFF file: {}!".format(gff_file))
 
