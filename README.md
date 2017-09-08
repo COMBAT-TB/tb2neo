@@ -17,7 +17,7 @@ Point your browser to [localhost:7474](http://0.0.0.0:7474) and run `call db.sch
 **Pull and run the [neo4j docker image](https://hub.docker.com/_/neo4j/):**
 
 ```
-$ docker run -d -p 7474:7474 -p 7687:7687 --name neo -e NEO4J_AUTH=none -v=$HOME/neo4j/data:/data neo4j
+$ docker run -d -p 7474:7474 -p 7687:7687 --name neo -e NEO4J_AUTH=none -v=$HOME/neo4j/data:/data neo4j:3.2.2
 ```
 
 **Create a virtual environment:**

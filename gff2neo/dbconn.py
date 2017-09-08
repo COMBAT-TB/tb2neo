@@ -257,8 +257,7 @@ def build_gff_rels():
     Build GFF Feature relationships
     :return:
     """
-    print("\nBuilding GFF Relationships...")
-    sys.stdout.write("\nBuilding GFF Relationships...")
+    sys.stdout.write("\nBuilding GFF Relationships...\n")
     for t, transcript in transcript_dict.iteritems():
         if transcript.parent in gene_dict.keys():
             gene = gene_dict.get(transcript.parent)
@@ -550,7 +549,7 @@ def create_drug_nodes(protein, entry):
     drug, dbxref = None, None
     target = chembl.get_target_by_uniprotId(entry)
     drugbank_id = eu_mapping(entry, to='DRUGBANK_ID')
-    chembl_id = eu_mapping(entry, to='CHEMBL_ID')
+    # chembl_id = eu_mapping(entry, to='CHEMBL_ID')
     if drugbank_id is not None:
         print("Entry", entry, "DrugBank", drugbank_id)
         for _id in drugbank_id:
@@ -593,17 +592,13 @@ def create_uniprot_nodes():
     Build DbXref nodes from UniProt results.
     :return:
     """
-    print("\nCreating UniProt Nodes from CSV...")
-    sys.stderr.write("\nCreating UniProt Nodes from CSV...")
-    # time.sleep(2)
-    count = 0
+    sys.stdout.write("\nCreating UniProt Nodes from CSV...\n")
     protein_interaction_dict = dict()
     with open(uniprot_data_csv, 'rb') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
         # total = len(list(reader))
         for entry in reader:
             protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
-            count += 1
             dbxref = DbXref(db="UniProt", accession=entry[
                 'Entry_Name'], version=entry['Entry'])
             graph.create(dbxref)
@@ -632,5 +627,4 @@ def create_uniprot_nodes():
             map_cds_to_protein(protein, entry['Entry'])
 
             create_interpro_term_nodes(protein, entry['InterPro'])
-    print ("TOTAL:", count)
     build_protein_interaction_rels(protein_interaction_dict)
