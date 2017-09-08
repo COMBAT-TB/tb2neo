@@ -252,12 +252,11 @@ def get_feature_name(feature):
     return names
 
 
-def build_relationships():
+def build_gff_rels():
     """
-    Build relationships
+    Build GFF Feature relationships
     :return:
     """
-    # TODO: Try optimize this
     print("\nBuilding GFF Relationships...")
     sys.stdout.write("\nBuilding GFF Relationships...")
     for t, transcript in transcript_dict.iteritems():
@@ -265,21 +264,28 @@ def build_relationships():
             gene = gene_dict.get(transcript.parent)
             transcript.part_of_g.add(gene)
             graph.push(transcript)
-        for g, gene in gene_dict.iteritems():
-            if transcript.parent == gene.uniquename:
-                transcript.part_of_g.add(gene)
-                graph.push(transcript)
+            gene.part_of.add(transcript)
+            graph.push(gene)
         for p, pseudogene in pseudogene_dict.iteritems():
             if transcript.parent == pseudogene.uniquename:
                 transcript.part_of_pg.add(pseudogene)
                 graph.push(transcript)
+                pseudogene.part_of.add(transcript)
+                graph.push(pseudogene)
         for c, cds in cds_dict.iteritems():
-            if transcript.parent == cds.uniquename:
+            if transcript.uniquename == cds.parent:
                 cds.part_of.add(transcript)
                 graph.push(cds)
+                transcript.part_of_cds.add(cds)
+                graph.push(transcript)
 
 
 def map_to_location(feature):
+    """
+    Map GFF Features to Location and Organism
+    :param feature:
+    :return:
+    """
     # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
     # LOCATED_AT
     srcfeature_id = get_feature_name(feature).get("UniqueName")

@@ -46,7 +46,7 @@ def load_gff(gff_file):
     if gff_file is None:
         gff_file = default_gff()
     parse_gff(gff_file)
-    build_relationships()
+    build_gff_rels()
 
 
 @cli.command()

@@ -69,7 +69,7 @@ class Gene(Feature):
     biotype = Property()
     description = Property()
 
-    # parts = RelatedFrom("Transcript", "PART_OF")
+    part_of = RelatedFrom("Transcript", "PART_OF")
     orthologous_to = RelatedTo("Gene", "ORTHOLOGOUS_TO")
 
     def __init__(self, so_id=_so_id):
@@ -85,6 +85,8 @@ class PseudoGene(Feature):
     biotype = Property()
     description = Property()
 
+    part_of = RelatedFrom("Transcript", "PART_OF")
+
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
 
@@ -99,6 +101,7 @@ class Transcript(Feature):
 
     part_of_g = RelatedTo("Gene", "PART_OF")
     part_of_pg = RelatedTo("PseudoGene", "PART_OF")
+    part_of_cds = RelatedFrom("CDS", "PART_OF")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id

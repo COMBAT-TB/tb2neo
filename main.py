@@ -16,7 +16,7 @@ def main():
         sys.stdout.write("Done parsing GFF in {} seconds.".format(gff_p_end - gff_p_st))
         print("Done parsing GFF in {} seconds.".format(gff_p_end - gff_p_st))
         rel_st = time.time()
-        build_relationships()
+        build_gff_rels()
         rel_end = time.time()
         sys.stdout.write("Built GFF relationships in {} seconds.".format(rel_end - rel_st))
         print("Built GFF relationships in {} seconds.".format(rel_end - rel_st))
