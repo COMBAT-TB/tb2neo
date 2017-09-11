@@ -567,7 +567,7 @@ def create_drugbank_nodes():
     :return:
     """
     drug_set = set()
-    with open("data/drugbank/drugbank_all_target_polypeptide_ids/all.csv", "rb") as csv_file:
+    with open("data/drugbank/all_target_polypeptide_ids.csv", "rb") as csv_file:
         reader = csv.DictReader(csv_file)
         for _target in reader:
             if 'tuberculosis' in _target['Species']:
