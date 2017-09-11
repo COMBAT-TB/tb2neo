@@ -31,6 +31,9 @@ ncrna_dict = dict()
 location_dict = dict()
 go_term_set = set()
 
+target_protein_ids_csv = "data/drugbank/all_target_polypeptide_ids.csv"
+drug_vocab_csv = "data/drugbank/drugbank_vocabulary.csv"
+
 
 def delete_data():
     """
@@ -567,7 +570,7 @@ def create_drugbank_nodes():
     :return:
     """
     drug_set = set()
-    with open("data/drugbank/all_target_polypeptide_ids.csv", "rb") as csv_file:
+    with open(target_protein_ids_csv, "rb") as csv_file:
         reader = csv.DictReader(csv_file)
         for _target in reader:
             if 'tuberculosis' in _target['Species']:
@@ -575,8 +578,8 @@ def create_drugbank_nodes():
                 protein_ = Protein.select(graph).where("_.entry_name='{}'".format(_target['Uniprot Title']))
                 if protein_:
                     for protein in protein_:
-                        dr_ids = [x for x in _target['Drug IDs'].split('; ') if x is not '']
-                        for _id in dr_ids:
+                        drug_ids = [x for x in _target['Drug IDs'].split('; ') if x is not '']
+                        for _id in drug_ids:
                             drug_set.add(_id)
                             dbxref = DbXref(db="DrugBank", accession=_id)
                             graph.create(dbxref)
@@ -588,14 +591,14 @@ def create_drugbank_nodes():
                             protein.dbxref.add(dbxref)
                             graph.push(protein)
 
-    with open("data/drugbank/drugbank_vocabulary.csv", "rb") as csv_file_:
+    with open(drug_vocab_csv, "rb") as csv_file_:
         reader = csv.DictReader(csv_file_)
-        for d in reader:
-            for _id in drug_set:
-                if d['DrugBank ID'] == _id:
-                    drug = Drug.select(graph, _id).first()
-                    drug.name = d['Common name']
-                    drug.synonyms = d['Synonyms']
+        for entry in reader:
+            for drug_id in drug_set:
+                if entry['DrugBank ID'] == drug_id:
+                    drug = Drug.select(graph, drug_id).first()
+                    drug.name = entry['Common name']
+                    drug.synonyms = entry['Synonyms']
                     graph.push(drug)
 
 

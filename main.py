@@ -4,6 +4,13 @@ from gff2neo.gffproc import *
 gff_file = "data/MTB_H37rv.gff3"
 
 
+def check_csv(csvfile):
+    _file = False
+    if os.path.exists(csvfile) and os.stat(csvfile).st_size > 0:
+        _file = True
+    return _file
+
+
 def main():
     if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file):
         import time
@@ -18,15 +25,17 @@ def main():
         build_gff_rels()
         rel_end = time.time()
         sys.stdout.write("\nBuilt GFF relationships in {} seconds.\n".format(rel_end - rel_st))
-        if os.path.exists(uniprot_data_csv) and os.stat(uniprot_data_csv).st_size > 0:
+        if check_csv(uniprot_data_csv):
             create_uniprot_nodes()
-            create_drugbank_nodes()
+            if check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
+                create_drugbank_nodes()
             create_go_term_nodes()
             create_pub_nodes()
         else:
             query_uniprot(get_locus_tags(gff_file, 400))
             create_uniprot_nodes()
-            create_drugbank_nodes()
+            if check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
+                create_drugbank_nodes()
             create_go_term_nodes()
             create_pub_nodes()
     else:
