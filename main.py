@@ -20,11 +20,13 @@ def main():
         sys.stdout.write("\nBuilt GFF relationships in {} seconds.\n".format(rel_end - rel_st))
         if os.path.exists(uniprot_data_csv) and os.stat(uniprot_data_csv).st_size > 0:
             create_uniprot_nodes()
+            create_drugbank_nodes()
             create_go_term_nodes()
             create_pub_nodes()
         else:
             query_uniprot(get_locus_tags(gff_file, 400))
             create_uniprot_nodes()
+            create_drugbank_nodes()
             create_go_term_nodes()
             create_pub_nodes()
     else:

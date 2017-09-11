@@ -187,6 +187,7 @@ class Protein(Feature):
     # more commonly known as a Protein - we should call it that - pvh
     _so_id = "SO:0000104"
     so_id = Property()
+    entry_name = Property()
     family = Property()
     function = Property()
     pdb_id = Property()
@@ -341,6 +342,7 @@ class Drug(GraphObject):
 
     accession = Property()
     name = Property()
+    synonyms = Property()
     definition = Property()
     # attr. from tbdtdb
     _class = Property()
@@ -349,9 +351,10 @@ class Drug(GraphObject):
 
     target = RelatedTo("Protein", "TARGET")
 
-    def __init__(self, accession, name=None, definition=None):
+    def __init__(self, accession, name=None, synonyms=None, definition=None):
         self.accession = accession
         self.name = name
+        self.synonyms = synonyms
         self.definition = definition
 
 

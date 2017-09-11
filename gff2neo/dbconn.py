@@ -444,7 +444,7 @@ def create_author_nodes(publication, full_author):
 def create_pub_nodes():
     p_id_set = set()
     import time
-    start = time.time()
+    _start = time.time()
     with open(uniprot_data_csv, 'rb') as csv_file:
 
         reader = csv.DictReader(csv_file, delimiter=',')
@@ -513,10 +513,10 @@ def create_pub_nodes():
         publication.pubplace = pub_place
         publication.publisher = publisher
         graph.push(publication)
-        end = time.time()
-        print("Created Publications in {} seconds.".format(end - start))
         create_author_nodes(publication, full_author)
         record_loaded_count += 1
+    end = time.time()
+    print("Created Publications in {} seconds.".format(end - _start))
 
 
 def build_protein_interaction_rels(protein_interaction_dict):
@@ -541,34 +541,62 @@ def build_protein_interaction_rels(protein_interaction_dict):
                     graph.push(poly)
 
 
-def create_drug_nodes(protein, entry):
+def create_chembl_nodes(protein, entry):
     """
-    Create Drug nodes from UniProt results.
+    Create ChEMBL Drug nodes from UniProt results.
     :return:
     """
-    drug, dbxref = None, None
     target = chembl.get_target_by_uniprotId(entry)
-    drugbank_id = eu_mapping(entry, to='DRUGBANK_ID')
-    # chembl_id = eu_mapping(entry, to='CHEMBL_ID')
-    if drugbank_id is not None:
-        print("Entry", entry, "DrugBank", drugbank_id)
-        for _id in drugbank_id:
-            dbxref = DbXref(db="DrugBank", accession=_id)
-            graph.create(dbxref)
-            drug = Drug(accession=_id)
-            graph.create(drug)
     if not isinstance(target, int):
         print("Entry", entry, "ChEMBL", target)
         dbxref = DbXref(db="ChEMBL", accession=target['chemblId'])
         graph.create(dbxref)
-        drug = Drug(accession=target['chemblId'])
+        drug = Drug(accession=target['chemblId'], name=target["preferredName"], synonyms=target["synonyms"],
+                    definition=target["description"])
         graph.create(drug)
-    if drug is not None and dbxref is not None:
         drug.target.add(protein)
         graph.push(drug)
         protein.drug.add(drug)
         protein.dbxref.add(dbxref)
         graph.push(protein)
+
+
+def create_drugbank_nodes():
+    """
+    Create DrugBank Drug Nodes
+    :return:
+    """
+    drug_set = set()
+    with open("data/drugbank/drugbank_all_target_polypeptide_ids/all.csv", "rb") as csv_file:
+        reader = csv.DictReader(csv_file)
+        for _target in reader:
+            if 'tuberculosis' in _target['Species']:
+                print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'])
+                protein_ = Protein.select(graph).where("_.entry_name='{}'".format(_target['Uniprot Title']))
+                if protein_:
+                    for protein in protein_:
+                        dr_ids = [x for x in _target['Drug IDs'].split('; ') if x is not '']
+                        for _id in dr_ids:
+                            drug_set.add(_id)
+                            dbxref = DbXref(db="DrugBank", accession=_id)
+                            graph.create(dbxref)
+                            drug = Drug(accession=_id)
+                            graph.create(drug)
+                            drug.target.add(protein)
+                            graph.push(drug)
+                            protein.drug.add(drug)
+                            protein.dbxref.add(dbxref)
+                            graph.push(protein)
+
+    with open("data/drugbank/drugbank_vocabulary.csv", "rb") as csv_file_:
+        reader = csv.DictReader(csv_file_)
+        for d in reader:
+            for _id in drug_set:
+                if d['DrugBank ID'] == _id:
+                    drug = Drug.select(graph, _id).first()
+                    drug.name = d['Common name']
+                    drug.synonyms = d['Synonyms']
+                    graph.push(drug)
 
 
 def map_cds_to_protein(protein, entry):
@@ -610,6 +638,7 @@ def create_uniprot_nodes():
             protein = Protein()
             protein.name = entry['Protein_Names']
             protein.uniquename = entry['Entry']
+            protein.entry_name = entry['Entry_Name']
             protein.ontology_id = protein.so_id
             protein.seqlen = entry['Length']
             protein.residues = entry['Sequence']
@@ -623,8 +652,8 @@ def create_uniprot_nodes():
             protein.dbxref.add(dbxref)
             graph.push(protein)
 
-            create_drug_nodes(protein, entry['Entry'])
-            map_cds_to_protein(protein, entry['Entry'])
+            create_chembl_nodes(protein, entry['Entry'])
+            # map_cds_to_protein(protein, entry['Entry'])
 
             create_interpro_term_nodes(protein, entry['InterPro'])
     build_protein_interaction_rels(protein_interaction_dict)
