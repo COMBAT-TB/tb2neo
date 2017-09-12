@@ -28,12 +28,13 @@ $ source envname/bin/activate
 $ pip install -r requirements.txt
 $ pip install --editable .
 $ gff2neo --help
+$ gff2neo load_gff
 ```
 
 Point your browser to [localhost:7474](http://localhost:7474]) and run `call db.schema()`.
 
-We used a [GFF file from EnsemblBacteria](ftp://ftp.ensemblgenomes.org/pub/bacteria/release-30/gff3/bacteria_0_collection/mycobacterium_tuberculosis_h37rv).
-
-## `db.schema()`
+### `db.schema()`
 
 ![Neo4j_IE](./data/img/dbschema.png)
+
+We used a [GFF file from EnsemblBacteria](ftp://ftp.ensemblgenomes.org/pub/bacteria/release-30/gff3/bacteria_0_collection/mycobacterium_tuberculosis_h37rv).
