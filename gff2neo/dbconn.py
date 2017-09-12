@@ -390,7 +390,6 @@ def create_go_term_nodes():
                 result = quick_go.Term(go_id, frmt="obo").split('\n')
                 name = result[2].split(":")[1]
                 _def = result[3].split(":")[1]
-                print(go_id, name, _def)
                 go_term = GOTerm(accession=go_id, name=name, definition=_def)
                 graph.create(go_term)
                 if protein is not None:
@@ -476,7 +475,6 @@ def create_pub_nodes():
     for record in records:
         if len(record) < 2:
             pm_id = record['id:'][0][record['id:'][0].find('able: ') + 6:]
-            print("PMID: {}".format(pm_id))
             record = fetch_publication_list(pm_id, rettype='xml')
             rec = next(record)
             article = rec['MedlineCitation']['Article']
@@ -551,7 +549,6 @@ def create_chembl_nodes(protein, entry):
     """
     target = chembl.get_target_by_uniprotId(entry)
     if not isinstance(target, int):
-        print("Entry", entry, "ChEMBL", target)
         dbxref = DbXref(db="ChEMBL", accession=target['chemblId'])
         graph.create(dbxref)
         drug = Drug(accession=target['chemblId'], name=target["preferredName"], synonyms=target["synonyms"],
@@ -603,12 +600,16 @@ def create_drugbank_nodes():
 
 
 def map_cds_to_protein(protein, entry):
+    """
+    Mapping Proteins to CDS
+    :param protein:
+    :param entry:
+    :return:
+    """
     # Map CDS to Protein
     # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
-    print("Entry:", entry)
     ens_id = eu_mapping(entry, to='ENSEMBLGENOME_TRS_ID')
     if ens_id is not None and 'CCP' in ens_id[0]:
-        print("ENSEMBLGENOME_TRS_ID", ens_id)
         cds = CDS.select(graph, "CDS:" + ens_id[0]).first()
         if cds:
             # Polypetide-derives_from->CDS
@@ -627,7 +628,6 @@ def create_uniprot_nodes():
     protein_interaction_dict = dict()
     with open(uniprot_data_csv, 'rb') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
-        # total = len(list(reader))
         for entry in reader:
             protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
             dbxref = DbXref(db="UniProt", accession=entry[
@@ -636,7 +636,6 @@ def create_uniprot_nodes():
 
             pdb_id = None
             if len(entry['3D']) > 0:
-                # pdb_id = map_ue_to_pdb(entry['Entry'])
                 pdb_id = eu_mapping(entry['Entry'], to='PDB_ID')
             protein = Protein()
             protein.name = entry['Protein_Names']
@@ -656,7 +655,7 @@ def create_uniprot_nodes():
             graph.push(protein)
 
             create_chembl_nodes(protein, entry['Entry'])
-            # map_cds_to_protein(protein, entry['Entry'])
+            map_cds_to_protein(protein, entry['Entry'])
 
             create_interpro_term_nodes(protein, entry['InterPro'])
     build_protein_interaction_rels(protein_interaction_dict)

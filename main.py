@@ -5,6 +5,11 @@ gff_file = "data/MTB_H37rv.gff3"
 
 
 def check_csv(csvfile):
+    """
+    Check if csv file exists and is not empty
+    :param csvfile:
+    :return:
+    """
     _file = False
     if os.path.exists(csvfile) and os.stat(csvfile).st_size > 0:
         _file = True
