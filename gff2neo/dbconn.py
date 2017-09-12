@@ -625,6 +625,7 @@ def create_uniprot_nodes():
     :return:
     """
     sys.stdout.write("\nCreating UniProt Nodes from CSV...\n")
+    start = time()
     protein_interaction_dict = dict()
     with open(uniprot_data_csv, 'rb') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
@@ -659,3 +660,5 @@ def create_uniprot_nodes():
 
             create_interpro_term_nodes(protein, entry['InterPro'])
     build_protein_interaction_rels(protein_interaction_dict)
+    end = time()
+    print("\nDone creating UniProt Nodes in ", end - start, "secs.")
