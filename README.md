@@ -1,5 +1,6 @@
 # gff2neo
-Build an [H37rv](https://en.wikipedia.org/wiki/H37Rv) graph database
+Build an [H37rv](https://en.wikipedia.org/wiki/H37Rv) graph database from a [GFF file from EnsemblBacteria](ftp://ftp.ensemblgenomes.org/pub/bacteria/release-30/gff3/bacteria_0_collection/mycobacterium_tuberculosis_h37rv).
+
 
 ## Up and running
 
@@ -37,4 +38,3 @@ Point your browser to [localhost:7474](http://localhost:7474]) and run `call db.
 
 ![Neo4j_IE](./data/img/dbschema.png)
 
-We used a [GFF file from EnsemblBacteria](ftp://ftp.ensemblgenomes.org/pub/bacteria/release-30/gff3/bacteria_0_collection/mycobacterium_tuberculosis_h37rv).
