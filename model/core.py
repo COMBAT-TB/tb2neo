@@ -200,6 +200,7 @@ class Protein(Feature):
     assoc_goterm = RelatedTo("GOTerm", 'ASSOCIATED_WITH')
     assoc_intterm = RelatedTo("InterProTerm", "ASSOCIATED_WITH")
     drug = RelatedFrom("Drug", "TARGET")
+    pathway = RelatedTo("Pathway", "INVOLVED_IN")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
@@ -384,3 +385,19 @@ class Contig(GraphObject):
     Contigs
     """
     pass
+
+
+class Pathway(GraphObject):
+    """
+    Pathway
+    """
+    __primarykey__ = 'accession'
+
+    accession = Property()
+    _type = Property()
+    species = Property()
+    name = Property()
+    compartment = Property()
+    summation = Property()
+
+    protein = RelatedFrom("Protein", "INVOLVED_IN")

@@ -4,7 +4,7 @@ Interface to the Neo4j Database
 import os
 import sys
 
-from bioservices import ChEMBL, QuickGO
+from bioservices import ChEMBL, QuickGO, Reactome
 from py2neo import Graph
 
 from model.core import *
@@ -17,6 +17,7 @@ graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
 
 chembl = ChEMBL(verbose=False)
 quick_go = QuickGO(verbose=False)
+reactome = Reactome(verbose=False)
 
 # watch("neo4j.bolt")
 
@@ -390,7 +391,7 @@ def create_go_term_nodes():
                 result = quick_go.Term(go_id, frmt="obo").split('\n')
                 name = result[2].split(":")[1]
                 _def = result[3].split(":")[1]
-                go_term = GOTerm(accession=go_id, name=name, definition=_def)
+                go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
                 graph.create(go_term)
                 if protein is not None:
                     protein.assoc_goterm.add(go_term)
@@ -662,3 +663,28 @@ def create_uniprot_nodes():
     build_protein_interaction_rels(protein_interaction_dict)
     end = time()
     print("\nDone creating UniProt Nodes in ", end - start, "secs.")
+
+
+def create_pathway_nodes():
+    with open(uniprot_data_csv, 'rb') as csv_file:
+        reader = csv.DictReader(csv_file, delimiter=',')
+        for entry in reader:
+            protein = entry['Entry']
+            pathway_id = eu_mapping(protein, to='REACTOME_ID')
+            if pathway_id:
+                path_res = reactome.query_by_id("Pathway", pathway_id)
+                print(protein, "Pathway: {} - {}".format(pathway_id, path_res['displayName']))
+                pathway = Pathway()
+                pathway.accession = pathway_id
+                pathway._type = path_res['schemaClass']
+                pathway.species = path_res['speciesName']
+                pathway.name = path_res['displayName']
+                pathway.compartment = path_res['compartment'][0]['displayName']
+                pathway.summation = path_res['summation'][0]['displayName']
+                graph.create(pathway)
+                _protein = Protein.select(graph, protein).first()
+                if _protein:
+                    _protein.pathway.add(pathway)
+                    graph.push(_protein)
+                    pathway.protein.add(protein)
+                    graph.push(pathway)

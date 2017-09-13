@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from gff2neo.gffproc import *
 
+
 gff_file = "data/MTB_H37rv.gff3"
 
 
@@ -32,6 +33,7 @@ def main():
         sys.stdout.write("\nBuilt GFF relationships in {} seconds.\n".format(rel_end - rel_st))
         if check_csv(uniprot_data_csv):
             create_uniprot_nodes()
+            create_pathway_nodes()
             if check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
                 create_drugbank_nodes()
             create_go_term_nodes()
