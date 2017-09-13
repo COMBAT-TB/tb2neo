@@ -1,7 +1,8 @@
 # gff2neo
 Build an [H37rv](https://en.wikipedia.org/wiki/H37Rv) graph database from a GFF file.
-
-* `ftp://ftp.ensemblgenomes.org/pub/bacteria/release-30/gff3/bacteria_0_collection/mycobacterium_tuberculosis_h37rv`.
+```
+ftp://ftp.ensemblgenomes.org/pub/bacteria/release-30/gff3/bacteria_0_collection/mycobacterium_tuberculosis_h37rv.
+```
 
 
 ## Up and running
