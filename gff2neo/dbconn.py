@@ -686,5 +686,5 @@ def create_pathway_nodes():
                 if _protein:
                     _protein.pathway.add(pathway)
                     graph.push(_protein)
-                    pathway.protein.add(protein)
+                    pathway.protein.add(_protein)
                     graph.push(pathway)
