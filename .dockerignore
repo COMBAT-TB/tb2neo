@@ -1,0 +1,8 @@
+#Dev
+.idea
+.vscode
+data/img/*
+data/uniprot_data_0.csv
+data/drugbank/pharmacologically_active.csv
+data/*.txt
+gff2neo.egg-info

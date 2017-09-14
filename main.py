@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 from gff2neo.gffproc import *
 
-
 gff_file = "data/MTB_H37rv.gff3"
 
 
@@ -34,16 +33,17 @@ def main():
         if check_csv(uniprot_data_csv):
             create_uniprot_nodes()
             create_pathway_nodes()
+            create_go_term_nodes()
             if check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
                 create_drugbank_nodes()
-            create_go_term_nodes()
             create_pub_nodes()
         else:
             query_uniprot(get_locus_tags(gff_file, 400))
             create_uniprot_nodes()
+            create_pathway_nodes()
+            create_go_term_nodes()
             if check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
                 create_drugbank_nodes()
-            create_go_term_nodes()
             create_pub_nodes()
     else:
         raise Exception("Couldn't find H37Rv GFF file: {}!".format(gff_file))

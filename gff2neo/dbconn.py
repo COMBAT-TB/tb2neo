@@ -12,7 +12,7 @@ from ncbi import fetch_publication_list
 from quickgo import fetch_quick_go_data
 from uniprot import *
 
-graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
+graph = Graph(host=os.environ.get("DB", "combattb.sanbi.ac.za"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
 
 chembl = ChEMBL(verbose=False)
@@ -357,7 +357,6 @@ def create_is_a_cv_term_rel(go_set):
     for go_id in go_set:
         is_a_list = fetch_quick_go_data(go_id)
         go_term = GOTerm.select(graph, go_id).first()
-        print(go_id, is_a_list)
         for go in is_a_list:
             goid = go[go.find('G'):go.find('!')].strip()
             term = GOTerm.select(graph, goid).first()
@@ -375,6 +374,7 @@ def create_go_term_nodes():
     :param mf:
     :return:
     """
+    sys.stdout.write("\nCreating GoTerm Nodes...\n")
     with open(uniprot_data_csv, 'rb') as csv_file:
         import time
         start = time.time()
@@ -446,6 +446,7 @@ def create_author_nodes(publication, full_author):
 
 def create_pub_nodes():
     p_id_set = set()
+    sys.stdout.write("\nCreating Publication Nodes...\n")
     import time
     _start = time.time()
     with open(uniprot_data_csv, 'rb') as csv_file:
@@ -518,7 +519,7 @@ def create_pub_nodes():
         create_author_nodes(publication, full_author)
         record_loaded_count += 1
     end = time.time()
-    print("Created Publications in {} seconds.".format(end - _start))
+    sys.stdout.write("Created Publications in {} seconds.".format(end - _start))
 
 
 def build_protein_interaction_rels(protein_interaction_dict):
@@ -567,6 +568,7 @@ def create_drugbank_nodes():
     Create DrugBank Drug Nodes
     :return:
     """
+    sys.stdout.write("\nCreating DrugBank Nodes...\n")
     drug_set = set()
     with open(target_protein_ids_csv, "rb") as csv_file:
         reader = csv.DictReader(csv_file)
@@ -666,25 +668,32 @@ def create_uniprot_nodes():
 
 
 def create_pathway_nodes():
+    sys.stdout.write("\nCreating Pathway Nodes...\n")
+    start = time()
     with open(uniprot_data_csv, 'rb') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in reader:
             protein = entry['Entry']
-            pathway_id = eu_mapping(protein, to='REACTOME_ID')
-            if pathway_id:
-                path_res = reactome.query_by_id("Pathway", pathway_id)
-                print(protein, "Pathway: {} - {}".format(pathway_id, path_res['displayName']))
-                pathway = Pathway()
-                pathway.accession = pathway_id
-                pathway._type = path_res['schemaClass']
-                pathway.species = path_res['speciesName']
-                pathway.name = path_res['displayName']
-                pathway.compartment = path_res['compartment'][0]['displayName']
-                pathway.summation = path_res['summation'][0]['displayName']
-                graph.create(pathway)
-                _protein = Protein.select(graph, protein).first()
-                if _protein:
-                    _protein.pathway.add(pathway)
-                    graph.push(_protein)
-                    pathway.protein.add(_protein)
-                    graph.push(pathway)
+            pathways = eu_mapping(protein, to='REACTOME_ID')
+            if pathways:
+                for pathway_id in pathways:
+                    path_res = reactome.query_by_id("Pathway", pathway_id)
+                    if not isinstance(path_res, int):
+                        print(protein, "Pathway: {} - {}".format(pathway_id, path_res['displayName']))
+                        pathway = Pathway()
+                        pathway.accession = pathway_id
+                        pathway._type = path_res['schemaClass']
+                        pathway.species = path_res['speciesName']
+                        pathway.name = path_res['displayName']
+                        if path_res.get('compartment'):
+                            pathway.compartment = path_res['compartment'][0]['displayName']
+                        pathway.summation = path_res['summation'][0]['displayName']
+                        graph.create(pathway)
+                        _protein = Protein.select(graph, protein).first()
+                        if _protein:
+                            _protein.pathway.add(pathway)
+                            graph.push(_protein)
+                            pathway.protein.add(_protein)
+                            graph.push(pathway)
+    end = time()
+    sys.stdout.write("\nDone creating Pathway Nodes in ", end - start, "secs.")
