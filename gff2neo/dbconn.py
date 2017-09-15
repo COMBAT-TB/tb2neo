@@ -4,7 +4,7 @@ Interface to the Neo4j Database
 import os
 import sys
 
-from bioservices import ChEMBL, QuickGO, Reactome
+from bioservices import ChEMBL, QuickGO, Reactome, KEGG
 from py2neo import Graph
 
 from model.core import *
@@ -12,12 +12,13 @@ from ncbi import fetch_publication_list
 from quickgo import fetch_quick_go_data
 from uniprot import *
 
-graph = Graph(host=os.environ.get("DB", "combattb.sanbi.ac.za"), bolt=True,
+graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
 
 chembl = ChEMBL(verbose=False)
 quick_go = QuickGO(verbose=False)
 reactome = Reactome(verbose=False)
+kegg = KEGG(verbose=False)
 
 # watch("neo4j.bolt")
 
@@ -667,7 +668,22 @@ def create_uniprot_nodes():
     print("\nDone creating UniProt Nodes in ", end - start, "secs.")
 
 
+def create_kegg_pathways():
+    kegg_rows = ["ENTRY", "NAME", "MODULE", "CLASS", "ORGANISM", "GENE","DESCRIPTION",
+                 "COMPOUND", "REFERENCE", "AUTHORS", "TITLE", "JOURNAL", "KO_PATHWAY"]
+    kegg_res = kegg.list('pathway', organism='mtu')
+    pathways = kegg_res.strip().split("\n")
+    for path in pathways:
+        p = str(path).split("\t")
+        path_res = kegg.get(p[0])
+        print("{}\n".format(path_res))
+
+
 def create_pathway_nodes():
+    """
+    Create Pathway Nodes
+    :return:
+    """
     sys.stdout.write("\nCreating Pathway Nodes...\n")
     start = time()
     with open(uniprot_data_csv, 'rb') as csv_file:
@@ -695,5 +711,6 @@ def create_pathway_nodes():
                             graph.push(_protein)
                             pathway.protein.add(_protein)
                             graph.push(pathway)
+    # create_kegg_pathways()
     end = time()
-    sys.stdout.write("\nDone creating Pathway Nodes in ", end - start, "secs.")
+    sys.stdout.write("\nDone creating Pathway Nodes in {} secs.".format(end - start))
