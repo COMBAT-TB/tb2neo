@@ -396,8 +396,10 @@ class Pathway(GraphObject):
     accession = Property()
     _type = Property()
     species = Property()
+    _class = Property()
     name = Property()
     compartment = Property()
+    # Description
     summation = Property()
 
     protein = RelatedFrom("Protein", "INVOLVED_IN")

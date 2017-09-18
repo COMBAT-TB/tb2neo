@@ -669,14 +669,33 @@ def create_uniprot_nodes():
 
 
 def create_kegg_pathways():
-    kegg_rows = ["ENTRY", "NAME", "MODULE", "CLASS", "ORGANISM", "GENE","DESCRIPTION",
-                 "COMPOUND", "REFERENCE", "AUTHORS", "TITLE", "JOURNAL", "KO_PATHWAY"]
-    kegg_res = kegg.list('pathway', organism='mtu')
-    pathways = kegg_res.strip().split("\n")
-    for path in pathways:
-        p = str(path).split("\t")
-        path_res = kegg.get(p[0])
-        print("{}\n".format(path_res))
+    sys.stdout.write("Creating KEGG Pathways...")
+    start = time()
+    kegg.organism = 'mtu'
+    pathway_ids = kegg.pathwayIds
+    for path in pathway_ids:
+        data = kegg.parse(kegg.get(path))
+        print(data)
+        print("\n")
+        print(data.keys())
+        pathway = Pathway()
+        pathway.accession = path[path.find('mtu'):].strip()
+        pathway._class = data['CLASS']
+        pathway.name = data['PATHWAY_MAP'].get(path)
+        if data.get('DESCRIPTION', None):
+            pathway.summation = data['DESCRIPTION']
+        pathway.species = data['ORGANISM']
+        graph.create(pathway)
+        for g_id in data['GENE'].keys():
+            protein_ = Protein.select(graph).where("_.parent='{}'".format(g_id))
+            if protein_:
+                for protein in protein_:
+                    protein.pathway.add(pathway)
+                    graph.push(protein)
+                    pathway.protein.add(protein)
+                    graph.push(pathway)
+    end = time()
+    sys.stdout.write("\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
 
 
 def create_pathway_nodes():
@@ -711,6 +730,5 @@ def create_pathway_nodes():
                             graph.push(_protein)
                             pathway.protein.add(_protein)
                             graph.push(pathway)
-    # create_kegg_pathways()
     end = time()
     sys.stdout.write("\nDone creating Pathway Nodes in {} secs.".format(end - start))

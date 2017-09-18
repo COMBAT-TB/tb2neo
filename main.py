@@ -32,6 +32,7 @@ def main():
         sys.stdout.write("\nBuilt GFF relationships in {} seconds.\n".format(rel_end - rel_st))
         if check_csv(uniprot_data_csv):
             create_uniprot_nodes()
+            create_kegg_pathways()
             create_pathway_nodes()
             create_go_term_nodes()
             if check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
@@ -40,6 +41,7 @@ def main():
         else:
             query_uniprot(get_locus_tags(gff_file, 400))
             create_uniprot_nodes()
+            create_kegg_pathways()
             create_pathway_nodes()
             create_go_term_nodes()
             if check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
