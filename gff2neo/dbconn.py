@@ -675,16 +675,12 @@ def create_kegg_pathways():
     pathway_ids = kegg.pathwayIds
     for path in pathway_ids:
         data = kegg.parse(kegg.get(path))
-        print(data)
-        print("\n")
-        print(data.keys())
         pathway = Pathway()
         pathway.accession = path[path.find('mtu'):].strip()
-        pathway._class = data['CLASS']
+        pathway._class = data.get('CLASS')
         pathway.name = data['PATHWAY_MAP'].get(path)
-        if data.get('DESCRIPTION', None):
-            pathway.summation = data['DESCRIPTION']
-        pathway.species = data['ORGANISM']
+        pathway.summation = data.get('DESCRIPTION')
+        pathway.species = data.get('ORGANISM')
         graph.create(pathway)
         for g_id in data['GENE'].keys():
             protein_ = Protein.select(graph).where("_.parent='{}'".format(g_id))
