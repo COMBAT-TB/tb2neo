@@ -10,7 +10,7 @@ services:
       - db
   db:
     restart: always
-    image: quay.io/thoba/neo4j:3.2.3
+    image: neo4j:3.2.3
     container_name: gff2neo_db
     environment:
       NEO4J_AUTH: none

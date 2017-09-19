@@ -674,6 +674,7 @@ def create_kegg_pathways():
     kegg.organism = 'mtu'
     pathway_ids = kegg.pathwayIds
     for path in pathway_ids:
+        print(path)
         data = kegg.parse(kegg.get(path))
         pathway = Pathway()
         pathway.accession = path[path.find('mtu'):].strip()
@@ -682,14 +683,15 @@ def create_kegg_pathways():
         pathway.summation = data.get('DESCRIPTION')
         pathway.species = data.get('ORGANISM')
         graph.create(pathway)
-        for g_id in data['GENE'].keys():
-            protein_ = Protein.select(graph).where("_.parent='{}'".format(g_id))
-            if protein_:
-                for protein in protein_:
-                    protein.pathway.add(pathway)
-                    graph.push(protein)
-                    pathway.protein.add(protein)
-                    graph.push(pathway)
+        if data.get('GENE'):
+            for g_id in data['GENE'].keys():
+                protein_ = Protein.select(graph).where("_.parent='{}'".format(g_id))
+                if protein_:
+                    for protein in protein_:
+                        protein.pathway.add(pathway)
+                        graph.push(protein)
+                        pathway.protein.add(protein)
+                        graph.push(pathway)
     end = time()
     sys.stdout.write("\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
 
