@@ -14,6 +14,10 @@ services:
     container_name: gff2neo_db
     environment:
       NEO4J_AUTH: none
+#      Tuning
+#      NEO4J_dbms_memory_pagecache_size: 8G
+#      NEO4J_dbms_memory_heap_initial__size: 2G
+#      NEO4J_dbms_memory_heap_max__size: 2G
     volumes:
       - db_data:/data
     ports:
@@ -25,4 +29,4 @@ volumes:
 #networks:
 #  default:
 #    external:
-#      name: some_network
+#      name: combattbweb_default

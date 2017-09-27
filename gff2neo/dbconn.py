@@ -618,8 +618,8 @@ def map_cds_to_protein(protein, entry):
         if cds:
             # Polypetide-derives_from->CDS
             protein.derives_from.add(cds)
-            cds.derived.add(protein)
             graph.push(protein)
+            cds.derived.add(protein)
             graph.push(cds)
 
 
