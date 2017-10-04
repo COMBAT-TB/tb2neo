@@ -668,6 +668,26 @@ def create_uniprot_nodes():
     print("\nDone creating UniProt Nodes in ", end - start, "secs.")
 
 
+def map_gene_protein(locus_tags):
+    sys.stdout.write("\nMapping Genes to Proteins...\n")
+    start = time()
+    for tag_list in locus_tags:
+        tags = ["gene:" + x for x in tag_list]
+        for tag in tags:
+            gene = Gene.select(graph, tag).first()
+            if gene:
+                parent = gene.uniquename[gene.uniquename.find(':') + 1:]
+                protein = Protein.select(graph).where("_.parent='{}'".format(parent)).first()
+                if protein:
+                    gene.encodes.add(protein)
+                    graph.push(gene)
+                    protein.encoded_by.add(gene)
+                    graph.push(protein)
+                print(gene.uniquename, [protein.uniquename if protein else None])
+    end = time()
+    print("\nDone mapping Genes to Proteins in ", end - start, "secs.")
+
+
 def create_kegg_pathways():
     sys.stdout.write("Creating KEGG Pathways...")
     start = time()
