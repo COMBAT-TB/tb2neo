@@ -38,6 +38,7 @@ def main():
             if check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
                 create_drugbank_nodes()
             create_pub_nodes()
+            map_gene_protein(get_locus_tags(gff_file, 400))
         else:
             query_uniprot(get_locus_tags(gff_file, 400))
             create_uniprot_nodes()
@@ -47,6 +48,7 @@ def main():
             if check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
                 create_drugbank_nodes()
             create_pub_nodes()
+            map_gene_protein(get_locus_tags(gff_file, 400))
     else:
         raise Exception("Couldn't find H37Rv GFF file: {}!".format(gff_file))
 

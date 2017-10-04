@@ -202,7 +202,7 @@ class Protein(Feature):
     assoc_intterm = RelatedTo("InterProTerm", "ASSOCIATED_WITH")
     drug = RelatedFrom("Drug", "TARGET")
     pathway = RelatedTo("Pathway", "INVOLVED_IN")
-    encoded_by = RelatedTo("Gene", "ENCODES")
+    encoded_by = RelatedFrom("Gene", "ENCODES")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
