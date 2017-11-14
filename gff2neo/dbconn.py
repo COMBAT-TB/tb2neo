@@ -694,14 +694,11 @@ def create_kegg_pathways():
     kegg.organism = 'mtv'
     pathway_ids = kegg.pathwayIds
     for path in pathway_ids:
-        print(path)
         data = kegg.parse(kegg.get(path))
-        print(data)
         pathway = Pathway()
         pathway.accession = path[path.find('mtv'):].strip()
         pathway._class = data.get('CLASS')
         pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
-        print("Pathname", pathway.name)
         pathway.summation = data.get('DESCRIPTION')
         pathway.species = data.get('ORGANISM')
         graph.create(pathway)
@@ -751,4 +748,4 @@ def create_pathway_nodes():
                             pathway.protein.add(_protein)
                             graph.push(pathway)
     end = time()
-    sys.stdout.write("\nDone creating Pathway Nodes in {} secs.".format(end - start))
+    sys.stdout.write("\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
