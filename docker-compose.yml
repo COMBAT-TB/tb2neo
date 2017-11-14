@@ -1,6 +1,6 @@
 version: '2'
 services:
-  web:
+  gff2neo:
     build: .
     image: gff2neo
     container_name: gff2neo
@@ -10,7 +10,7 @@ services:
       - db
   db:
     restart: always
-    image: neo4j:3.2.3
+    image: neo4j:3.3
     container_name: gff2neo_db
     environment:
       NEO4J_AUTH: none
