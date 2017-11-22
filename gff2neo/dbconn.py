@@ -691,21 +691,20 @@ def map_gene_protein(locus_tags):
 def create_kegg_pathways():
     sys.stdout.write("Creating KEGG Pathways...")
     start = time()
-    kegg.organism = 'mtu'
+    kegg.organism = 'mtv'
     pathway_ids = kegg.pathwayIds
     for path in pathway_ids:
-        print(path)
         data = kegg.parse(kegg.get(path))
         pathway = Pathway()
-        pathway.accession = path[path.find('mtu'):].strip()
+        pathway.accession = path[path.find('mtv'):].strip()
         pathway._class = data.get('CLASS')
-        pathway.name = data['PATHWAY_MAP'].get(path)
+        pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
         pathway.summation = data.get('DESCRIPTION')
         pathway.species = data.get('ORGANISM')
         graph.create(pathway)
         if data.get('GENE'):
             for g_id in data['GENE'].keys():
-                protein_ = Protein.select(graph).where("_.parent='{}'".format(g_id))
+                protein_ = Protein.select(graph).where("_.parent='{}'".format("Rv" + g_id.strip("RVBD_")))
                 if protein_:
                     for protein in protein_:
                         protein.pathway.add(pathway)
@@ -721,7 +720,7 @@ def create_pathway_nodes():
     Create Pathway Nodes
     :return:
     """
-    sys.stdout.write("\nCreating Pathway Nodes...\n")
+    sys.stdout.write("\nCreating REACTOME Pathways...\n")
     start = time()
     with open(uniprot_data_csv, 'rb') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
@@ -749,4 +748,4 @@ def create_pathway_nodes():
                             pathway.protein.add(_protein)
                             graph.push(pathway)
     end = time()
-    sys.stdout.write("\nDone creating Pathway Nodes in {} secs.".format(end - start))
+    sys.stdout.write("\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
