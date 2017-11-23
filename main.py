@@ -19,7 +19,7 @@ def check_csv(csvfile):
 def main():
     if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file):
         import time
-        time.sleep(10)
+        time.sleep(20)
         delete_data()
         examine(gff_file)
         gff_p_st = time.time()

@@ -2,16 +2,13 @@ version: '2'
 services:
   gff2neo:
     build: .
-    image: gff2neo
-    container_name: gff2neo
     environment:
       DB: db
     depends_on:
       - db
   db:
     restart: always
-    image: neo4j:3.3
-    container_name: gff2neo_db
+    build: ./neo4j/
     environment:
       NEO4J_AUTH: none
 #      Tuning
@@ -20,9 +17,17 @@ services:
 #      NEO4J_dbms_memory_heap_max__size: 2G
     volumes:
       - db_data:/data
+    depends_on:
+      - es
     ports:
       - "7687:7687"
       - "7474:7474"
+  es:
+    restart: always
+    image: elasticsearch:2.3.2
+    # build: ./es/
+    ports:
+      - "9200:9200"
 volumes:
   db_data:
 
