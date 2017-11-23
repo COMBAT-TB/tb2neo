@@ -659,7 +659,7 @@ def create_uniprot_nodes():
             protein.dbxref.add(dbxref)
             graph.push(protein)
 
-            create_chembl_nodes(protein, entry['Entry'])
+            # create_chembl_nodes(protein, entry['Entry'])
             map_cds_to_protein(protein, entry['Entry'])
 
             create_interpro_term_nodes(protein, entry['InterPro'])
