@@ -24,12 +24,15 @@ services:
       - "7474:7474"
   es:
     restart: always
-    image: elasticsearch:2.3.2
+    image: elasticsearch:2.4
     # build: ./es/
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
 volumes:
   db_data:
+  es_data:
 
 #networks:
 #  default:
