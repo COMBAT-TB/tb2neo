@@ -12,7 +12,7 @@ from tqdm import tqdm
 from dbconn import *
 
 
-def examine(gff_file):
+def examine_gff(gff_file):
     """
     Examine GFF file
     :param gff_file:

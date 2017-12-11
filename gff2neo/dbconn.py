@@ -35,9 +35,10 @@ go_term_set = set()
 
 target_protein_ids_csv = "data/drugbank/all_target_polypeptide_ids.csv"
 drug_vocab_csv = "data/drugbank/drugbank_vocabulary.csv"
+string_data = "data/string/83332.protein.links.detailed.v10.5.txt"
 
 
-def delete_data():
+def delete_db_data():
     """
     Delete existing data.
     :return:
@@ -218,6 +219,11 @@ def create_cds_nodes(feature):
 
 
 def get_feature_parent(feature):
+    """
+    Get Feature Parent
+    :param feature:
+    :return:
+    """
     if feature.qualifiers.get('Parent'):
         parent = feature.qualifiers['Parent'][0]
         # [feature.qualifiers['Parent'][0].find(":") + 1:]
@@ -233,8 +239,8 @@ def create_featureloc_nodes(feature):
     :return:
     """
     srcfeature_id = get_feature_name(feature).get("UniqueName")
-    pk = feature.location.start + feature.location.end
-    feature_loc = Location(pk=pk, fmin=feature.location.start, fmax=feature.location.end,
+    primary_key = feature.location.start + feature.location.end
+    feature_loc = Location(pk=primary_key, fmin=feature.location.start, fmax=feature.location.end,
                            strand=feature.location.strand)
     graph.create(feature_loc)
     location_dict[srcfeature_id] = feature_loc
@@ -257,7 +263,7 @@ def get_feature_name(feature):
     return names
 
 
-def build_gff_rels():
+def build_gff_relationships():
     """
     Build GFF Feature relationships
     :return:
@@ -368,7 +374,7 @@ def create_is_a_cv_term_rel(go_set):
 
 def create_go_term_nodes():
     """
-    Create CvTerm Nodes and build Polypetide relationships.
+    Create GOTerm Nodes and build Protein relationships.
     :param protein:
     :param bp:
     :param cc:
@@ -445,7 +451,11 @@ def create_author_nodes(publication, full_author):
             graph.push(publication)
 
 
-def create_pub_nodes():
+def create_publication_nodes():
+    """
+    Create Publication Nodes
+    :return:
+    """
     p_id_set = set()
     sys.stdout.write("\nCreating Publication Nodes...\n")
     import time
@@ -545,6 +555,28 @@ def build_protein_interaction_rels(protein_interaction_dict):
                     graph.push(poly)
 
 
+def build_string_ppis():
+    """
+    Create STRING_DB Protein Interactions
+    :return:
+    """
+    sys.stdout.write("\nCreating STRING-DB PPIs...\n")
+    start = time()
+    with open(string_data, 'rb') as ppi_data:
+        data = ppi_data.readlines()
+    ppi_list = [l.strip().split() for l in data]
+    for ppi in ppi_list:
+        p1 = Protein.select(graph).where("_.parent='{}'".format(ppi[0][6:])).first()
+        p2 = Protein.select(graph).where("_.parent='{}'".format(ppi[1][6:])).first()
+        if p1 and p2:
+            p1.interacts_with.add(p2)
+            print(p1.name, p2.name)
+            graph.push(p1)
+    end = time()
+    print("\nDone creating STRING-DB PPIs in ", end - start, "secs.")
+
+
+# TODO: Need to get Drugs not Targets
 def create_chembl_nodes(protein, entry):
     """
     Create ChEMBL Drug nodes from UniProt results.
@@ -623,12 +655,12 @@ def map_cds_to_protein(protein, entry):
             graph.push(cds)
 
 
-def create_uniprot_nodes():
+def create_protein_nodes():
     """
-    Build DbXref nodes from UniProt results.
+    Create Protein Nodes from UniProt results.
     :return:
     """
-    sys.stdout.write("\nCreating UniProt Nodes from CSV...\n")
+    sys.stdout.write("\nCreating Protein Nodes...\n")
     start = time()
     protein_interaction_dict = dict()
     with open(uniprot_data_csv, 'rb') as csv_file:
@@ -668,7 +700,12 @@ def create_uniprot_nodes():
     print("\nDone creating UniProt Nodes in ", end - start, "secs.")
 
 
-def map_gene_protein(locus_tags):
+def map_gene_to_protein(locus_tags):
+    """
+    Mapping Genes to Proteins
+    :param locus_tags:
+    :return:
+    """
     sys.stdout.write("\nMapping Genes to Proteins...\n")
     start = time()
     for tag_list in locus_tags:
@@ -688,7 +725,11 @@ def map_gene_protein(locus_tags):
     print("\nDone mapping Genes to Proteins in ", end - start, "secs.")
 
 
-def create_kegg_pathways():
+def create_kegg_pathways_nodes():
+    """
+    Create KEGG pathways
+    :return:
+    """
     sys.stdout.write("Creating KEGG Pathways...")
     start = time()
     kegg.organism = 'mtv'
@@ -715,9 +756,9 @@ def create_kegg_pathways():
     sys.stdout.write("\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
 
 
-def create_pathway_nodes():
+def create_reactome_pathway_nodes():
     """
-    Create Pathway Nodes
+    Create REACTOME Pathway Nodes
     :return:
     """
     sys.stdout.write("\nCreating REACTOME Pathways...\n")

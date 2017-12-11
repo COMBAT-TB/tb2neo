@@ -46,7 +46,7 @@ def examine_gff(gff_file):
     """
     if gff_file is None:
         gff_file = default_gff()
-    examine(gff_file=gff_file)
+    examine_gff(gff_file=gff_file)
 
 
 @cli.command()
@@ -58,11 +58,11 @@ def load_gff(gff_file):
     :return:
     """
     # Deleting existing data
-    delete_data()
+    delete_db_data()
     if gff_file is None:
         gff_file = default_gff()
     parse_gff(gff_file)
-    build_gff_rels()
+    build_gff_relationships()
 
 
 @cli.command()
@@ -74,12 +74,12 @@ def load_uniprot_data(gff_file):
     :return:
     """
     if check_csv(uniprot_data_csv):
-        create_uniprot_nodes()
+        create_protein_nodes()
     else:
         if gff_file is None:
             gff_file = default_gff()
         query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
-        create_uniprot_nodes()
+        create_protein_nodes()
 
 
 @cli.command()
@@ -99,7 +99,7 @@ def load_drugbank_data(gff_file):
         if gff_file is None:
             gff_file = default_gff()
         query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
-        create_uniprot_nodes()
+        create_protein_nodes()
         create_drugbank_nodes()
 
 
@@ -129,12 +129,12 @@ def load_publications(gff_file):
     :return:
     """
     if check_csv(uniprot_data_csv):
-        create_pub_nodes()
+        create_publication_nodes()
     else:
         if gff_file is None:
             gff_file = default_gff()
         query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
-        create_pub_nodes()
+        create_publication_nodes()
 
 
 if __name__ == '__main__':

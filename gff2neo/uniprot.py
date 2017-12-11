@@ -12,7 +12,7 @@ import csv
 from time import time
 from bioservices import UniProt
 
-u = UniProt(verbose=False)
+uniprot_ = UniProt(verbose=False)
 
 uniprot_data_csv = "data/uniprot_data.csv"
 
@@ -29,7 +29,7 @@ def search_uniprot(query, columns, taxonomy='83332', proteome='UP000001584'):
     query = "taxonomy:{}+AND+proteome:{}+AND+{}".format(taxonomy,
                                                         proteome, query)
 
-    result = u.search(query=query, frmt="tab", columns=columns, sort=None)
+    result = uniprot_.search(query=query, frmt="tab", columns=columns, sort=None)
     reader = csv.reader(StringIO(result), delimiter='\t')
     try:
         next(reader)
@@ -67,7 +67,7 @@ def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
     :return:
     """
     print("Querying UniProt...")
-    start = time()
+    start_time = time()
     uniprot_data = []
     results = []
     columns = "id, entry name, genes(OLN), genes, go-id, interpro, " \
@@ -89,20 +89,20 @@ def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
     for data in uniprot_data:
         for entry in data:
             results.append(entry)
-    end = time()
-    print("\nDone fetching data from UniProt in ", end - start, "secs.")
+    end_time = time()
+    print("\nDone fetching data from UniProt in ", end_time - start_time, "secs.")
     write_to_csv(results)
 
 
-def eu_mapping(ue, to):
+def eu_mapping(from_, to):
     """
-    Mapping UniProt entry to XREF
+    Mapping UniProt entry to external databases
     :param to:
-    :param ue:
+    :param from_:
     :return:
     """
     xref_id = None
-    _map = u.mapping(fr='ID', to=to, query=ue)
+    _map = uniprot_.mapping(fr='ID', to=to, query=from_)
     if len(_map) != 0:
-        xref_id = _map[ue]
+        xref_id = _map[from_]
     return xref_id
