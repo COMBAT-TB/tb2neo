@@ -1,5 +1,7 @@
 # gff2neo
 
+[![Build Status](https://travis-ci.org/thobalose/gff2neo.svg?branch=dev)](https://travis-ci.org/thobalose/gff2neo)
+
 [![Known Vulnerabilities](https://snyk.io/test/github/thobalose/gff2neo/badge.svg)](https://snyk.io/test/github/thobalose/gff2neo)
 
 Build an [H37rv](https://en.wikipedia.org/wiki/H37Rv) graph database from a GFF file.

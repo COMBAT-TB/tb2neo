@@ -1,0 +1,100 @@
+##gff-version   3
+##sequence-region   Chromosome 1 4410929
+#!genome-build European Nucleotide Archive ASM19595v2
+#!genome-version GCA_000195955.2
+#!genome-date 2015-02
+#!genome-build-accession GCA_000195955.2
+#!genebuild-last-updated 2015-02
+Chromosome	ena	gene	1	1524	.	+	.	ID=gene:Rv0001;Name=dnaA;biotype=protein_coding;description=Chromosomal replication initiator protein DnaA;gene_id=Rv0001;logic_name=ena;version=1
+Chromosome	ena	transcript	1	1524	.	+	.	ID=transcript:CCP42723;Parent=gene:Rv0001;Name=dnaA-1;biotype=protein_coding;transcript_id=CCP42723;version=1
+Chromosome	ena	exon	1	1524	.	+	.	Parent=transcript:CCP42723;Name=CCP42723-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42723-1;rank=1;version=1
+Chromosome	ena	CDS	1	1524	.	+	0	ID=CDS:CCP42723;Parent=transcript:CCP42723;protein_id=CCP42723
+###
+Chromosome	ena	gene	2052	3260	.	+	.	ID=gene:Rv0002;Name=dnaN;biotype=protein_coding;description=DNA polymerase III (beta chain) DnaN (DNA nucleotidyltransferase);gene_id=Rv0002;logic_name=ena;version=1
+Chromosome	ena	transcript	2052	3260	.	+	.	ID=transcript:CCP42724;Parent=gene:Rv0002;Name=dnaN-1;biotype=protein_coding;transcript_id=CCP42724;version=1
+Chromosome	ena	exon	2052	3260	.	+	.	Parent=transcript:CCP42724;Name=CCP42724-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42724-1;rank=1;version=1
+Chromosome	ena	CDS	2052	3260	.	+	0	ID=CDS:CCP42724;Parent=transcript:CCP42724;protein_id=CCP42724
+###
+Chromosome	ena	gene	3280	4437	.	+	.	ID=gene:Rv0003;Name=recF;biotype=protein_coding;description=DNA replication and repair protein RecF (single-strand DNA binding protein);gene_id=Rv0003;logic_name=ena;version=1
+Chromosome	ena	transcript	3280	4437	.	+	.	ID=transcript:CCP42725;Parent=gene:Rv0003;Name=recF-1;biotype=protein_coding;transcript_id=CCP42725;version=1
+Chromosome	ena	exon	3280	4437	.	+	.	Parent=transcript:CCP42725;Name=CCP42725-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42725-1;rank=1;version=1
+Chromosome	ena	CDS	3280	4437	.	+	0	ID=CDS:CCP42725;Parent=transcript:CCP42725;protein_id=CCP42725
+###
+Chromosome	ena	gene	4434	4997	.	+	.	ID=gene:Rv0004;biotype=protein_coding;description=Conserved hypothetical protein;gene_id=Rv0004;logic_name=ena;version=1
+Chromosome	ena	transcript	4434	4997	.	+	.	ID=transcript:CCP42726;Parent=gene:Rv0004;biotype=protein_coding;transcript_id=CCP42726;version=1
+Chromosome	ena	exon	4434	4997	.	+	.	Parent=transcript:CCP42726;Name=CCP42726-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42726-1;rank=1;version=1
+Chromosome	ena	CDS	4434	4997	.	+	0	ID=CDS:CCP42726;Parent=transcript:CCP42726;protein_id=CCP42726
+###
+Chromosome	ena	gene	5240	7267	.	+	.	ID=gene:Rv0005;Name=gyrB;biotype=protein_coding;description=DNA gyrase (subunit B) GyrB (DNA topoisomerase (ATP-hydrolysing)) (DNA topoisomerase II) (type II DNA topoisomerase);gene_id=Rv0005;logic_name=ena;version=1
+Chromosome	ena	transcript	5240	7267	.	+	.	ID=transcript:CCP42727;Parent=gene:Rv0005;Name=gyrB-1;biotype=protein_coding;transcript_id=CCP42727;version=1
+Chromosome	ena	exon	5240	7267	.	+	.	Parent=transcript:CCP42727;Name=CCP42727-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42727-1;rank=1;version=1
+Chromosome	ena	CDS	5240	7267	.	+	0	ID=CDS:CCP42727;Parent=transcript:CCP42727;protein_id=CCP42727
+###
+Chromosome	ena	gene	7302	9818	.	+	.	ID=gene:Rv0006;Name=gyrA;biotype=protein_coding;description=DNA gyrase (subunit A) GyrA (DNA topoisomerase (ATP-hydrolysing)) (DNA topoisomerase II) (type II DNA topoisomerase);gene_id=Rv0006;logic_name=ena;version=1
+Chromosome	ena	transcript	7302	9818	.	+	.	ID=transcript:CCP42728;Parent=gene:Rv0006;Name=gyrA-1;biotype=protein_coding;transcript_id=CCP42728;version=1
+Chromosome	ena	exon	7302	9818	.	+	.	Parent=transcript:CCP42728;Name=CCP42728-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42728-1;rank=1;version=1
+Chromosome	ena	CDS	7302	9818	.	+	0	ID=CDS:CCP42728;Parent=transcript:CCP42728;protein_id=CCP42728
+###
+Chromosome	ena	gene	9914	10828	.	+	.	ID=gene:Rv0007;biotype=protein_coding;description=Possible conserved membrane protein;gene_id=Rv0007;logic_name=ena;version=1
+Chromosome	ena	transcript	9914	10828	.	+	.	ID=transcript:CCP42729;Parent=gene:Rv0007;biotype=protein_coding;transcript_id=CCP42729;version=1
+Chromosome	ena	exon	9914	10828	.	+	.	Parent=transcript:CCP42729;Name=CCP42729-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42729-1;rank=1;version=1
+Chromosome	ena	CDS	9914	10828	.	+	0	ID=CDS:CCP42729;Parent=transcript:CCP42729;protein_id=CCP42729
+###
+Chromosome	ena	tRNA_gene	10887	10960	.	+	.	ID=gene:EBG00000313329;Name=ileT;biotype=tRNA;gene_id=EBG00000313329;logic_name=ena_rna;version=1
+Chromosome	ena	transcript	10887	10960	.	+	.	ID=transcript:EBG00000313329-1;Parent=gene:EBG00000313329;Name=ileT;biotype=tRNA;transcript_id=EBG00000313329-1;version=1
+Chromosome	ena	exon	10887	10960	.	+	.	Parent=transcript:EBG00000313329-1;Name=EBG00000313329-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=EBG00000313329-1;rank=1;version=1
+###
+Chromosome	ena_gene	biological_region	10887	10960	.	+	.	external_name=AL123456.3:gene:10887..10960;logic_name=ena_gene
+Chromosome	ena	tRNA_gene	11112	11184	.	+	.	ID=gene:EBG00000313365;Name=alaT;biotype=tRNA;gene_id=EBG00000313365;logic_name=ena_rna;version=1
+Chromosome	ena	transcript	11112	11184	.	+	.	ID=transcript:EBG00000313365-1;Parent=gene:EBG00000313365;Name=alaT;biotype=tRNA;transcript_id=EBG00000313365-1;version=1
+Chromosome	ena	exon	11112	11184	.	+	.	Parent=transcript:EBG00000313365-1;Name=EBG00000313365-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=EBG00000313365-1;rank=1;version=1
+###
+Chromosome	ena_gene	biological_region	11112	11184	.	+	.	external_name=AL123456.3:gene:11112..11184;logic_name=ena_gene
+Chromosome	ena	gene	11874	12311	.	-	.	ID=gene:Rv0008c;biotype=protein_coding;description=Possible membrane protein;gene_id=Rv0008c;logic_name=ena;version=1
+Chromosome	ena	transcript	11874	12311	.	-	.	ID=transcript:CCP42730;Parent=gene:Rv0008c;biotype=protein_coding;transcript_id=CCP42730;version=1
+Chromosome	ena	exon	11874	12311	.	-	.	Parent=transcript:CCP42730;Name=CCP42730-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42730-1;rank=1;version=1
+Chromosome	ena	CDS	11874	12311	.	-	0	ID=CDS:CCP42730;Parent=transcript:CCP42730;protein_id=CCP42730
+###
+Chromosome	ena	gene	12468	13016	.	+	.	ID=gene:Rv0009;Name=ppiA;biotype=protein_coding;description=Probable iron-regulated peptidyl-prolyl cis-trans isomerase A PpiA (PPIase A) (rotamase A);gene_id=Rv0009;logic_name=ena;version=1
+Chromosome	ena	transcript	12468	13016	.	+	.	ID=transcript:CCP42731;Parent=gene:Rv0009;Name=ppiA-1;biotype=protein_coding;transcript_id=CCP42731;version=1
+Chromosome	ena	exon	12468	13016	.	+	.	Parent=transcript:CCP42731;Name=CCP42731-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42731-1;rank=1;version=1
+Chromosome	ena	CDS	12468	13016	.	+	0	ID=CDS:CCP42731;Parent=transcript:CCP42731;protein_id=CCP42731
+###
+Chromosome	ena	gene	13133	13558	.	-	.	ID=gene:Rv0010c;biotype=protein_coding;description=Probable conserved membrane protein;gene_id=Rv0010c;logic_name=ena;version=1
+Chromosome	ena	transcript	13133	13558	.	-	.	ID=transcript:CCP42732;Parent=gene:Rv0010c;biotype=protein_coding;transcript_id=CCP42732;version=1
+Chromosome	ena	exon	13133	13558	.	-	.	Parent=transcript:CCP42732;Name=CCP42732-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42732-1;rank=1;version=1
+Chromosome	ena	CDS	13133	13558	.	-	0	ID=CDS:CCP42732;Parent=transcript:CCP42732;protein_id=CCP42732
+###
+Chromosome	ena	gene	13714	13995	.	-	.	ID=gene:Rv0011c;biotype=protein_coding;description=Probable conserved transmembrane protein;gene_id=Rv0011c;logic_name=ena;version=1
+Chromosome	ena	transcript	13714	13995	.	-	.	ID=transcript:CCP42733;Parent=gene:Rv0011c;biotype=protein_coding;transcript_id=CCP42733;version=1
+Chromosome	ena	exon	13714	13995	.	-	.	Parent=transcript:CCP42733;Name=CCP42733-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42733-1;rank=1;version=1
+Chromosome	ena	CDS	13714	13995	.	-	0	ID=CDS:CCP42733;Parent=transcript:CCP42733;protein_id=CCP42733
+###
+Chromosome	ena	gene	14089	14877	.	+	.	ID=gene:Rv0012;biotype=protein_coding;description=Probable conserved membrane protein;gene_id=Rv0012;logic_name=ena;version=1
+Chromosome	ena	transcript	14089	14877	.	+	.	ID=transcript:CCP42734;Parent=gene:Rv0012;biotype=protein_coding;transcript_id=CCP42734;version=1
+Chromosome	ena	exon	14089	14877	.	+	.	Parent=transcript:CCP42734;Name=CCP42734-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42734-1;rank=1;version=1
+Chromosome	ena	CDS	14089	14877	.	+	0	ID=CDS:CCP42734;Parent=transcript:CCP42734;protein_id=CCP42734
+###
+Chromosome	ena	gene	14914	15612	.	+	.	ID=gene:Rv0013;Name=trpG;biotype=protein_coding;description=Possible anthranilate synthase component II TrpG (glutamine amidotransferase);gene_id=Rv0013;logic_name=ena;version=1
+Chromosome	ena	transcript	14914	15612	.	+	.	ID=transcript:CCP42735;Parent=gene:Rv0013;Name=trpG-1;biotype=protein_coding;transcript_id=CCP42735;version=1
+Chromosome	ena	exon	14914	15612	.	+	.	Parent=transcript:CCP42735;Name=CCP42735-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42735-1;rank=1;version=1
+Chromosome	ena	CDS	14914	15612	.	+	0	ID=CDS:CCP42735;Parent=transcript:CCP42735;protein_id=CCP42735
+###
+Chromosome	ena	gene	15590	17470	.	-	.	ID=gene:Rv0014c;Name=pknB;biotype=protein_coding;description=Transmembrane serine/threonine-protein kinase B PknB (protein kinase B) (STPK B);gene_id=Rv0014c;logic_name=ena;version=1
+Chromosome	ena	transcript	15590	17470	.	-	.	ID=transcript:CCP42736;Parent=gene:Rv0014c;Name=pknB-1;biotype=protein_coding;transcript_id=CCP42736;version=1
+Chromosome	ena	exon	15590	17470	.	-	.	Parent=transcript:CCP42736;Name=CCP42736-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42736-1;rank=1;version=1
+Chromosome	ena	CDS	15590	17470	.	-	0	ID=CDS:CCP42736;Parent=transcript:CCP42736;protein_id=CCP42736
+###
+Chromosome	ena	gene	17467	18762	.	-	.	ID=gene:Rv0015c;Name=pknA;biotype=protein_coding;description=Transmembrane serine/threonine-protein kinase A PknA (protein kinase A) (STPK A);gene_id=Rv0015c;logic_name=ena;version=1
+Chromosome	ena	transcript	17467	18762	.	-	.	ID=transcript:CCP42737;Parent=gene:Rv0015c;Name=pknA-1;biotype=protein_coding;transcript_id=CCP42737;version=1
+Chromosome	ena	exon	17467	18762	.	-	.	Parent=transcript:CCP42737;Name=CCP42737-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42737-1;rank=1;version=1
+Chromosome	ena	CDS	17467	18762	.	-	0	ID=CDS:CCP42737;Parent=transcript:CCP42737;protein_id=CCP42737
+###
+Chromosome	ena	gene	18759	20234	.	-	.	ID=gene:Rv0016c;Name=pbpA;biotype=protein_coding;description=Probable penicillin-binding protein PbpA;gene_id=Rv0016c;logic_name=ena;version=1
+Chromosome	ena	transcript	18759	20234	.	-	.	ID=transcript:CCP42738;Parent=gene:Rv0016c;Name=pbpA-1;biotype=protein_coding;transcript_id=CCP42738;version=1
+Chromosome	ena	exon	18759	20234	.	-	.	Parent=transcript:CCP42738;Name=CCP42738-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42738-1;rank=1;version=1
+Chromosome	ena	CDS	18759	20234	.	-	0	ID=CDS:CCP42738;Parent=transcript:CCP42738;protein_id=CCP42738
+###
+Chromosome	ena	gene	20231	21640	.	-	.	ID=gene:Rv0017c;Name=rodA;biotype=protein_coding;description=Probable cell division protein RodA;gene_id=Rv0017c;logic_name=ena;version=1
+Chromosome	ena	transcript	20231	21640	.	-	.	ID=transcript:CCP42739;Parent=gene:Rv0017c;Name=rodA-1;biotype=protein_coding;transcript_id=CCP42739;version=1
+Chromosome	ena	exon	20231	21640	.	-	.	Parent=transcript:CCP42739;Name=CCP42739-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42739-1;rank=1;version=1
