@@ -8,12 +8,12 @@ def default_gff():
     Check if gff is given, use default if not.
     :return:
     """
-    gff_file_ = "data/MTB_H37rv.gff3"
-    if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file_):
-        click.echo("\nUsing {}.\n".format(gff_file_), nl=True, err=True)
+    gff_file = "data/sample.gff3"
+    if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file):
+        click.echo("\nUsing {}.\n".format(gff_file), nl=True, err=True)
     else:
-        raise OSError("Couldn't find GFF file: {}!".format(gff_file_))
-    return gff_file_
+        raise OSError("Couldn't find GFF file: {}!".format(gff_file))
+    return gff_file
 
 
 def check_csv(csvfile):
@@ -46,7 +46,7 @@ def examine_gff(gff_file):
     """
     if gff_file is None:
         gff_file = default_gff()
-    examine_gff(gff_file=gff_file)
+    examine_gff_file(gff_file=gff_file)
 
 
 @cli.command()
@@ -80,6 +80,7 @@ def load_uniprot_data(gff_file):
             gff_file = default_gff()
         query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
         create_protein_nodes()
+        map_gene_to_protein(get_locus_tags(gff_file, 400))
 
 
 @cli.command()
@@ -90,7 +91,7 @@ def load_drugbank_data(gff_file):
     :param gff_file:
     :return:
     """
-    # Let's check if we Proteins to map to.
+    # Let's check if we have Proteins to map to.
     proteins = graph.data("MATCH (p:Protein) RETURN p.entry_name LIMIT 1")
     if len(proteins) > 0 and check_csv(uniprot_data_csv) \
             and check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
@@ -100,6 +101,7 @@ def load_drugbank_data(gff_file):
             gff_file = default_gff()
         query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
         create_protein_nodes()
+        map_gene_to_protein(get_locus_tags(gff_file, 400))
         create_drugbank_nodes()
 
 
@@ -135,6 +137,34 @@ def load_publications(gff_file):
             gff_file = default_gff()
         query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
         create_publication_nodes()
+
+
+@cli.command()
+@click.argument('gff_file', required=False, type=click.Path(exists=True, file_okay=True))
+def load_kegg_pathways(gff_file):
+    # Let's check if we have Proteins to map to.
+    proteins = graph.data("MATCH (p:Protein) RETURN p.entry_name LIMIT 1")
+    if len(proteins) > 0:
+        create_kegg_pathways_nodes()
+    else:
+        if gff_file is None:
+            gff_file = default_gff()
+        query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
+        create_kegg_pathways_nodes()
+
+
+@cli.command()
+@click.argument('gff_file', required=False, type=click.Path(exists=True, file_okay=True))
+def load_reactome_pathways(gff_file):
+    # Let's check if we have Proteins to map to.
+    proteins = graph.data("MATCH (p:Protein) RETURN p.entry_name LIMIT 1")
+    if len(proteins) > 0 and check_csv(uniprot_data_csv):
+        create_reactome_pathway_nodes()
+    else:
+        if gff_file is None:
+            gff_file = default_gff()
+        query_uniprot(get_locus_tags(gff_file=gff_file, chunk=400))
+        create_reactome_pathway_nodes()
 
 
 if __name__ == '__main__':

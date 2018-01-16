@@ -21,7 +21,7 @@ def main():
         import time
         time.sleep(20)
         delete_db_data()
-        examine_gff(gff_file)
+        examine_gff_file(gff_file)
         start_time = time.time()
         parse_gff(gff_file)
         end_time = time.time()

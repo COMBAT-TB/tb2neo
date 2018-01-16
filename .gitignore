@@ -106,3 +106,5 @@ ENV/
 
 data/drugbank/pharmacologically_active.csv
 data/uniprot_data_0.csv
+data/string
+data/gff_files
