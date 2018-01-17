@@ -4,7 +4,6 @@ dist: trusty
 sudo: required
 
 language: python
-
 python:
   - "2.7"
 
@@ -20,4 +19,7 @@ install:
   - pip install -e .
 
 script:
-  - pytest
+  - pytest -v test/ --cov=gff2neo --cov-report term
+
+after_success:
+  coveralls
