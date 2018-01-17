@@ -3,8 +3,7 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from gff2neo.cli import default_gff, check_csv, examine_gff, load_gff, \
-    load_uniprot_data
+from gff2neo.cli import default_gff, check_csv, examine_gff, load_gff
 
 
 @pytest.fixture(scope="module")
@@ -36,7 +35,6 @@ def test_load_gff(cli_runner):
     result = cli_runner.invoke(load_gff)
     assert result.exit_code == 0
 
-
-def test_load_uniprot_data(cli_runner):
-    result = cli_runner.invoke(load_uniprot_data)
-    assert result.exit_code == 0
+# def test_load_uniprot_data(cli_runner):
+#     result = cli_runner.invoke(load_uniprot_data)
+#     assert result.exit_code == 0
