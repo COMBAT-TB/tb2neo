@@ -142,6 +142,11 @@ def load_publications(gff_file):
 @cli.command()
 @click.argument('gff_file', required=False, type=click.Path(exists=True, file_okay=True))
 def load_kegg_pathways(gff_file):
+    """
+    Load KEGG Pathways
+    :param gff_file:
+    :return:
+    """
     # Let's check if we have Proteins to map to.
     proteins = graph.data("MATCH (p:Protein) RETURN p.entry_name LIMIT 1")
     if len(proteins) > 0:
@@ -156,6 +161,11 @@ def load_kegg_pathways(gff_file):
 @cli.command()
 @click.argument('gff_file', required=False, type=click.Path(exists=True, file_okay=True))
 def load_reactome_pathways(gff_file):
+    """
+    Load REACTOME Pathways
+    :param gff_file:
+    :return:
+    """
     # Let's check if we have Proteins to map to.
     proteins = graph.data("MATCH (p:Protein) RETURN p.entry_name LIMIT 1")
     if len(proteins) > 0 and check_csv(uniprot_data_csv):

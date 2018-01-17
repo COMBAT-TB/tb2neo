@@ -410,15 +410,15 @@ def create_go_term_nodes():
     create_is_a_cv_term_rel(go_term_set)
 
 
-def create_interpro_term_nodes(protein, entry):
+def create_interpro_term_nodes(protein, interpro_ids):
     """
     Create InterPro Term Nodes.
     :param protein:
-    :param entry:
+    :param interpro_ids:
     :return:
     """
     # http://generic-model-organism-system-database.450254.n5.nabble.com/Re-GMOD-devel-Storing-Interpro-domains-in-Chado-td459778.html
-    terms = [t for t in entry.split("; ") if t is not '']
+    terms = [interpro_id for interpro_id in interpro_ids.split("; ") if interpro_id is not '']
     for interpro in terms:
         import time
         dbxref = DbXref(db="InterPro", accession=interpro, version=time.time())
@@ -635,20 +635,19 @@ def create_drugbank_nodes():
                     graph.push(drug)
 
 
-def map_cds_to_protein(protein, entry):
+def map_cds_to_protein(protein):
     """
     Mapping Proteins to CDS
     :param protein:
-    :param entry:
     :return:
     """
     # Map CDS to Protein
     # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
-    ens_id = eu_mapping(entry, to='ENSEMBLGENOME_TRS_ID')
+    ens_id = eu_mapping(protein.uniquename, to='ENSEMBLGENOME_TRS_ID')
     if ens_id is not None and 'CCP' in ens_id[0]:
         cds = CDS.select(graph, "CDS:" + ens_id[0]).first()
         if cds:
-            # Polypetide-derives_from->CDS
+            # Protein-[derives_from]->CDS
             protein.derives_from.add(cds)
             graph.push(protein)
             cds.derived.add(protein)
@@ -692,7 +691,7 @@ def create_protein_nodes():
             graph.push(protein)
 
             # create_chembl_nodes(protein, entry['Entry'])
-            map_cds_to_protein(protein, entry['Entry'])
+            map_cds_to_protein(protein)
 
             create_interpro_term_nodes(protein, entry['InterPro'])
     build_protein_interaction_rels(protein_interaction_dict)
@@ -720,7 +719,6 @@ def map_gene_to_protein(locus_tags):
                     graph.push(gene)
                     protein.encoded_by.add(gene)
                     graph.push(protein)
-                print(gene.uniquename, [protein.uniquename if protein else None])
     end = time()
     print("\nDone mapping Genes to Proteins in ", end - start, "secs.")
 

@@ -17,7 +17,7 @@ def check_csv(csvfile):
 
 
 def main():
-    if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file):
+    if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file) and os.stat(gff_file).st_size > 0:
         import time
         time.sleep(20)
         delete_db_data()
