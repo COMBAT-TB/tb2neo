@@ -689,6 +689,7 @@ def create_protein_nodes():
             graph.create(protein)
             protein.dbxref.add(dbxref)
             graph.push(protein)
+            print("Created:", protein.name)
 
             # create_chembl_nodes(protein, entry['Entry'])
             map_cds_to_protein(protein)

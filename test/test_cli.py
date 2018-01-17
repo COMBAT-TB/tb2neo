@@ -5,7 +5,6 @@ from click.testing import CliRunner
 
 from gff2neo.cli import default_gff, check_csv, examine_gff, load_gff, \
     load_uniprot_data
-from gff2neo.dbconn import graph
 
 
 @pytest.fixture(scope="module")
@@ -41,9 +40,3 @@ def test_load_gff(cli_runner):
 def test_load_uniprot_data(cli_runner):
     result = cli_runner.invoke(load_uniprot_data)
     assert result.exit_code == 0
-
-
-def test_db_nodes():
-    result = graph.node_labels
-    assert "Gene" in result
-    assert "Protein" in result
