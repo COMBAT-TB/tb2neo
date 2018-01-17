@@ -38,3 +38,18 @@ def test_load_gff(cli_runner):
 # def test_load_uniprot_data(cli_runner):
 #     result = cli_runner.invoke(load_uniprot_data)
 #     assert result.exit_code == 0
+#
+#
+# def test_load_go_terms(cli_runner):
+#     result = cli_runner.invoke(load_go_terms)
+#     assert result.exit_code == 0
+#
+#
+# def test_load_drugbank_data(cli_runner):
+#     result = cli_runner.invoke(load_drugbank_data)
+#     assert result.exit_code == 0
+#
+#
+# def test_load_reactome_pathways(cli_runner):
+#     result = cli_runner.invoke(load_reactome_pathways)
+#     assert result.exit_code == 0
