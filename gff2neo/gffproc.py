@@ -9,7 +9,7 @@ from BCBio import GFF
 from BCBio.GFF import GFFExaminer
 from tqdm import tqdm
 
-from dbconn import *
+from gff2neo.dbconn import *
 
 
 def examine_gff_file(gff_file):

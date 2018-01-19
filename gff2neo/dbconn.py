@@ -7,10 +7,10 @@ import sys
 from bioservices import ChEMBL, QuickGO, Reactome, KEGG
 from py2neo import Graph
 
+from gff2neo.ncbi import fetch_publication_list
+from gff2neo.quickgo import fetch_quick_go_data
+from gff2neo.uniprot import *
 from model.core import *
-from ncbi import fetch_publication_list
-from quickgo import fetch_quick_go_data
-from uniprot import *
 
 graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
@@ -269,20 +269,20 @@ def build_gff_relationships():
     :return:
     """
     sys.stdout.write("\nBuilding GFF Relationships...\n")
-    for t, transcript in transcript_dict.iteritems():
+    for t, transcript in transcript_dict.items():
         if transcript.parent in gene_dict.keys():
             gene = gene_dict.get(transcript.parent)
             transcript.part_of_g.add(gene)
             graph.push(transcript)
             gene.part_of.add(transcript)
             graph.push(gene)
-        for p, pseudogene in pseudogene_dict.iteritems():
+        for p, pseudogene in pseudogene_dict.items():
             if transcript.parent == pseudogene.uniquename:
                 transcript.part_of_pg.add(pseudogene)
                 graph.push(transcript)
                 pseudogene.part_of.add(transcript)
                 graph.push(pseudogene)
-        for c, cds in cds_dict.iteritems():
+        for c, cds in cds_dict.items():
             if transcript.uniquename == cds.parent:
                 cds.part_of.add(transcript)
                 graph.push(cds)

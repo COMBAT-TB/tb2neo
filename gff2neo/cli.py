@@ -1,6 +1,6 @@
 import click
 
-from gffproc import *
+from gff2neo.gffproc import *
 
 
 def default_gff():
