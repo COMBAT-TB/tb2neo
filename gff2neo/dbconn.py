@@ -17,6 +17,7 @@ graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
 
 chembl = ChEMBL(verbose=False)
 quick_go = QuickGO(verbose=False)
+quick_go.url = 'http://www.ebi.ac.uk/QuickGO-Old'
 reactome = Reactome(verbose=False)
 kegg = KEGG(verbose=False)
 
@@ -45,25 +46,34 @@ def delete_db_data():
     """
     # print("Deleting all nodes and relationships in {}".format(graph))
     sys.stdout.write(
-        "Deleting all nodes and relationships in {}".format(graph))
+        "Deleting all nodes and relationships in {}\n".format(graph))
 
     graph.delete_all()
 
 
-def create_organism_nodes():
+def create_organism_nodes(gff_file=None):
     """
     Create Organism Nodes
     :return:
     """
-    abbrev = "H37Rv"
-    strain = abbrev
+    # TODO: Change the strain to accommodate MTB strains
+    # get strain name from gff_file name
+    gff_strain = None
+    if "/" in str(gff_file):
+        gff_strain = str(gff_file).split("/")[-1]
+    if "." in gff_strain:
+        gff_strain = gff_strain.split(".")[0]
+    else:
+        gff_strain = gff_strain
+
+    strain = gff_strain
     genus = "Mycobacterium"
     species = "M. tuberculosis"
     common_name = "TB"
 
-    organism = Organism(abbreviation=abbrev, strain=strain, genus=genus,
-                        species=species, common_name=common_name)
+    organism = Organism(strain=strain, genus=genus, species=species, common_name=common_name)
     graph.create(organism)
+    return organism
 
 
 def create_chromosome_nodes():
@@ -79,18 +89,19 @@ def create_chromosome_nodes():
     graph.create(chromosome)
 
 
-def create_gene_nodes(feature):
+def create_gene_nodes(feature, organism):
     """
     Create Gene Nodes
+    :param organism:
     :param feature:
     :return:
     """
     names = get_feature_name(feature)
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
-    description = feature.qualifiers["description"]
+    description = feature.qualifiers.get("description", "")
     biotype = feature.qualifiers['biotype'][0]
-    parent = get_feature_parent(feature)
+    parent = feature.qualifiers.get("Parent", " ")[0]
 
     gene = Gene()
     gene.name = name
@@ -99,6 +110,8 @@ def create_gene_nodes(feature):
     gene.biotype = biotype
     gene.description = description
     graph.create(gene)
+    gene.belongs_to.add(organism)
+    graph.push(gene)
     gene_dict[unique_name] = gene
 
 
@@ -112,7 +125,7 @@ def create_transcript_nodes(feature):
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
     biotype = feature.qualifiers['biotype'][0]
-    parent = get_feature_parent(feature)
+    parent = feature.qualifiers.get("Parent", " ")[0]
 
     transcript = Transcript()
     transcript.name = name
@@ -123,18 +136,19 @@ def create_transcript_nodes(feature):
     transcript_dict[unique_name] = transcript
 
 
-def create_pseudogene_nodes(feature):
+def create_pseudogene_nodes(feature, organism):
     """
     Create Pseudogene Nodes
+    :param organism:
     :param feature:
     :return:
     """
     names = get_feature_name(feature)
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
-    description = feature.qualifiers["description"][0]
+    description = feature.qualifiers.get("description", " ")[0]
     biotype = feature.qualifiers['biotype'][0]
-    parent = get_feature_parent(feature)
+    parent = feature.qualifiers.get("Parent", " ")[0]
 
     pseudogene = PseudoGene()
     pseudogene.name = name
@@ -143,6 +157,8 @@ def create_pseudogene_nodes(feature):
     pseudogene.description = description
     pseudogene.biotype = biotype
     graph.create(pseudogene)
+    pseudogene.belongs_to.add(organism)
+    graph.push(pseudogene)
     pseudogene_dict[unique_name] = pseudogene
 
 
@@ -155,7 +171,7 @@ def create_exon_nodes(feature):
     names = get_feature_name(feature)
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
-    parent = get_feature_parent(feature)
+    parent = feature.qualifiers.get("Parent", " ")[0]
 
     exon = Exon()
     exon.name = name
@@ -174,7 +190,7 @@ def create_rna_nodes(feature):
     names = get_feature_name(feature)
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
-    parent = get_feature_parent(feature)
+    parent = feature.qualifiers.get("Parent", " ")[0]
 
     if feature.type == 'tRNA_gene':
         trna = TRna()
@@ -208,7 +224,7 @@ def create_cds_nodes(feature):
     names = get_feature_name(feature)
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
-    parent = get_feature_parent(feature)
+    parent = feature.qualifiers.get("Parent", " ")[0]
 
     cds = CDS()
     cds.name = name
@@ -216,20 +232,6 @@ def create_cds_nodes(feature):
     cds.uniquename = unique_name
     graph.create(cds)
     cds_dict[unique_name] = cds
-
-
-def get_feature_parent(feature):
-    """
-    Get Feature Parent
-    :param feature:
-    :return:
-    """
-    if feature.qualifiers.get('Parent'):
-        parent = feature.qualifiers['Parent'][0]
-        # [feature.qualifiers['Parent'][0].find(":") + 1:]
-    else:
-        parent = None
-    return parent
 
 
 def create_featureloc_nodes(feature):
@@ -288,6 +290,7 @@ def build_gff_relationships():
                 graph.push(cds)
                 transcript.part_of_cds.add(cds)
                 graph.push(transcript)
+    sys.stdout.write("\nDone Building GFF Relationships...\n")
 
 
 def map_to_location(feature):
@@ -300,57 +303,48 @@ def map_to_location(feature):
     # LOCATED_AT
     srcfeature_id = get_feature_name(feature).get("UniqueName")
     location = location_dict.get(srcfeature_id)
-    organism = Organism.select(graph).first()
     chromosome = Chromosome.select(graph).first()
     rna = ["tRNA_gene", "ncRNA_gene", "rRNA_gene"]
     if location:
         if feature.type == 'gene':
             _feature = gene_dict.get(srcfeature_id)
             _feature.location.add(location)
-            _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'pseudogene':
             _feature = pseudogene_dict.get(srcfeature_id)
             _feature.location.add(location)
-            _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'exon':
             _feature = exon_dict.get(srcfeature_id)
             _feature.location.add(location)
-            _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type in rna:
             if feature.type == 'tRNA_gene':
                 _feature = trna_dict.get(srcfeature_id)
                 _feature.location.add(location)
-                _feature.belongs_to.add(organism)
                 _feature.located_on.add(chromosome)
                 graph.push(_feature)
             if feature.type == 'ncRNA_gene':
                 _feature = ncrna_dict.get(srcfeature_id)
                 _feature.location.add(location)
-                _feature.belongs_to.add(organism)
                 _feature.located_on.add(chromosome)
                 graph.push(_feature)
             if feature.type == 'rRNA_gene':
                 _feature = rrna_dict.get(srcfeature_id)
                 _feature.location.add(location)
-                _feature.belongs_to.add(organism)
                 _feature.located_on.add(chromosome)
                 graph.push(_feature)
         elif feature.type == 'CDS':
             _feature = cds_dict.get(srcfeature_id)
             _feature.location.add(location)
-            _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
         elif feature.type == 'transcript':
             _feature = transcript_dict.get(srcfeature_id)
             _feature.location.add(location)
-            _feature.belongs_to.add(organism)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
 
@@ -362,7 +356,7 @@ def create_is_a_cv_term_rel(go_set):
     :return:
     """
     for go_id in go_set:
-        is_a_list = fetch_quick_go_data(go_id)
+        is_a_list = fetch_quick_go_data(quick_go, go_id)
         go_term = GOTerm.select(graph, go_id).first()
         for go in is_a_list:
             goid = go[go.find('G'):go.find('!')].strip()
@@ -375,14 +369,10 @@ def create_is_a_cv_term_rel(go_set):
 def create_go_term_nodes():
     """
     Create GOTerm Nodes and build Protein relationships.
-    :param protein:
-    :param bp:
-    :param cc:
-    :param mf:
     :return:
     """
     sys.stdout.write("\nCreating GoTerm Nodes...\n")
-    with open(uniprot_data_csv, 'rb') as csv_file:
+    with open(uniprot_data_csv, 'r') as csv_file:
         import time
         start = time.time()
         reader = csv.DictReader(csv_file, delimiter=',')
@@ -393,9 +383,9 @@ def create_go_term_nodes():
                 protein = Protein.select(graph, protein_entry).first()
             go_ids = [g for g in entry['GO_IDs'].split("; ") if g is not '']
             for go_id in go_ids:
-                # will map is_a
                 go_term_set.add(go_id)
                 result = quick_go.Term(go_id, frmt="obo").split('\n')
+                print("QuickGo result:\n", result)
                 name = result[2].split(":")[1]
                 _def = result[3].split(":")[1]
                 go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
@@ -406,7 +396,7 @@ def create_go_term_nodes():
                     go_term.protein.add(protein)
                     graph.push(go_term)
         end = time.time()
-        print("Created {} in {} seconds.".format(len(go_term_set), end - start))
+        print("Created {} GoTerms in {} seconds.".format(len(go_term_set), end - start))
     create_is_a_cv_term_rel(go_term_set)
 
 
@@ -460,7 +450,7 @@ def create_publication_nodes():
     sys.stdout.write("\nCreating Publication Nodes...\n")
     import time
     _start = time.time()
-    with open(uniprot_data_csv, 'rb') as csv_file:
+    with open(uniprot_data_csv, 'r') as csv_file:
 
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in reader:
@@ -547,12 +537,8 @@ def build_protein_interaction_rels(protein_interaction_dict):
                 if interactor == 'Itself':
                     interactor = poly.uniquename
                 _poly = Protein.select(graph, interactor).first()
-                if _poly is None:
-                    print("No Protein with uniquename: {}".format(interactor))
-                    # time.sleep(2)
-                else:
-                    poly.interacts_with.add(_poly)
-                    graph.push(poly)
+                poly.interacts_with.add(_poly)
+                graph.push(poly)
 
 
 def build_string_ppis():
@@ -562,7 +548,7 @@ def build_string_ppis():
     """
     sys.stdout.write("\nCreating STRING-DB PPIs...\n")
     start = time()
-    with open(string_data, 'rb') as ppi_data:
+    with open(string_data, 'r') as ppi_data:
         data = ppi_data.readlines()
     ppi_list = [l.strip().split() for l in data]
     for ppi in ppi_list:
@@ -603,28 +589,30 @@ def create_drugbank_nodes():
     """
     sys.stdout.write("\nCreating DrugBank Nodes...\n")
     drug_set = set()
-    with open(target_protein_ids_csv, "rb") as csv_file:
+    with open(target_protein_ids_csv, "r") as csv_file:
         reader = csv.DictReader(csv_file)
         for _target in reader:
-            if 'tuberculosis' in _target['Species']:
-                print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'])
-                protein_ = Protein.select(graph).where("_.entry_name='{}'".format(_target['Uniprot Title']))
-                if protein_:
-                    for protein in protein_:
-                        drug_ids = [x for x in _target['Drug IDs'].split('; ') if x is not '']
-                        for _id in drug_ids:
-                            drug_set.add(_id)
-                            dbxref = DbXref(db="DrugBank", accession=_id)
-                            graph.create(dbxref)
-                            drug = Drug(accession=_id)
-                            graph.create(drug)
-                            drug.target.add(protein)
-                            graph.push(drug)
-                            protein.drug.add(drug)
-                            protein.dbxref.add(dbxref)
-                            graph.push(protein)
+            # TODO :
+            # if 'tuberculosis' in _target['Species']:
+            # print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'])
+            protein_ = Protein.select(graph).where(
+                "_.entry_name='{}'".format(_target['Uniprot Title']))
+            if protein_:
+                for protein in protein_:
+                    drug_ids = [x for x in _target['Drug IDs'].split('; ') if x is not '']
+                    for _id in drug_ids:
+                        drug_set.add(_id)
+                        dbxref = DbXref(db="DrugBank", accession=_id)
+                        graph.create(dbxref)
+                        drug = Drug(accession=_id)
+                        graph.create(drug)
+                        drug.target.add(protein)
+                        graph.push(drug)
+                        protein.drug.add(drug)
+                        protein.dbxref.add(dbxref)
+                        graph.push(protein)
 
-    with open(drug_vocab_csv, "rb") as csv_file_:
+    with open(drug_vocab_csv, "r") as csv_file_:
         reader = csv.DictReader(csv_file_)
         for entry in reader:
             for drug_id in drug_set:
@@ -633,6 +621,7 @@ def create_drugbank_nodes():
                     drug.name = entry['Common name']
                     drug.synonyms = entry['Synonyms']
                     graph.push(drug)
+    sys.stdout.write("\nDone Creating DrugBank Nodes...\n")
 
 
 def map_cds_to_protein(protein):
@@ -662,7 +651,7 @@ def create_protein_nodes():
     sys.stdout.write("\nCreating Protein Nodes...\n")
     start = time()
     protein_interaction_dict = dict()
-    with open(uniprot_data_csv, 'rb') as csv_file:
+    with open(uniprot_data_csv, 'r') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in reader:
             protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
@@ -689,8 +678,6 @@ def create_protein_nodes():
             graph.create(protein)
             protein.dbxref.add(dbxref)
             graph.push(protein)
-            print("Created:", protein.name)
-
             # create_chembl_nodes(protein, entry['Entry'])
             map_cds_to_protein(protein)
 
@@ -730,27 +717,30 @@ def create_kegg_pathways_nodes():
     :return:
     """
     sys.stdout.write("Creating KEGG Pathways...")
+    organisms = ['mtc', 'mtv']
     start = time()
-    kegg.organism = 'mtv'
-    pathway_ids = kegg.pathwayIds
-    for path in pathway_ids:
-        data = kegg.parse(kegg.get(path))
-        pathway = Pathway()
-        pathway.accession = path[path.find('mtv'):].strip()
-        pathway._class = data.get('CLASS')
-        pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
-        pathway.summation = data.get('DESCRIPTION')
-        pathway.species = data.get('ORGANISM')
-        graph.create(pathway)
-        if data.get('GENE'):
-            for g_id in data['GENE'].keys():
-                protein_ = Protein.select(graph).where("_.parent='{}'".format("Rv" + g_id.strip("RVBD_")))
-                if protein_:
-                    for protein in protein_:
-                        protein.pathway.add(pathway)
-                        graph.push(protein)
-                        pathway.protein.add(protein)
-                        graph.push(pathway)
+    for organism in organisms:
+        kegg.organism = organism
+        pathway_ids = kegg.pathwayIds
+        for path in pathway_ids:
+            data = kegg.parse(kegg.get(path))
+            pathway = Pathway()
+            pathway.accession = path[path.find(organism):].strip()
+            pathway._class = data.get('CLASS')
+            pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
+            pathway.summation = data.get('DESCRIPTION')
+            pathway.species = data.get('ORGANISM')
+            graph.create(pathway)
+            if data.get('GENE'):
+                for g_id in data['GENE'].keys():
+                    g_id = "Rv" + g_id.strip("RVBD_") if "RV" in g_id else g_id
+                    protein_ = Protein.select(graph).where("_.parent='{}'".format(g_id))
+                    if protein_:
+                        for protein in protein_:
+                            protein.pathway.add(pathway)
+                            graph.push(protein)
+                            pathway.protein.add(protein)
+                            graph.push(pathway)
     end = time()
     sys.stdout.write("\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
 
@@ -762,7 +752,7 @@ def create_reactome_pathway_nodes():
     """
     sys.stdout.write("\nCreating REACTOME Pathways...\n")
     start = time()
-    with open(uniprot_data_csv, 'rb') as csv_file:
+    with open(uniprot_data_csv, 'r') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in reader:
             protein = entry['Entry']

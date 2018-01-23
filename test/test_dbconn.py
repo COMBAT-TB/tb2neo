@@ -18,3 +18,6 @@ def test_gene_part_of_transcript():
     part_of = graph.evaluate("MATCH (g:Gene) OPTIONAL MATCH "
                              "((g)<-[:PART_OF]-(t)) RETURN t.parent")
     assert part_of is not None
+    located_at = graph.evaluate("MATCH (g:Gene) OPTIONAL MATCH "
+                                "((g)-[:LOCATED_AT]->(l)) RETURN l.fmax")
+    assert located_at is not None

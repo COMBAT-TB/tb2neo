@@ -3,7 +3,9 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from gff2neo.cli import default_gff, check_csv, examine_gff, load_gff
+from gff2neo.cli import examine_gff, load_gff, sample_gff
+
+sample_gff_dir = os.path.dirname(sample_gff)
 
 
 @pytest.fixture(scope="module")
@@ -17,27 +19,29 @@ def test_default_gff():
     Test if empty
     :return:
     """
-    assert os.stat(default_gff()).st_size > 0
+    assert os.stat(sample_gff).st_size > 0
 
 
-def test_check_csv():
-    uniprot_data_csv = "data/uniprot_data.csv"
-    assert check_csv(uniprot_data_csv) is True
+@pytest.mark.parametrize("test_input,expected_output", [
+    (examine_gff, 0),
+])
+def test_examine_gff(cli_runner, test_input, expected_output):
+    result = cli_runner.invoke(test_input)
+    assert result.exit_code == expected_output
 
 
-def test_examine_gff(cli_runner):
-    result = cli_runner.invoke(examine_gff)
-    assert result.exit_code == 0
-    assert 'gff_type' in result.output
-
-
-def test_load_gff(cli_runner):
-    result = cli_runner.invoke(load_gff)
-    assert result.exit_code == 0
+@pytest.mark.parametrize("test_input,expected_output", [
+    (load_gff, 0),
+])
+def test_load_gff(cli_runner, test_input, expected_output):
+    result = cli_runner.invoke(test_input)
+    assert result.exit_code == expected_output
 
 # def test_load_uniprot_data(cli_runner):
-#     result = cli_runner.invoke(load_uniprot_data)
+#     result = cli_runner.invoke(load_uniprot_data, ["--gff_files", os.getcwd() + "/data/sample_gff/"])
 #     assert result.exit_code == 0
+
+#
 #
 #
 # def test_load_go_terms(cli_runner):
