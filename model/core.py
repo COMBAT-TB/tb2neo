@@ -5,7 +5,7 @@ class Organism(GraphObject):
     """
     Organism
     """
-    __primarykey__ = 'genus'
+    __primarykey__ = 'strain'
 
     abbreviation = Property()
     strain = Property()

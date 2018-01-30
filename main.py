@@ -1,7 +1,15 @@
 #!/usr/bin/env python
 from gff2neo.gffproc import *
 
-gff_file = "data/MTB_H37rv.gff3"
+gff_file = os.getcwd() + "/data/MTB_H37rv.gff3"
+gff_files_dir = os.getcwd() + "/data/gff_files/"
+
+
+def print_gff_file_names():
+    for f_name in os.listdir(gff_files_dir):
+        mtb_strain = str(f_name).split('.')[0]
+        if f_name.endswith(".gff3"):
+            print(f_name)
 
 
 def check_csv(csvfile):
@@ -17,6 +25,7 @@ def check_csv(csvfile):
 
 
 def main():
+    print_gff_file_names()
     if os.path.isdir(os.getcwd() + "/data") and os.path.exists(gff_file) and os.stat(gff_file).st_size > 0:
         import time
         time.sleep(20)

@@ -58,7 +58,8 @@ def write_to_csv(results):
         writer.writerows(mapped_list)
 
 
-def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
+# TODO Change tax and proteome based on strain
+def query_uniprot(locus_tags=None, taxonomy=None, proteome=None):
     """
     Get data from UniProt
     :param proteome:
@@ -77,7 +78,7 @@ def query_uniprot(locus_tags, taxonomy='83332', proteome='UP000001584'):
               "go(molecular function), go(cellular component), " \
               " genes(ALTERNATIVE), genes(ORF), version(sequence)"
     # print("\nWriting to csv...")
-    # with open("data/uniprot_data.csv", "w") as csv_file:
+    # with open("data/uniprot_data_0.csv", "w") as csv_file:
     #     writer = csv.writer(csv_file)
     for tag_list in locus_tags:
         query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
