@@ -43,7 +43,7 @@ def parse_gff(gff_file):
     return gff_file
 
 
-def get_locus_tags(gff_file=None, chunk=None):
+def get_locus_tags(gff_file, chunk):
     """
     Return a list of locus tags from gff_file
     :param gff_file:
@@ -53,18 +53,15 @@ def get_locus_tags(gff_file=None, chunk=None):
     sys.stdout.write("Getting locus_tags from {}...\n".format(gff_file))
     count = 0
     locus_tags = []
-    if gff_file:
-        for rec in GFF.parse(gff_file, limit_info=dict(gff_type=['gene'])):
-            for gene in rec.features:
-                locus_tag = gene.qualifiers.get("gene_id", " ")[0]
-                count += 1
-                locus_tags.append(locus_tag)
-                if count == chunk:
-                    yield locus_tags
-                    locus_tags = []
-                    count = 0
-    else:
-        raise OSError("{}: File not found!".format(gff_file))
+    for rec in GFF.parse(gff_file, limit_info=dict(gff_type=['gene'])):
+        for gene in rec.features:
+            locus_tag = gene.qualifiers.get("gene_id", " ")[0]
+            count += 1
+            locus_tags.append(locus_tag)
+            if count == chunk:
+                yield locus_tags
+                locus_tags = []
+                count = 0
     yield locus_tags
 
 

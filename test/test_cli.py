@@ -3,7 +3,7 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from gff2neo.cli import examine_gff, load_gff, sample_gff
+from gff2neo.cli import examine_gff, load_gff, sample_gff, load_uniprot_data
 
 sample_gff_dir = os.path.dirname(sample_gff)
 
@@ -37,13 +37,11 @@ def test_load_gff(cli_runner, test_input, expected_output):
     result = cli_runner.invoke(test_input)
     assert result.exit_code == expected_output
 
-# def test_load_uniprot_data(cli_runner):
-#     result = cli_runner.invoke(load_uniprot_data, ["--gff_files", os.getcwd() + "/data/sample_gff/"])
-#     assert result.exit_code == 0
 
-#
-#
-#
+def test_load_uniprot_data(cli_runner):
+    result = cli_runner.invoke(load_uniprot_data, ["--gff_files", os.getcwd() + "/data/sample_gff/"])
+    assert result.exit_code == 0
+
 # def test_load_go_terms(cli_runner):
 #     result = cli_runner.invoke(load_go_terms)
 #     assert result.exit_code == 0

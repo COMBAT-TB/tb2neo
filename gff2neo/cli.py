@@ -88,16 +88,18 @@ def load_uniprot_data(gff_files):
         if not os.path.isdir(gff_files):
             gff_files = os.path.dirname(sample_gff)
         for gff_file in os.listdir(os.path.abspath(gff_files)):
+            gff_file = os.path.abspath(gff_files) + "/" + gff_file
             if gff_file.endswith(".gff3"):
-                click.secho("Fetchig data about {}".format(gff_file), fg="green")
                 for k, v in uniprot_config.items():
                     if k in gff_file.split("/")[-1]:
                         taxonomy = v['taxonomy']
                         proteome = v['proteome']
-                locus_tags = get_locus_tags(gff_file=os.path.abspath(gff_files) + "/" + gff_file, chunk=400)
+                click.secho("Fetchig data about {}".format(gff_file), fg="green")
+                locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
                 query_uniprot(locus_tags=locus_tags, taxonomy=taxonomy, proteome=proteome)
+                # TODO: Need to refactor
                 create_protein_nodes()
-                map_gene_to_protein(get_locus_tags(os.path.abspath(gff_files) + "/" + gff_file, 400))
+                map_gene_to_protein(get_locus_tags(gff_file, 400))
 
 
 @cli.command()

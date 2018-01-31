@@ -537,8 +537,9 @@ def build_protein_interaction_rels(protein_interaction_dict):
                 if interactor == 'Itself':
                     interactor = poly.uniquename
                 _poly = Protein.select(graph, interactor).first()
-                poly.interacts_with.add(_poly)
-                graph.push(poly)
+                if _poly:
+                    poly.interacts_with.add(_poly)
+                    graph.push(poly)
 
 
 def build_string_ppis():
