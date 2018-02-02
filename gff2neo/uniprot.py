@@ -4,6 +4,8 @@ Interface to the `UniProt <http://www.uniprot.org>`_ service.
 
 from __future__ import print_function
 
+import sys
+
 try:
     from StringIO import StringIO
 except ImportError:
@@ -17,7 +19,7 @@ uniprot_ = UniProt(verbose=False)
 uniprot_data_csv = "data/uniprot_data.csv"
 
 
-def search_uniprot(query, columns, taxonomy='83332', proteome='UP000001584'):
+def search_uniprot(query, columns, taxonomy, proteome):
     """
     Search UniProt and return results as list
     :param taxonomy:
@@ -40,14 +42,13 @@ def search_uniprot(query, columns, taxonomy='83332', proteome='UP000001584'):
 
 
 def write_to_csv(results):
-    print("\nWriting to csv...")
+    sys.stdout.write("\nWriting to csv...")
     fieldnames = [
         'Entry', 'Entry_Name', 'Gene_Names_OL', 'Gene_Name', 'GO_IDs', 'InterPro', 'Interacts_With',
         'Gene_Names_Prim', 'Domain_FT', 'Protein_Names', 'GO', 'PubMed', '3D', 'Function_CC', 'Sequence',
         'Mass', 'Length', 'Protein_Families', 'GO_BP', 'GO_MF', 'GO_CC', 'Gene_SYN', 'Gene_Name_ORF',
         'SeqVersion'
     ]
-    print(len(fieldnames))
     with open(uniprot_data_csv, "w") as csv_file:
         writer = csv.DictWriter(csv_file, delimiter=',', fieldnames=fieldnames)
         writer.writeheader()
@@ -56,10 +57,11 @@ def write_to_csv(results):
             fn_row = dict(zip(fieldnames, row))
             mapped_list.append(fn_row)
         writer.writerows(mapped_list)
+    sys.stdout.write("\nDone Writing to CSV...")
 
 
 # TODO Change tax and proteome based on strain
-def query_uniprot(locus_tags=None, taxonomy=None, proteome=None):
+def query_uniprot(locus_tags, taxonomy, proteome):
     """
     Get data from UniProt
     :param proteome:
@@ -92,7 +94,9 @@ def query_uniprot(locus_tags=None, taxonomy=None, proteome=None):
             results.append(entry)
     end_time = time()
     print("\nDone fetching data from UniProt in ", end_time - start_time, "secs.")
-    write_to_csv(results)
+    if len(results) > 0:
+        write_to_csv(results)
+    return results
 
 
 def eu_mapping(from_, to):
@@ -103,7 +107,10 @@ def eu_mapping(from_, to):
     :return:
     """
     xref_id = None
-    _map = uniprot_.mapping(fr='ID', to=to, query=from_)
-    if len(_map) != 0:
-        xref_id = _map[from_]
+    if from_ and to:
+        _map = uniprot_.mapping(fr='ID', to=to, query=from_)
+        if len(_map) != 0:
+            xref_id = _map[from_]
+    else:
+        raise ValueError("Can't map {} to {}".format(from_, to))
     return xref_id
