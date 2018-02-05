@@ -14,3 +14,12 @@ Chromosome	ena	gene	2052	3260	.	+	.	ID=gene:Rv0002;Name=dnaN;biotype=protein_cod
 Chromosome	ena	transcript	2052	3260	.	+	.	ID=transcript:CCP42724;Parent=gene:Rv0002;Name=dnaN-1;biotype=protein_coding;transcript_id=CCP42724;version=1
 Chromosome	ena	exon	2052	3260	.	+	.	Parent=transcript:CCP42724;Name=CCP42724-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42724-1;rank=1;version=1
 Chromosome	ena	CDS	2052	3260	.	+	0	ID=CDS:CCP42724;Parent=transcript:CCP42724;protein_id=CCP42724
+###
+Chromosome	ena	tRNA_gene	2401987	2402072	.	+	.	ID=gene:EBG00000313328;Name=leuU;biotype=tRNA;gene_id=EBG00000313328;logic_name=ena_rna
+Chromosome	ena	transcript	2401987	2402072	.	+	.	ID=transcript:EBG00000313328-1;Parent=gene:EBG00000313328;Name=leuU;biotype=tRNA;transcript_id=EBG00000313328-1
+Chromosome	ena	exon	2401987	2402072	.	+	.	Parent=transcript:EBG00000313328-1;Name=EBG00000313328-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=EBG00000313328-1;rank=1
+###
+Chromosome	ena	pseudogene	2268268	2268726	.	-	.	ID=gene:Rv2023A;biotype=pseudogene;description=Hypothetical protein%2C pseudogene;gene_id=Rv2023A;logic_name=ena
+Chromosome	ena	pseudogene	2268268	2268726	.	-	.	ID=transcript:Rv2023A;Parent=gene:Rv2023A;biotype=pseudogene;transcript_id=Rv2023A
+Chromosome	ena	exon	2268268	2268726	.	-	.	Parent=transcript:Rv2023A;Name=Rv2023A-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=Rv2023A-1;rank=1
+###
