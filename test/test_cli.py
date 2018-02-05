@@ -3,7 +3,8 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from gff2neo.cli import examine_gff, load_gff, sample_gff, load_uniprot_data
+from gff2neo.cli import examine_gff, load_gff, sample_gff, load_uniprot_data, load_publications, load_reactome_pathways, \
+    load_go_terms, load_drugbank_data
 
 sample_gff_dir = os.path.dirname(sample_gff)
 
@@ -39,19 +40,25 @@ def test_load_gff(cli_runner, test_input, expected_output):
 
 
 def test_load_uniprot_data(cli_runner):
-    result = cli_runner.invoke(load_uniprot_data, ["--gff_files", os.getcwd() + "/data/sample_gff/"])
+    result = cli_runner.invoke(load_uniprot_data, ["--gff_files", sample_gff_dir])
     assert result.exit_code == 0
 
-# def test_load_go_terms(cli_runner):
-#     result = cli_runner.invoke(load_go_terms)
-#     assert result.exit_code == 0
-#
-#
-# def test_load_drugbank_data(cli_runner):
-#     result = cli_runner.invoke(load_drugbank_data)
-#     assert result.exit_code == 0
-#
-#
-# def test_load_reactome_pathways(cli_runner):
-#     result = cli_runner.invoke(load_reactome_pathways)
-#     assert result.exit_code == 0
+
+def test_load_go_terms(cli_runner):
+    result = cli_runner.invoke(load_go_terms)
+    assert result.exit_code == 0
+
+
+def test_load_drugbank_data(cli_runner):
+    result = cli_runner.invoke(load_drugbank_data)
+    assert result.exit_code == 0
+
+
+def test_load_reactome_pathways(cli_runner):
+    result = cli_runner.invoke(load_reactome_pathways)
+    assert result.exit_code == 0
+
+
+def test_load_publications(cli_runner):
+    result = cli_runner.invoke(load_publications)
+    assert result.exit_code == 0

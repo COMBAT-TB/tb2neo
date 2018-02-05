@@ -2,7 +2,6 @@
 Interface to the Neo4j Database
 """
 import os
-import sys
 
 from bioservices import ChEMBL, QuickGO, Reactome, KEGG
 from py2neo import Graph
@@ -160,25 +159,6 @@ def create_pseudogene_nodes(feature, organism):
     pseudogene.belongs_to.add(organism)
     graph.push(pseudogene)
     pseudogene_dict[unique_name] = pseudogene
-
-
-def create_exon_nodes(feature):
-    """
-    Create Exon Nodes
-    :param feature:
-    :return:
-    """
-    names = get_feature_name(feature)
-    name = names.get("Name", names.get("UniqueName"))
-    unique_name = names.get("UniqueName", name)
-    parent = feature.qualifiers.get("Parent", " ")[0]
-
-    exon = Exon()
-    exon.name = name
-    exon.uniquename = unique_name
-    exon.parent = parent
-    graph.create(exon)
-    exon_dict[unique_name] = exon
 
 
 def create_rna_nodes(feature):

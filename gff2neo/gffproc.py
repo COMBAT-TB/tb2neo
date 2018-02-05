@@ -86,9 +86,6 @@ def load_gff_data(gff_file, limit, organism):
             elif feature.type == 'pseudogene':
                 create_pseudogene_nodes(feature, organism)
                 map_to_location(feature)
-            elif feature.type == 'exon':
-                create_exon_nodes(feature)
-                map_to_location(feature)
             elif feature.type in rna:
                 create_rna_nodes(feature)
                 map_to_location(feature)
