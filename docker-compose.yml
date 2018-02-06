@@ -15,8 +15,8 @@ services:
       NEO4J_AUTH: none
 #      Tuning
       NEO4J_dbms_memory_pagecache_size: 8G
-      NEO4J_dbms_memory_heap_initial__size: 2G
-      NEO4J_dbms_memory_heap_max__size: 2G
+      NEO4J_dbms_memory_heap_initial__size: 4G
+      NEO4J_dbms_memory_heap_max__size: 4G
     volumes:
       - db_data:/data
     depends_on:
