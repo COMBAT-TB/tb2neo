@@ -105,7 +105,7 @@ def create_gene_nodes(feature, organism):
     gene = Gene()
     gene.name = name
     gene.uniquename = unique_name
-    gene.parent = parent
+    gene.parent = parent[parent.find(':') + 1:]
     gene.biotype = biotype
     gene.description = description
     graph.create(gene)
@@ -128,7 +128,7 @@ def create_transcript_nodes(feature):
 
     transcript = Transcript()
     transcript.name = name
-    transcript.parent = parent
+    transcript.parent = parent[parent.find(':') + 1:]
     transcript.uniquename = unique_name
     transcript.biotype = biotype
     graph.create(transcript)
@@ -152,7 +152,7 @@ def create_pseudogene_nodes(feature, organism):
     pseudogene = PseudoGene()
     pseudogene.name = name
     pseudogene.uniquename = unique_name
-    pseudogene.parent = parent
+    pseudogene.parent = parent[parent.find(':') + 1:]
     pseudogene.description = description
     pseudogene.biotype = biotype
     graph.create(pseudogene)
@@ -175,21 +175,21 @@ def create_rna_nodes(feature):
     if feature.type == 'tRNA_gene':
         trna = TRna()
         trna.name = name
-        trna.parent = parent
+        trna.parent = parent[parent.find(':') + 1:]
         trna.uniquename = unique_name
         graph.create(trna)
         trna_dict[unique_name] = trna
     if feature.type == 'ncRNA_gene':
         ncrna = NCRna()
         ncrna.name = name
-        ncrna.parent = parent
+        ncrna.parent = parent[parent.find(':') + 1:]
         ncrna.uniquename = unique_name
         graph.create(ncrna)
         ncrna_dict[unique_name] = ncrna
     if feature.type == 'rRNA_gene':
         rrna = RRna()
         rrna.name = name
-        rrna.parent = parent
+        rrna.parent = parent[parent.find(':') + 1:]
         rrna.uniquename = unique_name
         graph.create(rrna)
         rrna_dict[unique_name] = rrna
@@ -208,7 +208,7 @@ def create_cds_nodes(feature):
 
     cds = CDS()
     cds.name = name
-    cds.parent = parent
+    cds.parent = parent[parent.find(':') + 1:]
     cds.uniquename = unique_name
     graph.create(cds)
     cds_dict[unique_name] = cds
@@ -235,13 +235,13 @@ def get_feature_name(feature):
     :return:
     """
     names = dict()
+    u_name = feature.id[feature.id.find(":") + 1:]
     if feature.qualifiers.get("Name"):
-        names["Name"] = feature.qualifiers["Name"][0]
-        names["UniqueName"] = feature.id
-        # [feature.id.find(":") + 1:]
+        name = feature.qualifiers["Name"][0]
+        names["Name"] = name[name.find(':') + 1:]
+        names["UniqueName"] = u_name
     else:
-        names["Name"] = names["UniqueName"] = feature.id
-        # [feature.id.find(":") + 1:]
+        names["Name"] = names["UniqueName"] = u_name
     return names
 
 
@@ -613,9 +613,9 @@ def map_cds_to_protein(protein):
     """
     # Map CDS to Protein
     # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
-    ens_id = eu_mapping(protein.uniquename, to='ENSEMBLGENOME_TRS_ID')
-    if ens_id is not None and 'CCP' in ens_id[0]:
-        cds = CDS.select(graph, "CDS:" + ens_id[0]).first()
+    ens_id = eu_mapping(str(protein.uniquename), 'ENSEMBLGENOME_TRS_ID')
+    if ens_id is not None:
+        cds = CDS.select(graph, ens_id[0]).first()
         if cds:
             # Protein-[derives_from]->CDS
             protein.derives_from.add(cds)
@@ -677,8 +677,7 @@ def map_gene_to_protein(locus_tags):
     sys.stdout.write("\nMapping Genes to Proteins...\n")
     start = time()
     for tag_list in locus_tags:
-        tags = ["gene:" + x for x in tag_list]
-        for tag in tags:
+        for tag in tag_list:
             gene = Gene.select(graph, tag).first()
             if gene:
                 parent = gene.uniquename[gene.uniquename.find(':') + 1:]
