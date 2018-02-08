@@ -81,9 +81,10 @@ def load_uniprot_data(gff_files):
     taxonomy = None
     proteome = None
     click.secho("Loading UniProt data...", fg="green")
-    if check_csv(uniprot_data_csv):
+    if check_csv(uniprot_data_csv) and not gff_files:
         click.secho("Found CSV data...", fg="green")
         create_protein_nodes()
+        map_gene_to_protein(get_locus_tags(sample_gff, 400))
     else:
         if not os.path.isdir(gff_files):
             gff_files = os.path.dirname(sample_gff)

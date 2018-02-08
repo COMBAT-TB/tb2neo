@@ -24,6 +24,6 @@ def test_eu_mapping(test_input, expected):
     assert isinstance(test_input, expected) is True
 
 
-def test_test_eu_mapping_error():
+def test_eu_mapping_error():
     with pytest.raises(ValueError):
         eu_mapping(None, to="PDB_ID")

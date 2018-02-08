@@ -5,3 +5,4 @@ data/img/*
 data/drugbank/pharmacologically_active.csv
 data/*.txt
 gff2neo.egg-info
+data/*.bz2

@@ -23,3 +23,17 @@ Chromosome	ena	pseudogene	2268268	2268726	.	-	.	ID=gene:Rv2023A;biotype=pseudoge
 Chromosome	ena	pseudogene	2268268	2268726	.	-	.	ID=transcript:Rv2023A;Parent=gene:Rv2023A;biotype=pseudogene;transcript_id=Rv2023A
 Chromosome	ena	exon	2268268	2268726	.	-	.	Parent=transcript:Rv2023A;Name=Rv2023A-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=Rv2023A-1;rank=1
 ###
+Chromosome	ena	ncRNA_gene	2437823	2437866	.	-	.	ID=gene:EBG00000313321;Name=mcr5;biotype=ncRNA;gene_id=EBG00000313321;logic_name=ena_rna
+Chromosome	ena	transcript	2437823	2437866	.	-	.	ID=transcript:EBG00000313321-1;Parent=gene:EBG00000313321;Name=mcr5;biotype=ncRNA;transcript_id=EBG00000313321-1
+Chromosome	ena	exon	2437823	2437866	.	-	.	Parent=transcript:EBG00000313321-1;Name=EBG00000313321-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=EBG00000313321-1;rank=1
+###
+Chromosome	ena_gene	biological_region	1471619	1471742	.	+	.	external_name=AL123456.3:gene:1471619..1471742;logic_name=ena_gene
+Chromosome	ena	rRNA_gene	1471846	1473382	.	+	.	ID=gene:EBG00000313325;Name=rrs;biotype=rRNA;gene_id=EBG00000313325;logic_name=ena_rna
+Chromosome	ena	rRNA	1471846	1473382	.	+	.	ID=transcript:EBG00000313325-1;Parent=gene:EBG00000313325;Name=rrs;biotype=rRNA;transcript_id=EBG00000313325-1
+Chromosome	ena	exon	1471846	1473382	.	+	.	Parent=transcript:EBG00000313325-1;Name=EBG00000313325-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=EBG00000313325-1;rank=1
+###
+Chromosome	ena	gene	2153889	2156111	.	-	.	ID=gene:Rv1908c;Name=katG;biotype=protein_coding;description=Catalase-peroxidase-peroxynitritase T KatG;gene_id=Rv1908c;logic_name=ena
+Chromosome	ena	mRNA	2153889	2156111	.	-	.	ID=transcript:CCP44675;Parent=gene:Rv1908c;Name=katG-1;biotype=protein_coding;transcript_id=CCP44675
+Chromosome	ena	exon	2153889	2156111	.	-	.	Parent=transcript:CCP44675;Name=CCP44675-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP44675-1;rank=1
+Chromosome	ena	CDS	2153889	2156111	.	-	0	ID=CDS:CCP44675;Parent=transcript:CCP44675;protein_id=CCP44675
+###
