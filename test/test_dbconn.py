@@ -1,5 +1,3 @@
-import types
-
 import pytest
 
 from gff2neo.dbconn import graph
@@ -19,9 +17,9 @@ def test_rv0001():
 
 
 @pytest.mark.parametrize("test_input,expected", [
-    ("MATCH (g:Gene) OPTIONAL MATCH ((g)<-[:PART_OF]-(t)) RETURN t.parent", types.NoneType),
-    ("MATCH (g:Gene) OPTIONAL MATCH ((g)-[:LOCATED_AT]->(l)) RETURN l.fmax", types.NoneType),
-    ("MATCH (g:Gene) OPTIONAL MATCH ((g)-[:ENCODES]->(p)) RETURN p.parent", types.NoneType),
+    ("MATCH (g:Gene) OPTIONAL MATCH ((g)<-[:PART_OF]-(t)) RETURN t.parent", type(None)),
+    ("MATCH (g:Gene) OPTIONAL MATCH ((g)-[:LOCATED_AT]->(l)) RETURN l.fmax", type(None)),
+    ("MATCH (g:Gene) OPTIONAL MATCH ((g)-[:ENCODES]->(p)) RETURN p.parent", type(None)),
 ])
 def test_db_data(test_input, expected):
     assert isinstance(type(graph.evaluate(test_input)), expected) is False
