@@ -186,7 +186,7 @@ def create_rna_nodes(feature):
         ncrna.uniquename = unique_name
         graph.create(ncrna)
         ncrna_dict[unique_name] = ncrna
-    if feature.type == 'rRNA_gene':
+    if feature.type == 'rRNA_gene' or 'rRNA':
         rrna = RRna()
         rrna.name = name
         rrna.parent = parent[parent.find(':') + 1:]
@@ -296,11 +296,6 @@ def map_to_location(feature):
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
-        elif feature.type == 'exon':
-            _feature = exon_dict.get(srcfeature_id)
-            _feature.location.add(location)
-            _feature.located_on.add(chromosome)
-            graph.push(_feature)
         elif feature.type in rna:
             if feature.type == 'tRNA_gene':
                 _feature = trna_dict.get(srcfeature_id)
@@ -312,7 +307,7 @@ def map_to_location(feature):
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
                 graph.push(_feature)
-            if feature.type == 'rRNA_gene':
+            if feature.type == 'rRNA_gene' or 'rRNA':
                 _feature = rrna_dict.get(srcfeature_id)
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
@@ -322,7 +317,7 @@ def map_to_location(feature):
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
-        elif feature.type == 'transcript':
+        elif feature.type == 'transcript' or 'mRNA':
             _feature = transcript_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
