@@ -170,6 +170,7 @@ def create_rna_nodes(feature):
     names = get_feature_name(feature)
     name = names.get("Name", names.get("UniqueName"))
     unique_name = names.get("UniqueName", name)
+    biotype = feature.qualifiers['biotype'][0]
     parent = feature.qualifiers.get("Parent", " ")[0]
 
     if feature.type == 'tRNA_gene':
@@ -177,6 +178,7 @@ def create_rna_nodes(feature):
         trna.name = name
         trna.parent = parent[parent.find(':') + 1:]
         trna.uniquename = unique_name
+        trna.biotype = biotype
         graph.create(trna)
         trna_dict[unique_name] = trna
     if feature.type == 'ncRNA_gene':
@@ -184,6 +186,7 @@ def create_rna_nodes(feature):
         ncrna.name = name
         ncrna.parent = parent[parent.find(':') + 1:]
         ncrna.uniquename = unique_name
+        ncrna.biotype = biotype
         graph.create(ncrna)
         ncrna_dict[unique_name] = ncrna
     if feature.type == 'rRNA_gene' or 'rRNA':
@@ -191,6 +194,7 @@ def create_rna_nodes(feature):
         rrna.name = name
         rrna.parent = parent[parent.find(':') + 1:]
         rrna.uniquename = unique_name
+        rrna.biotype = biotype
         graph.create(rrna)
         rrna_dict[unique_name] = rrna
 
@@ -258,6 +262,18 @@ def build_gff_relationships():
             graph.push(transcript)
             gene.part_of.add(transcript)
             graph.push(gene)
+        if transcript.parent in rrna_dict.keys():
+            rrna = rrna_dict.get(transcript.parent)
+            rrna.part_of.add(transcript)
+            graph.push(rrna)
+        if transcript.parent in trna_dict.keys():
+            trna = trna_dict.get(transcript.parent)
+            trna.part_of.add(transcript)
+            graph.push(trna)
+        if transcript.parent in ncrna_dict.keys():
+            ncrna = ncrna_dict.get(transcript.parent)
+            ncrna.part_of.add(transcript)
+            graph.push(ncrna)
         for p, pseudogene in pseudogene_dict.items():
             if transcript.parent == pseudogene.uniquename:
                 transcript.part_of_pg.add(pseudogene)

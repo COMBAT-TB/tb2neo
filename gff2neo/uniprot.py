@@ -49,7 +49,7 @@ def write_to_csv(results):
         'Mass', 'Length', 'Protein_Families', 'GO_BP', 'GO_MF', 'GO_CC', 'Gene_SYN', 'Gene_Name_ORF',
         'SeqVersion'
     ]
-    with open(uniprot_data_csv, "w") as csv_file:
+    with open(uniprot_data_csv, "a") as csv_file:
         writer = csv.DictWriter(csv_file, delimiter=',', fieldnames=fieldnames)
         writer.writeheader()
         mapped_list = []

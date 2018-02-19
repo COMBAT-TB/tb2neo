@@ -114,6 +114,9 @@ class TRna(Feature):
     """
     _so_id = "SO:0000253"
     so_id = Property()
+    biotype = Property()
+
+    part_of = RelatedTo("Transcript", "PART_OF")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
@@ -125,6 +128,9 @@ class NCRna(Feature):
     """
     _so_id = "SO:0000655"
     so_id = Property()
+    biotype = Property()
+
+    part_of = RelatedTo("Transcript", "PART_OF")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
@@ -136,6 +142,9 @@ class RRna(Feature):
     """
     _so_id = "SO:0000252"
     so_id = Property()
+    biotype = Property()
+
+    part_of = RelatedTo("Transcript", "PART_OF")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
