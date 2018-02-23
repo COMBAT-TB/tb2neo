@@ -262,18 +262,6 @@ def build_gff_relationships():
             graph.push(transcript)
             gene.part_of.add(transcript)
             graph.push(gene)
-        if transcript.parent in rrna_dict.keys():
-            rrna = rrna_dict.get(transcript.parent)
-            rrna.part_of.add(transcript)
-            graph.push(rrna)
-        if transcript.parent in trna_dict.keys():
-            trna = trna_dict.get(transcript.parent)
-            trna.part_of.add(transcript)
-            graph.push(trna)
-        if transcript.parent in ncrna_dict.keys():
-            ncrna = ncrna_dict.get(transcript.parent)
-            ncrna.part_of.add(transcript)
-            graph.push(ncrna)
         for p, pseudogene in pseudogene_dict.items():
             if transcript.parent == pseudogene.uniquename:
                 transcript.part_of_pg.add(pseudogene)
@@ -323,7 +311,7 @@ def map_to_location(feature):
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
                 graph.push(_feature)
-            if feature.type == 'rRNA_gene' or 'rRNA':
+            if feature.type == 'rRNA_gene':
                 _feature = rrna_dict.get(srcfeature_id)
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
@@ -333,7 +321,7 @@ def map_to_location(feature):
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
-        elif feature.type == 'transcript' or 'mRNA':
+        elif feature.type == 'mRNA':
             _feature = transcript_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)

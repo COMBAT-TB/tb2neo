@@ -33,7 +33,7 @@ def parse_gff(gff_file):
     organism = create_organism_nodes(gff_file)
     create_chromosome_nodes()
     # we are not interested in exons as this is a bacterial genome
-    limits = [["mRNA"], ["transcript"], ["gene", "CDS", "tRNA_gene", "ncRNA_gene", "rRNA_gene", "rRNA"], ["pseudogene"]]
+    limits = [["mRNA"], ["gene", "CDS", "tRNA_gene", "ncRNA_gene", "rRNA_gene", "rRNA"], ["pseudogene"]]
     for limit in limits:
         sys.stdout.write("\nLoading {}...".format(limit))
         # print("\nLoading", limit, "...")
@@ -92,7 +92,7 @@ def load_gff_data(gff_file, limit, organism):
             elif feature.type == 'CDS':
                 create_cds_nodes(feature)
                 map_to_location(feature)
-            elif feature.type == 'transcript' or 'mRNA':
+            elif feature.type == 'mRNA':
                 create_transcript_nodes(feature)
                 map_to_location(feature)
     in_file.close()
