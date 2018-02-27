@@ -4,14 +4,11 @@ Interface to the `UniProt <http://www.uniprot.org>`_ service.
 
 from __future__ import print_function
 
-import sys
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 import csv
+import sys
+from io import StringIO
 from time import time
+
 from bioservices import UniProt
 
 uniprot_ = UniProt(verbose=False)
@@ -84,8 +81,7 @@ def query_uniprot(locus_tags, taxonomy, proteome):
     #     writer = csv.writer(csv_file)
     for tag_list in locus_tags:
         query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
-        result = search_uniprot(query, columns, taxonomy=taxonomy,
-                                proteome=proteome)
+        result = search_uniprot(query, columns, taxonomy=taxonomy, proteome=proteome)
         # writer.writerows(result)
         uniprot_data.append(result)
 
