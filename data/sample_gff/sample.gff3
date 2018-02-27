@@ -5,14 +5,14 @@
 #!genome-date 2015-02
 #!genome-build-accession GCA_000195955.2
 #!genebuild-last-updated 2015-02
-Chromosome	ena	gene	1	1524	.	+	.	ID=gene:Rv0001;Name=dnaA;biotype=protein_coding;description=Chromosomal replication initiator protein DnaA;gene_id=Rv0001;logic_name=ena;version=1
-Chromosome	ena	transcript	1	1524	.	+	.	ID=transcript:CCP42723;Parent=gene:Rv0001;Name=dnaA-1;biotype=protein_coding;transcript_id=CCP42723;version=1
-Chromosome	ena	exon	1	1524	.	+	.	Parent=transcript:CCP42723;Name=CCP42723-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42723-1;rank=1;version=1
+Chromosome	ena	gene	1	1524	.	+	.	ID=gene:Rv0001;Name=dnaA;biotype=protein_coding;description=Chromosomal replication initiator protein DnaA;gene_id=Rv0001;logic_name=ena
+Chromosome	ena	mRNA	1	1524	.	+	.	ID=transcript:CCP42723;Parent=gene:Rv0001;Name=dnaA-1;biotype=protein_coding;transcript_id=CCP42723
+Chromosome	ena	exon	1	1524	.	+	.	Parent=transcript:CCP42723;Name=CCP42723-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42723-1;rank=1
 Chromosome	ena	CDS	1	1524	.	+	0	ID=CDS:CCP42723;Parent=transcript:CCP42723;protein_id=CCP42723
 ###
-Chromosome	ena	gene	2052	3260	.	+	.	ID=gene:Rv0002;Name=dnaN;biotype=protein_coding;description=DNA polymerase III (beta chain) DnaN (DNA nucleotidyltransferase);gene_id=Rv0002;logic_name=ena;version=1
-Chromosome	ena	transcript	2052	3260	.	+	.	ID=transcript:CCP42724;Parent=gene:Rv0002;Name=dnaN-1;biotype=protein_coding;transcript_id=CCP42724;version=1
-Chromosome	ena	exon	2052	3260	.	+	.	Parent=transcript:CCP42724;Name=CCP42724-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42724-1;rank=1;version=1
+Chromosome	ena	gene	2052	3260	.	+	.	ID=gene:Rv0002;Name=dnaN;biotype=protein_coding;description=DNA polymerase III (beta chain) DnaN (DNA nucleotidyltransferase);gene_id=Rv0002;logic_name=ena
+Chromosome	ena	mRNA	2052	3260	.	+	.	ID=transcript:CCP42724;Parent=gene:Rv0002;Name=dnaN-1;biotype=protein_coding;transcript_id=CCP42724
+Chromosome	ena	exon	2052	3260	.	+	.	Parent=transcript:CCP42724;Name=CCP42724-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP42724-1;rank=1
 Chromosome	ena	CDS	2052	3260	.	+	0	ID=CDS:CCP42724;Parent=transcript:CCP42724;protein_id=CCP42724
 ###
 Chromosome	ena	tRNA_gene	2401987	2402072	.	+	.	ID=gene:EBG00000313328;Name=leuU;biotype=tRNA;gene_id=EBG00000313328;logic_name=ena_rna
@@ -36,4 +36,9 @@ Chromosome	ena	gene	2153889	2156111	.	-	.	ID=gene:Rv1908c;Name=katG;biotype=prot
 Chromosome	ena	mRNA	2153889	2156111	.	-	.	ID=transcript:CCP44675;Parent=gene:Rv1908c;Name=katG-1;biotype=protein_coding;transcript_id=CCP44675
 Chromosome	ena	exon	2153889	2156111	.	-	.	Parent=transcript:CCP44675;Name=CCP44675-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP44675-1;rank=1
 Chromosome	ena	CDS	2153889	2156111	.	-	0	ID=CDS:CCP44675;Parent=transcript:CCP44675;protein_id=CCP44675
+###
+Chromosome	ena	gene	3877464	3878507	.	-	.	ID=gene:Rv3457c;Name=rpoA;biotype=protein_coding;description=Probable DNA-directed RNA polymerase (alpha chain) RpoA (transcriptase alpha chain) (RNA polymerase alpha subunit) (DNA-directed RNA nucleotidyltransferase);gene_id=Rv3457c;logic_name=ena
+Chromosome	ena	mRNA	3877464	3878507	.	-	.	ID=transcript:CCP46279;Parent=gene:Rv3457c;Name=rpoA-1;biotype=protein_coding;transcript_id=CCP46279
+Chromosome	ena	exon	3877464	3878507	.	-	.	Parent=transcript:CCP46279;Name=CCP46279-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP46279-1;rank=1
+Chromosome	ena	CDS	3877464	3878507	.	-	0	ID=CDS:CCP46279;Parent=transcript:CCP46279;protein_id=CCP46279
 ###

@@ -521,45 +521,45 @@ def build_protein_interaction_rels(protein_interaction_dict):
                     graph.push(poly)
 
 
-def build_string_ppis():
-    """
-    Create STRING_DB Protein Interactions
-    :return:
-    """
-    sys.stdout.write("\nCreating STRING-DB PPIs...\n")
-    start = time()
-    with open(string_data, 'r') as ppi_data:
-        data = ppi_data.readlines()
-    ppi_list = [l.strip().split() for l in data]
-    for ppi in ppi_list:
-        p1 = Protein.select(graph).where("_.parent='{}'".format(ppi[0][6:])).first()
-        p2 = Protein.select(graph).where("_.parent='{}'".format(ppi[1][6:])).first()
-        if p1 and p2:
-            p1.interacts_with.add(p2)
-            print(p1.name, p2.name)
-            graph.push(p1)
-    end = time()
-    print("\nDone creating STRING-DB PPIs in ", end - start, "secs.")
+# def build_string_ppis():
+#     """
+#     Create STRING_DB Protein Interactions
+#     :return:
+#     """
+#     sys.stdout.write("\nCreating STRING-DB PPIs...\n")
+#     start = time()
+#     with open(string_data, 'r') as ppi_data:
+#         data = ppi_data.readlines()
+#     ppi_list = [l.strip().split() for l in data]
+#     for ppi in ppi_list:
+#         p1 = Protein.select(graph).where("_.parent='{}'".format(ppi[0][6:])).first()
+#         p2 = Protein.select(graph).where("_.parent='{}'".format(ppi[1][6:])).first()
+#         if p1 and p2:
+#             p1.interacts_with.add(p2)
+#             print(p1.name, p2.name)
+#             graph.push(p1)
+#     end = time()
+#     print("\nDone creating STRING-DB PPIs in ", end - start, "secs.")
 
 
 # TODO: Need to get Drugs not Targets
-def create_chembl_nodes(protein, entry):
-    """
-    Create ChEMBL Drug nodes from UniProt results.
-    :return:
-    """
-    target = chembl.get_target_by_uniprotId(entry)
-    if not isinstance(target, int):
-        dbxref = DbXref(db="ChEMBL", accession=target['chemblId'])
-        graph.create(dbxref)
-        drug = Drug(accession=target['chemblId'], name=target["preferredName"], synonyms=target["synonyms"],
-                    definition=target["description"])
-        graph.create(drug)
-        drug.target.add(protein)
-        graph.push(drug)
-        protein.drug.add(drug)
-        protein.dbxref.add(dbxref)
-        graph.push(protein)
+# def create_chembl_nodes(protein, entry):
+#     """
+#     Create ChEMBL Drug nodes from UniProt results.
+#     :return:
+#     """
+#     target = chembl.get_target_by_uniprotId(entry)
+#     if not isinstance(target, int):
+#         dbxref = DbXref(db="ChEMBL", accession=target['chemblId'])
+#         graph.create(dbxref)
+#         drug = Drug(accession=target['chemblId'], name=target["preferredName"], synonyms=target["synonyms"],
+#                     definition=target["description"])
+#         graph.create(drug)
+#         drug.target.add(protein)
+#         graph.push(drug)
+#         protein.drug.add(drug)
+#         protein.dbxref.add(dbxref)
+#         graph.push(protein)
 
 
 def create_drugbank_nodes():
