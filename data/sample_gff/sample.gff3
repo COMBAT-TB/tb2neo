@@ -42,3 +42,8 @@ Chromosome	ena	mRNA	3877464	3878507	.	-	.	ID=transcript:CCP46279;Parent=gene:Rv3
 Chromosome	ena	exon	3877464	3878507	.	-	.	Parent=transcript:CCP46279;Name=CCP46279-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP46279-1;rank=1
 Chromosome	ena	CDS	3877464	3878507	.	-	0	ID=CDS:CCP46279;Parent=transcript:CCP46279;protein_id=CCP46279
 ###
+Chromosome	ena	gene	2072596	2073084	.	+	.	ID=gene:Rv1827;Name=garA;biotype=protein_coding;description=Conserved protein with FHA domain%2C GarA;gene_id=Rv1827;logic_name=ena
+Chromosome	ena	mRNA	2072596	2073084	.	+	.	ID=transcript:CCP44593;Parent=gene:Rv1827;Name=garA-1;biotype=protein_coding;transcript_id=CCP44593
+Chromosome	ena	exon	2072596	2073084	.	+	.	Parent=transcript:CCP44593;Name=CCP44593-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP44593-1;rank=1
+Chromosome	ena	CDS	2072596	2073084	.	+	0	ID=CDS:CCP44593;Parent=transcript:CCP44593;protein_id=CCP44593
+###

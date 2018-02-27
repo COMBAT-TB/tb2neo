@@ -7,6 +7,7 @@ from bioservices import ChEMBL, QuickGO, Reactome, KEGG
 from py2neo import Graph
 
 from gff2neo.ncbi import fetch_publication_list
+from gff2neo.orthologs import fetch_ortholog
 from gff2neo.quickgo import fetch_quick_go_data
 from gff2neo.uniprot import *
 from model.core import *
@@ -669,7 +670,7 @@ def create_protein_nodes():
 
 def map_gene_to_protein(locus_tags):
     """
-    Mapping Genes to Proteins
+    Mapping Genes to Proteins and orthologs
     :param locus_tags:
     :return:
     """
@@ -679,6 +680,12 @@ def map_gene_to_protein(locus_tags):
         for tag in tag_list:
             gene = Gene.select(graph, tag).first()
             if gene:
+                ortholog = fetch_ortholog(locus_tag=str(tag))
+                if ortholog:
+                    orthologous_gene = Gene.select(graph, str(ortholog)).first()
+                    if orthologous_gene:
+                        gene.orthologous_to.add(orthologous_gene)
+                        graph.push(gene)
                 parent = gene.uniquename[gene.uniquename.find(':') + 1:]
                 protein = Protein.select(graph).where("_.parent='{}'".format(parent)).first()
                 if protein:
