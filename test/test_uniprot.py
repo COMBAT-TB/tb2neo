@@ -10,9 +10,7 @@ from gff2neo.uniprot import query_uniprot, eu_mapping
 def test_search_uniprot():
     identifiers = get_locus_tags(sample_gff, 300)
     assert isinstance(identifiers, types.GeneratorType) is True
-    result = query_uniprot(
-        locus_tags=identifiers,
-        taxonomy='83332', proteome='UP000001584')
+    result = query_uniprot(locus_tags=identifiers, taxonomy='83332', proteome='UP000001584')
     assert isinstance(result, list) is True
 
 
