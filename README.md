@@ -38,5 +38,5 @@ Point your browser to [localhost:7474](http://localhost:7474]) and run `call db.
 
 ### `db.schema()`
 
-![Neo4j_IE](./data/img/dbschema.png)
+![Neo4j_IE](./data/img/dbschema_.png)
 

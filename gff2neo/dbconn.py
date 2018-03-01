@@ -336,14 +336,15 @@ def create_is_a_cv_term_rel(go_set):
     :return:
     """
     for go_id in go_set:
-        is_a_list = fetch_quick_go_data(quick_go, go_id)
-        go_term = GOTerm.select(graph, go_id).first()
-        for go in is_a_list:
-            goid = go[go.find('G'):go.find('!')].strip()
-            term = GOTerm.select(graph, goid).first()
-            if term and go_term:
-                go_term.is_a.add(term)
-                graph.push(go_term)
+        if go_id.startswith("GO:") and go_id is not 'GO_IDs':
+            is_a_list = fetch_quick_go_data(quick_go, go_id)
+            go_term = GOTerm.select(graph, go_id).first()
+            for go in is_a_list:
+                goid = go[go.find('G'):go.find('!')].strip()
+                term = GOTerm.select(graph, goid).first()
+                if term and go_term:
+                    go_term.is_a.add(term)
+                    graph.push(go_term)
 
 
 def create_go_term_nodes():
@@ -364,8 +365,8 @@ def create_go_term_nodes():
             go_ids = [g for g in entry['GO_IDs'].split("; ") if g is not '']
             for go_id in go_ids:
                 go_term_set.add(go_id)
-                result = quick_go.Term(go_id, frmt="obo").split('\n')
-                print("QuickGo result:\n", result)
+                if go_id.startswith("GO:") and go_id is not 'GO_IDs':
+                    result = quick_go.Term(go_id, frmt="obo").split('\n')
                 name = result[2].split(":")[1]
                 _def = result[3].split(":")[1]
                 go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
@@ -680,12 +681,15 @@ def map_gene_to_protein(locus_tags):
         for tag in tag_list:
             gene = Gene.select(graph, tag).first()
             if gene:
-                ortholog = fetch_ortholog(locus_tag=str(tag))
-                if ortholog:
-                    orthologous_gene = Gene.select(graph, str(ortholog)).first()
-                    if orthologous_gene:
-                        gene.orthologous_to.add(orthologous_gene)
-                        graph.push(gene)
+                if tag.startswith('Rv'):
+                    ortholog = fetch_ortholog(locus_tag=str(tag))
+                    if ortholog:
+                        orthologous_gene = Gene.select(graph, str(ortholog)).first()
+                        if orthologous_gene:
+                            gene.orthologous_to.add(orthologous_gene)
+                            orthologous_gene.orthologous_to_.add(gene)
+                            graph.push(gene)
+                            graph.push(orthologous_gene)
                 parent = gene.uniquename[gene.uniquename.find(':') + 1:]
                 protein = Protein.select(graph).where("_.parent='{}'".format(parent)).first()
                 if protein:
