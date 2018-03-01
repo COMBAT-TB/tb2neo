@@ -71,6 +71,8 @@ class Gene(Feature):
 
     part_of = RelatedFrom("Transcript", "PART_OF")
     orthologous_to = RelatedTo("Gene", "ORTHOLOGOUS_TO")
+    orthologous_to_ = RelatedFrom("Gene", "ORTHOLOGOUS_TO")
+
     encodes = RelatedTo("Protein", "ENCODES")
 
     def __init__(self, so_id=_so_id):

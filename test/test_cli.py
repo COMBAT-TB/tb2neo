@@ -23,20 +23,14 @@ def test_default_gff():
     assert os.stat(sample_gff).st_size > 0
 
 
-@pytest.mark.parametrize("test_input,expected_output", [
-    (examine_gff, 0),
-])
-def test_examine_gff(cli_runner, test_input, expected_output):
-    result = cli_runner.invoke(test_input)
-    assert result.exit_code == expected_output
+def test_examine_gff(cli_runner):
+    result = cli_runner.invoke(examine_gff, ["--gff_files", sample_gff_dir])
+    assert result.exit_code == 0
 
 
-@pytest.mark.parametrize("test_input,expected_output", [
-    (load_gff, 0),
-])
-def test_load_gff(cli_runner, test_input, expected_output):
-    result = cli_runner.invoke(test_input)
-    assert result.exit_code == expected_output
+def test_load_gff(cli_runner):
+    result = cli_runner.invoke(load_gff, ["--gff_files", sample_gff_dir])
+    assert result.exit_code == 0
 
 
 def test_load_uniprot_data(cli_runner):
