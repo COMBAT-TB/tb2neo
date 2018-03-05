@@ -1,7 +1,6 @@
 """
 Interface to the Neo4j Database
 """
-import os
 
 from bioservices import ChEMBL, QuickGO, Reactome, KEGG
 from py2neo import Graph
@@ -612,7 +611,13 @@ def map_cds_to_protein(protein):
     :param protein:
     :return:
     """
-    # Map CDS to Protein
+    for tag in protein.parent:
+        gene = Gene.select(graph, tag).first()
+        if gene:
+            gene.encodes.add(protein)
+            graph.push(gene)
+            protein.encoded_by.add(gene)
+            graph.push(protein)
     # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
     ens_id = eu_mapping(str(protein.uniquename), 'ENSEMBLGENOME_TRS_ID')
     if ens_id is not None:
@@ -623,6 +628,18 @@ def map_cds_to_protein(protein):
             graph.push(protein)
             cds.derived.add(protein)
             graph.push(cds)
+
+
+def split_gene_names(parent=None):
+    if not parent:
+        return None
+    if ';' in parent:
+        parent = parent.split(';')
+    elif '/' in parent:
+        parent = parent.split('/')
+    else:
+        parent = parent.split(' ')
+    return parent
 
 
 def create_protein_nodes():
@@ -651,7 +668,9 @@ def create_protein_nodes():
             protein.ontology_id = protein.so_id
             protein.seqlen = entry['Length']
             protein.residues = entry['Sequence']
-            protein.parent = entry['Gene_Names_OL']
+            # TODO: Cater for 'MT1076 MT1237 MT3197', 'MT0511/MT0512' and 'Rv0132c LH57_00740'
+            parent = split_gene_names(parent=entry['Gene_Names_OL'])
+            protein.parent = parent
             protein.family = entry['Protein_Families']
             protein.function = entry['Function_CC']
             protein.pdb_id = pdb_id
@@ -675,7 +694,7 @@ def map_gene_to_protein(locus_tags):
     :param locus_tags:
     :return:
     """
-    sys.stdout.write("\nMapping Genes to Proteins...\n")
+    sys.stdout.write("\nMapping Orthologs...\n")
     start = time()
     for tag_list in locus_tags:
         for tag in tag_list:
@@ -690,15 +709,15 @@ def map_gene_to_protein(locus_tags):
                             orthologous_gene.orthologous_to_.add(gene)
                             graph.push(gene)
                             graph.push(orthologous_gene)
-                parent = gene.uniquename[gene.uniquename.find(':') + 1:]
-                protein = Protein.select(graph).where("_.parent='{}'".format(parent)).first()
-                if protein:
-                    gene.encodes.add(protein)
-                    graph.push(gene)
-                    protein.encoded_by.add(gene)
-                    graph.push(protein)
+                # parent = gene.uniquename[gene.uniquename.find(':') + 1:]
+                # protein = Protein.select(graph).where("_.parent='{}'".format(parent)).first()
+                # if protein:
+                #     gene.encodes.add(protein)
+                #     graph.push(gene)
+                #     protein.encoded_by.add(gene)
+                #     graph.push(protein)
     end = time()
-    print("\nDone mapping Genes to Proteins in ", end - start, "secs.")
+    print("\nDone mapping Orthologs", end - start, "secs.")
 
 
 def create_kegg_pathways_nodes():

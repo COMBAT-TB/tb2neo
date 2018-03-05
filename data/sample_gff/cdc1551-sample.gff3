@@ -22,3 +22,8 @@ Chromosome	ena	mRNA	3280	4437	.	+	.	ID=transcript:AAK44226;Parent=gene:MT0003;Na
 Chromosome	ena	exon	3280	4437	.	+	.	Parent=transcript:AAK44226;Name=AAK44226-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=AAK44226-1;rank=1
 Chromosome	ena	CDS	3280	4437	.	+	0	ID=CDS:AAK44226;Parent=transcript:AAK44226;protein_id=AAK44226
 ###
+Chromosome	ena	gene	1169406	1170716	.	+	.	ID=gene:MT1076;biotype=protein_coding;description=IS1081%2C transposase;gene_id=MT1076;logic_name=ena
+Chromosome	ena	mRNA	1169406	1170716	.	+	.	ID=transcript:AAK45328;Parent=gene:MT1076;biotype=protein_coding;transcript_id=AAK45328
+Chromosome	ena	exon	1169406	1170716	.	+	.	Parent=transcript:AAK45328;Name=AAK45328-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=AAK45328-1;rank=1
+Chromosome	ena	CDS	1169406	1170716	.	+	0	ID=CDS:AAK45328;Parent=transcript:AAK45328;protein_id=AAK45328
+###
