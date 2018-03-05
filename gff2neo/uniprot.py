@@ -4,14 +4,12 @@ Interface to the `UniProt <http://www.uniprot.org>`_ service.
 
 from __future__ import print_function
 
-import sys
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
 import csv
+import os
+import sys
+from io import StringIO
 from time import time
+
 from bioservices import UniProt
 
 uniprot_ = UniProt(verbose=False)
@@ -42,6 +40,7 @@ def search_uniprot(query, columns, taxonomy, proteome):
 
 
 def write_to_csv(results):
+    file_exists = os.path.isfile(uniprot_data_csv)
     sys.stdout.write("\nWriting to csv...")
     fieldnames = [
         'Entry', 'Entry_Name', 'Gene_Names_OL', 'Gene_Name', 'GO_IDs', 'InterPro', 'Interacts_With',
@@ -51,7 +50,8 @@ def write_to_csv(results):
     ]
     with open(uniprot_data_csv, "a") as csv_file:
         writer = csv.DictWriter(csv_file, delimiter=',', fieldnames=fieldnames)
-        writer.writeheader()
+        if not file_exists:
+            writer.writeheader()
         mapped_list = []
         for row in results:
             fn_row = dict(zip(fieldnames, row))
@@ -84,8 +84,7 @@ def query_uniprot(locus_tags, taxonomy, proteome):
     #     writer = csv.writer(csv_file)
     for tag_list in locus_tags:
         query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
-        result = search_uniprot(query, columns, taxonomy=taxonomy,
-                                proteome=proteome)
+        result = search_uniprot(query, columns, taxonomy=taxonomy, proteome=proteome)
         # writer.writerows(result)
         uniprot_data.append(result)
 

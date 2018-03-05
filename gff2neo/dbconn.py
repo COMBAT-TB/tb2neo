@@ -1,12 +1,12 @@
 """
 Interface to the Neo4j Database
 """
-import os
 
 from bioservices import ChEMBL, QuickGO, Reactome, KEGG
 from py2neo import Graph
 
 from gff2neo.ncbi import fetch_publication_list
+from gff2neo.orthologs import fetch_ortholog
 from gff2neo.quickgo import fetch_quick_go_data
 from gff2neo.uniprot import *
 from model.core import *
@@ -262,18 +262,6 @@ def build_gff_relationships():
             graph.push(transcript)
             gene.part_of.add(transcript)
             graph.push(gene)
-        if transcript.parent in rrna_dict.keys():
-            rrna = rrna_dict.get(transcript.parent)
-            rrna.part_of.add(transcript)
-            graph.push(rrna)
-        if transcript.parent in trna_dict.keys():
-            trna = trna_dict.get(transcript.parent)
-            trna.part_of.add(transcript)
-            graph.push(trna)
-        if transcript.parent in ncrna_dict.keys():
-            ncrna = ncrna_dict.get(transcript.parent)
-            ncrna.part_of.add(transcript)
-            graph.push(ncrna)
         for p, pseudogene in pseudogene_dict.items():
             if transcript.parent == pseudogene.uniquename:
                 transcript.part_of_pg.add(pseudogene)
@@ -323,7 +311,7 @@ def map_to_location(feature):
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
                 graph.push(_feature)
-            if feature.type == 'rRNA_gene' or 'rRNA':
+            if feature.type == 'rRNA_gene':
                 _feature = rrna_dict.get(srcfeature_id)
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
@@ -333,7 +321,7 @@ def map_to_location(feature):
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
             graph.push(_feature)
-        elif feature.type == 'transcript' or 'mRNA':
+        elif feature.type == 'mRNA':
             _feature = transcript_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
@@ -347,14 +335,15 @@ def create_is_a_cv_term_rel(go_set):
     :return:
     """
     for go_id in go_set:
-        is_a_list = fetch_quick_go_data(quick_go, go_id)
-        go_term = GOTerm.select(graph, go_id).first()
-        for go in is_a_list:
-            goid = go[go.find('G'):go.find('!')].strip()
-            term = GOTerm.select(graph, goid).first()
-            if term and go_term:
-                go_term.is_a.add(term)
-                graph.push(go_term)
+        if go_id.startswith("GO:") and go_id is not 'GO_IDs':
+            is_a_list = fetch_quick_go_data(quick_go, go_id)
+            go_term = GOTerm.select(graph, go_id).first()
+            for go in is_a_list:
+                goid = go[go.find('G'):go.find('!')].strip()
+                term = GOTerm.select(graph, goid).first()
+                if term and go_term:
+                    go_term.is_a.add(term)
+                    graph.push(go_term)
 
 
 def create_go_term_nodes():
@@ -375,8 +364,8 @@ def create_go_term_nodes():
             go_ids = [g for g in entry['GO_IDs'].split("; ") if g is not '']
             for go_id in go_ids:
                 go_term_set.add(go_id)
-                result = quick_go.Term(go_id, frmt="obo").split('\n')
-                print("QuickGo result:\n", result)
+                if go_id.startswith("GO:") and go_id is not 'GO_IDs':
+                    result = quick_go.Term(go_id, frmt="obo").split('\n')
                 name = result[2].split(":")[1]
                 _def = result[3].split(":")[1]
                 go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
@@ -533,45 +522,45 @@ def build_protein_interaction_rels(protein_interaction_dict):
                     graph.push(poly)
 
 
-def build_string_ppis():
-    """
-    Create STRING_DB Protein Interactions
-    :return:
-    """
-    sys.stdout.write("\nCreating STRING-DB PPIs...\n")
-    start = time()
-    with open(string_data, 'r') as ppi_data:
-        data = ppi_data.readlines()
-    ppi_list = [l.strip().split() for l in data]
-    for ppi in ppi_list:
-        p1 = Protein.select(graph).where("_.parent='{}'".format(ppi[0][6:])).first()
-        p2 = Protein.select(graph).where("_.parent='{}'".format(ppi[1][6:])).first()
-        if p1 and p2:
-            p1.interacts_with.add(p2)
-            print(p1.name, p2.name)
-            graph.push(p1)
-    end = time()
-    print("\nDone creating STRING-DB PPIs in ", end - start, "secs.")
+# def build_string_ppis():
+#     """
+#     Create STRING_DB Protein Interactions
+#     :return:
+#     """
+#     sys.stdout.write("\nCreating STRING-DB PPIs...\n")
+#     start = time()
+#     with open(string_data, 'r') as ppi_data:
+#         data = ppi_data.readlines()
+#     ppi_list = [l.strip().split() for l in data]
+#     for ppi in ppi_list:
+#         p1 = Protein.select(graph).where("_.parent='{}'".format(ppi[0][6:])).first()
+#         p2 = Protein.select(graph).where("_.parent='{}'".format(ppi[1][6:])).first()
+#         if p1 and p2:
+#             p1.interacts_with.add(p2)
+#             print(p1.name, p2.name)
+#             graph.push(p1)
+#     end = time()
+#     print("\nDone creating STRING-DB PPIs in ", end - start, "secs.")
 
 
 # TODO: Need to get Drugs not Targets
-def create_chembl_nodes(protein, entry):
-    """
-    Create ChEMBL Drug nodes from UniProt results.
-    :return:
-    """
-    target = chembl.get_target_by_uniprotId(entry)
-    if not isinstance(target, int):
-        dbxref = DbXref(db="ChEMBL", accession=target['chemblId'])
-        graph.create(dbxref)
-        drug = Drug(accession=target['chemblId'], name=target["preferredName"], synonyms=target["synonyms"],
-                    definition=target["description"])
-        graph.create(drug)
-        drug.target.add(protein)
-        graph.push(drug)
-        protein.drug.add(drug)
-        protein.dbxref.add(dbxref)
-        graph.push(protein)
+# def create_chembl_nodes(protein, entry):
+#     """
+#     Create ChEMBL Drug nodes from UniProt results.
+#     :return:
+#     """
+#     target = chembl.get_target_by_uniprotId(entry)
+#     if not isinstance(target, int):
+#         dbxref = DbXref(db="ChEMBL", accession=target['chemblId'])
+#         graph.create(dbxref)
+#         drug = Drug(accession=target['chemblId'], name=target["preferredName"], synonyms=target["synonyms"],
+#                     definition=target["description"])
+#         graph.create(drug)
+#         drug.target.add(protein)
+#         graph.push(drug)
+#         protein.drug.add(drug)
+#         protein.dbxref.add(dbxref)
+#         graph.push(protein)
 
 
 def create_drugbank_nodes():
@@ -622,7 +611,13 @@ def map_cds_to_protein(protein):
     :param protein:
     :return:
     """
-    # Map CDS to Protein
+    for tag in protein.parent:
+        gene = Gene.select(graph, tag).first()
+        if gene:
+            gene.encodes.add(protein)
+            graph.push(gene)
+            protein.encoded_by.add(gene)
+            graph.push(protein)
     # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
     ens_id = eu_mapping(str(protein.uniquename), 'ENSEMBLGENOME_TRS_ID')
     if ens_id is not None:
@@ -633,6 +628,18 @@ def map_cds_to_protein(protein):
             graph.push(protein)
             cds.derived.add(protein)
             graph.push(cds)
+
+
+def split_gene_names(parent=None):
+    if not parent:
+        return None
+    if ';' in parent:
+        parent = parent.split(';')
+    elif '/' in parent:
+        parent = parent.split('/')
+    else:
+        parent = parent.split(' ')
+    return parent
 
 
 def create_protein_nodes():
@@ -661,7 +668,9 @@ def create_protein_nodes():
             protein.ontology_id = protein.so_id
             protein.seqlen = entry['Length']
             protein.residues = entry['Sequence']
-            protein.parent = entry['Gene_Names_OL']
+            # TODO: Cater for 'MT1076 MT1237 MT3197', 'MT0511/MT0512' and 'Rv0132c LH57_00740'
+            parent = split_gene_names(parent=entry['Gene_Names_OL'])
+            protein.parent = parent
             protein.family = entry['Protein_Families']
             protein.function = entry['Function_CC']
             protein.pdb_id = pdb_id
@@ -681,25 +690,34 @@ def create_protein_nodes():
 
 def map_gene_to_protein(locus_tags):
     """
-    Mapping Genes to Proteins
+    Mapping Genes to Proteins and orthologs
     :param locus_tags:
     :return:
     """
-    sys.stdout.write("\nMapping Genes to Proteins...\n")
+    sys.stdout.write("\nMapping Orthologs...\n")
     start = time()
     for tag_list in locus_tags:
         for tag in tag_list:
             gene = Gene.select(graph, tag).first()
             if gene:
-                parent = gene.uniquename[gene.uniquename.find(':') + 1:]
-                protein = Protein.select(graph).where("_.parent='{}'".format(parent)).first()
-                if protein:
-                    gene.encodes.add(protein)
-                    graph.push(gene)
-                    protein.encoded_by.add(gene)
-                    graph.push(protein)
+                if tag.startswith('Rv'):
+                    ortholog = fetch_ortholog(locus_tag=str(tag))
+                    if ortholog:
+                        orthologous_gene = Gene.select(graph, str(ortholog)).first()
+                        if orthologous_gene:
+                            gene.orthologous_to.add(orthologous_gene)
+                            orthologous_gene.orthologous_to_.add(gene)
+                            graph.push(gene)
+                            graph.push(orthologous_gene)
+                # parent = gene.uniquename[gene.uniquename.find(':') + 1:]
+                # protein = Protein.select(graph).where("_.parent='{}'".format(parent)).first()
+                # if protein:
+                #     gene.encodes.add(protein)
+                #     graph.push(gene)
+                #     protein.encoded_by.add(gene)
+                #     graph.push(protein)
     end = time()
-    print("\nDone mapping Genes to Proteins in ", end - start, "secs.")
+    print("\nDone mapping Orthologs", end - start, "secs.")
 
 
 def create_kegg_pathways_nodes():

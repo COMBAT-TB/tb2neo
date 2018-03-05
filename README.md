@@ -1,6 +1,6 @@
 # gff2neo
 
-[![Build Status](https://travis-ci.org/thobalose/gff2neo.svg?branch=dev)](https://travis-ci.org/thobalose/gff2neo) [![Coverage Status](https://coveralls.io/repos/github/thobalose/gff2neo/badge.svg)](https://coveralls.io/github/thobalose/gff2neo)
+[![Build Status](https://travis-ci.org/thobalose/gff2neo.svg?branch=master)](https://travis-ci.org/thobalose/gff2neo) [![Coverage Status](https://coveralls.io/repos/github/thobalose/gff2neo/badge.svg)](https://coveralls.io/github/thobalose/gff2neo)
 
 Builds a graph database from GFF files.
 
@@ -38,5 +38,5 @@ Point your browser to [localhost:7474](http://localhost:7474]) and run `call db.
 
 ### `db.schema()`
 
-![Neo4j_IE](./data/img/dbschema.png)
+![Neo4j_IE](./data/img/dbschema_.png)
 
