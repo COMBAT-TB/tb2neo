@@ -365,11 +365,13 @@ def create_go_term_nodes():
             for go_id in go_ids:
                 go_term_set.add(go_id)
                 if go_id.startswith("GO:") and go_id is not 'GO_IDs':
-                    result = quick_go.Term(go_id, frmt="obo").split('\n')
-                name = result[2].split(":")[1]
-                _def = result[3].split(":")[1]
-                go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
-                graph.create(go_term)
+                    result = quick_go.Term(go_id, frmt="obo")
+                    if not isinstance(result, int):
+                        result = result.split('\n')
+                        name = result[2].split(":")[1]
+                        _def = result[3].split(":")[1]
+                        go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
+                        graph.create(go_term)
                 if protein is not None:
                     protein.assoc_goterm.add(go_term)
                     graph.push(protein)
@@ -611,13 +613,14 @@ def map_cds_to_protein(protein):
     :param protein:
     :return:
     """
-    for tag in protein.parent:
-        gene = Gene.select(graph, tag).first()
-        if gene:
-            gene.encodes.add(protein)
-            graph.push(gene)
-            protein.encoded_by.add(gene)
-            graph.push(protein)
+    if protein and protein.parent:
+        for tag in protein.parent:
+            gene = Gene.select(graph, tag).first()
+            if gene:
+                gene.encodes.add(protein)
+                graph.push(gene)
+                protein.encoded_by.add(gene)
+                graph.push(protein)
     # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
     ens_id = eu_mapping(str(protein.uniquename), 'ENSEMBLGENOME_TRS_ID')
     if ens_id is not None:
@@ -630,7 +633,7 @@ def map_cds_to_protein(protein):
             graph.push(cds)
 
 
-def split_gene_names(parent=None):
+def split_gene_names(parent):
     if not parent:
         return None
     if ';' in parent:
@@ -679,6 +682,7 @@ def create_protein_nodes():
             graph.create(protein)
             protein.dbxref.add(dbxref)
             graph.push(protein)
+
             # create_chembl_nodes(protein, entry['Entry'])
             map_cds_to_protein(protein)
 
