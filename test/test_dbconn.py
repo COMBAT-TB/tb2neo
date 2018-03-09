@@ -1,6 +1,6 @@
 import pytest
 
-from gff2neo.dbconn import graph
+from gff2neo.dbconn import graph, split_gene_names
 from model.core import Gene
 
 
@@ -23,3 +23,13 @@ def test_rv0001():
 ])
 def test_db_data(test_input, expected):
     assert isinstance(type(graph.evaluate(test_input)), expected) is False
+
+
+@pytest.mark.parametrize("test_input,expected", [
+    (split_gene_names("MT0511/MT0512"), list),
+    (split_gene_names("MT1076 MT1237 MT3197"), list),
+    (split_gene_names("MT0511;MT0512"), list),
+    (split_gene_names(None), type(None)),
+])
+def test_split_gene_name(test_input, expected):
+    assert isinstance(test_input, expected) is True

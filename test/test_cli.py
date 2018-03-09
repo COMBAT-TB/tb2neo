@@ -4,7 +4,7 @@ import pytest
 from click.testing import CliRunner
 
 from gff2neo.cli import examine_gff, load_gff, sample_gff, load_uniprot_data, load_publications, load_reactome_pathways, \
-    load_go_terms, load_drugbank_data
+    load_go_terms, load_drugbank_data, load_kegg_pathways
 
 sample_gff_dir = os.path.dirname(sample_gff)
 
@@ -45,6 +45,11 @@ def test_load_go_terms(cli_runner):
 
 def test_load_drugbank_data(cli_runner):
     result = cli_runner.invoke(load_drugbank_data)
+    assert result.exit_code == 0
+
+
+def test_load_kegg_pathways(cli_runner):
+    result = cli_runner.invoke(load_kegg_pathways)
     assert result.exit_code == 0
 
 

@@ -316,16 +316,20 @@ class GOTerm(GraphObject):
     namespace = Property()
 
     is_a = RelatedTo("GOTerm", "IS_A")
+    part_of = RelatedTo("GOTerm", "PART_OF")
+    regulates = RelatedTo("GOTerm", "REGULATES")
+    capable_of = RelatedTo("GOTerm", "CAPABLE_OF")
     protein = RelatedFrom("Protein", "ASSOCIATED_WITH")
 
     # part_of = RelatedTo("GOTerm", "PART_OF")
     # feature = RelatedFrom("Feature", "ASSOC_WITH")
 
-    def __init__(self, accession, name=None, definition=None, is_obsolete=None):
+    def __init__(self, accession, name=None, definition=None, is_obsolete=None, ontology=None):
         self.accession = accession
         self.name = name
         self.definition = definition
         self.is_obsolete = is_obsolete
+        self.ontology = ontology
 
 
 class InterProTerm(GraphObject):

@@ -7,7 +7,7 @@ from py2neo import Graph
 
 from gff2neo.ncbi import fetch_publication_list
 from gff2neo.orthologs import fetch_ortholog
-from gff2neo.quickgo import fetch_quick_go_data
+from gff2neo.quickgo import fetch_quick_go_data, query_quickgo
 from gff2neo.uniprot import *
 from model.core import *
 
@@ -352,6 +352,8 @@ def create_go_term_nodes():
     :return:
     """
     sys.stdout.write("\nCreating GoTerm Nodes...\n")
+    quick_go_data_dict = dict()
+
     with open(uniprot_data_csv, 'r') as csv_file:
         import time
         start = time.time()
@@ -361,25 +363,67 @@ def create_go_term_nodes():
             protein = None
             if protein_entry is not '':
                 protein = Protein.select(graph, protein_entry).first()
-            go_ids = [g for g in entry['GO_IDs'].split("; ") if g is not '']
-            for go_id in go_ids:
-                go_term_set.add(go_id)
-                if go_id.startswith("GO:") and go_id is not 'GO_IDs':
-                    result = quick_go.Term(go_id, frmt="obo")
-                    if not isinstance(result, int):
-                        result = result.split('\n')
-                        name = result[2].split(":")[1]
-                        _def = result[3].split(":")[1]
-                        go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
-                        graph.create(go_term)
-                if protein is not None:
-                    protein.assoc_goterm.add(go_term)
-                    graph.push(protein)
-                    go_term.protein.add(protein)
-                    graph.push(go_term)
+            go_ids = [g for g in entry['GO_IDs'].split("; ") if
+                      g is not '' and g.startswith("GO:") and g is not 'GO_IDs']
+            go_term_set.add(go_id for go_id in go_ids)
+            terms = ','.join(go_ids)
+            response = query_quickgo(terms)
+            if response.status_code == 200:
+                data = response.json()
+                for result in data['results']:
+                    accession = result['id']
+                    # quick_go_data[accession] = result
+                    name = result['name']
+                    definition = result['definition']['text']
+                    ontology = result['aspect']
+                    go_term = GOTerm(accession=accession, name=name.strip(), definition=definition.strip(),
+                                     ontology=ontology)
+                    graph.create(go_term)
+                    quick_go_data_dict[accession] = result
+                sys.stdout.write("\nCreated {}...\n".format(terms))
+            else:
+                sys.stdout.write('\nA status of {code} occurred for {go}\n'.format(code=response.status_code, go=terms))
+
+            if protein is not None:
+                protein.assoc_goterm.add(go_term)
+                graph.push(protein)
+                go_term.protein.add(protein)
+                graph.push(go_term)
+
+    sys.stdout.write("\nMapping GoTerm Relations...\n")
+    for term_accession, v in quick_go_data_dict.items():
+        term = GOTerm.select(graph, term_accession).first()
+        if term:
+            if v.get('children'):
+                for child in v['children']:
+                    child_id = child['id']
+                    child_relation = child['relation']
+                    child_go = GOTerm.select(graph, child_id).first()
+                    if child_go:
+                        if 'is_a' in child_relation:
+                            term.is_a.add(child_go)
+                        elif 'part_of' in child_relation:
+                            term.part_of.add(child_go)
+                        elif 'regulates' in child_relation:
+                            term.regulates.add(child_go)
+                        elif 'capable_of' in child_relation:
+                            term.capable_of.add(child_go)
+                    graph.push(term)
+
+            # for go_id in go_ids:
+            #     go_term_set.add(go_id)
+            #     if go_id.startswith("GO:") and go_id is not 'GO_IDs':
+            #         result = quick_go.Term(go_id, frmt="obo")
+            #         if result and not isinstance(result, int):
+            #             result = result.split('\n')
+            #             name = result[2].split(":")[1]
+            #             _def = result[3].split(":")[1]
+            #             go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
+            #             graph.create(go_term)
+
         end = time.time()
         print("Created {} GoTerms in {} seconds.".format(len(go_term_set), end - start))
-    create_is_a_cv_term_rel(go_term_set)
+    # create_is_a_cv_term_rel(go_term_set)
 
 
 def create_interpro_term_nodes(protein, interpro_ids):

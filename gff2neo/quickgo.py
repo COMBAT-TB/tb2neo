@@ -3,6 +3,8 @@ Interface to the quickGO interface.
 """
 from __future__ import print_function
 
+import requests
+
 
 def fetch_quick_go_data(quick_go, go_id):
     """
@@ -21,3 +23,10 @@ def fetch_quick_go_data(quick_go, go_id):
     else:
         raise ValueError("GO id can't be: {}".format(go_id))
     return go_is_a
+
+
+def query_quickgo(go_term_ids):
+    url = 'https://www.ebi.ac.uk/QuickGO/services/ontology/go/terms/'
+    headers = {'Accept': 'application/json'}
+    res = requests.get(url + go_term_ids, headers=headers)
+    return res
