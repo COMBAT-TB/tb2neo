@@ -29,7 +29,8 @@ def search_uniprot(query, columns, taxonomy, proteome):
     query = "taxonomy:{}+AND+proteome:{}+AND+{}".format(taxonomy,
                                                         proteome, query)
 
-    result = uniprot_.search(query=query, frmt="tab", columns=columns, sort=None)
+    result = uniprot_.search(query=query, frmt="tab",
+                             columns=columns, sort=None)
     reader = csv.reader(StringIO(result), delimiter='\t')
     try:
         next(reader)
@@ -70,6 +71,7 @@ def query_uniprot(locus_tags, taxonomy, proteome):
     :return:
     """
     print("Querying UniProt...")
+    sys.stdout.write("\nQuerying UniProt...")
     start_time = time()
     uniprot_data = []
     results = []
@@ -84,7 +86,8 @@ def query_uniprot(locus_tags, taxonomy, proteome):
     #     writer = csv.writer(csv_file)
     for tag_list in locus_tags:
         query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
-        result = search_uniprot(query, columns, taxonomy=taxonomy, proteome=proteome)
+        result = search_uniprot(
+            query, columns, taxonomy=taxonomy, proteome=proteome)
         # writer.writerows(result)
         uniprot_data.append(result)
 
@@ -92,7 +95,9 @@ def query_uniprot(locus_tags, taxonomy, proteome):
         for entry in data:
             results.append(entry)
     end_time = time()
-    print("\nDone fetching data from UniProt in ", end_time - start_time, "secs.")
+    sys.stdout.write(
+        "\nDone fetching data from UniProt in {} secs."
+            .format(end_time - start_time))
     if len(results) > 0:
         write_to_csv(results)
     return results
