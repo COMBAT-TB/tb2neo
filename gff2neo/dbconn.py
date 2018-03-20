@@ -421,8 +421,8 @@ def create_go_term_nodes():
             #             go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
             #             graph.create(go_term)
 
-        end = time.time()
-        print("Created {} GoTerms in {} seconds.".format(len(go_term_set), end - start))
+    end = time.time()
+    print("Created {} GoTerms in {} seconds.".format(len(go_term_set), end - start))
     # create_is_a_cv_term_rel(go_term_set)
 
 

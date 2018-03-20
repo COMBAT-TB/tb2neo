@@ -3,7 +3,11 @@ Interface to the quickGO interface.
 """
 from __future__ import print_function
 
-import requests
+from requests import Session
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+BASE_URL = "https://www.ebi.ac.uk/QuickGO/services"
 
 
 def fetch_quick_go_data(quick_go, go_id):
@@ -26,7 +30,11 @@ def fetch_quick_go_data(quick_go, go_id):
 
 
 def query_quickgo(go_term_ids):
-    url = 'https://www.ebi.ac.uk/QuickGO/services/ontology/go/terms/'
+    s = Session()
+    s.mount(BASE_URL, HTTPAdapter(
+        max_retries=Retry(total=5, status_forcelist=[500])
+    ))
+    url = BASE_URL + "/ontology/go/terms/"
     headers = {'Accept': 'application/json'}
-    res = requests.get(url + go_term_ids, headers=headers)
+    res = s.get(url + go_term_ids, headers=headers)
     return res
