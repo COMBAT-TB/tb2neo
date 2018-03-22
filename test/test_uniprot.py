@@ -2,13 +2,13 @@ import types
 
 import pytest
 
-from gff2neo.cli import sample_gff
 from gff2neo.gffproc import get_locus_tags
 from gff2neo.uniprot import query_uniprot, eu_mapping
+from test_cli import TEST_GFF
 
 
 def test_search_uniprot():
-    identifiers = get_locus_tags(sample_gff, 300)
+    identifiers = get_locus_tags(TEST_GFF, 300)
     assert isinstance(identifiers, types.GeneratorType) is True
     result = query_uniprot(locus_tags=identifiers, taxonomy='83332', proteome='UP000001584')
     assert isinstance(result, list) is True
