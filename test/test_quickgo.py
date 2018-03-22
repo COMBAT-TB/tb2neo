@@ -16,5 +16,5 @@ def test_fetch_quick_go_data():
 
 
 def test_query_quickgo():
-    result = query_quickgo("GO:0005886,GO:0046872,GO:0016301")
+    result = query_quickgo("GO:0004160,GO:0005886,GO:0009082,GO:0009097,GO:0009099,GO:0040007,GO:0046872,GO:0051539")
     assert result.status_code == 200

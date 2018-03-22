@@ -2,8 +2,6 @@ import click
 
 from gff2neo.gffproc import *
 
-sample_gff = os.getcwd() + "/data/sample_gff/h37rv-sample.gff3"
-
 
 def check_csv(csvfile):
     """
@@ -20,53 +18,7 @@ def check_csv(csvfile):
 uniprot_config = {
     'h37rv': {'taxonomy': '83332', 'proteome': 'UP000001584'},
     'cdc1551': {'taxonomy': '83331', 'proteome': 'UP000001020'},
-    # 'sample': {'taxonomy': '83332', 'proteome': 'UP000001584'},
 }
-
-
-@click.group()
-def cli():
-    """
-    This script parses a GFF file and builds a Neo4j Graph database.
-    """
-    pass
-
-
-@cli.command()
-@click.option('gff_files', '--gff_files', type=click.Path(exists=True), default=sample_gff,
-              help="Path to GFF file(s) (default: '{}')".format(sample_gff))
-def examine_gff(gff_files):
-    """
-    Examine features from GFF file.
-    :param gff_files: GFF file directory
-    :return
-    """
-    if not os.path.isdir(gff_files):
-        gff_files = os.path.dirname(sample_gff)
-    for gff_file in os.listdir(os.path.abspath(gff_files)):
-        if gff_file.endswith(".gff3"):
-            click.secho("Examining: {}".format(gff_file), fg="green")
-            examine_gff_file(gff_file=os.path.abspath(gff_files) + "/" + gff_file)
-
-
-@cli.command()
-@click.option('gff_files', '--gff_files', type=click.Path(exists=True), default=sample_gff,
-              help="Path to GFF file(s) (default: '{}')".format(sample_gff))
-def load_gff(gff_files):
-    """
-    Load GFF features and build relationships.
-    :param gff_files:
-    :return:
-    """
-    # Deleting existing data
-    delete_db_data()
-    if not os.path.isdir(gff_files):
-        gff_files = os.path.dirname(sample_gff)
-    for gff_file in os.listdir(os.path.abspath(gff_files)):
-        if gff_file.endswith(".gff3"):
-            click.secho("Loading {}".format(os.path.abspath(gff_files) + "/" + gff_file), fg="green")
-            parse_gff(os.path.abspath(gff_files) + "/" + gff_file)
-            build_gff_relationships()
 
 
 def get_taxonomy_and_proteome(gff_file):
@@ -84,9 +36,53 @@ def get_taxonomy_and_proteome(gff_file):
     return result
 
 
+@click.group()
+def cli():
+    """
+    This script parses a GFF file and builds a Neo4j Graph database.
+    """
+    pass
+
+
 @cli.command()
-@click.option('gff_files', '--gff_files', type=click.Path(exists=True), default=sample_gff,
-              help="Path to GFF file(s) (default: '{}')".format(sample_gff))
+@click.argument('gff_files', type=click.Path(exists=True))
+def examine_gff(gff_files):
+    """
+    Examine features from GFF file.
+    :param gff_files: GFF file directory
+    :return
+    """
+    if os.path.isdir(gff_files):
+        for root, dirs, files in os.walk(gff_files):
+            for gff_file in files:
+                gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                if gff_file.endswith(".gff3"):
+                    click.secho("Examining: {}".format(gff_file), fg="green")
+                    examine_gff_file(gff_file=gff_file)
+
+
+@cli.command()
+@click.argument('gff_files', type=click.Path(exists=True))
+def load_gff(gff_files):
+    """
+    Load GFF features and build relationships.
+    :param gff_files:
+    :return:
+    """
+    # Deleting existing data
+    delete_db_data()
+    if os.path.isdir(gff_files):
+        for root, dirs, files in os.walk(gff_files):
+            for gff_file in files:
+                gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                if gff_file.endswith(".gff3"):
+                    click.secho("Loading {}".format(gff_file), fg="green")
+                    parse_gff(gff_file)
+                    build_gff_relationships()
+
+
+@cli.command()
+@click.argument('gff_files', type=click.Path(exists=True))
 def load_uniprot_data(gff_files):
     """
     Load UniProt data using GFF (locus tags).
@@ -97,24 +93,24 @@ def load_uniprot_data(gff_files):
     if check_csv(uniprot_data_csv) and not gff_files:
         click.secho("Found CSV data...", fg="green")
         create_protein_nodes()
-        map_gene_to_protein(get_locus_tags(sample_gff, 400))
+        # TODO: Map Gene to Protein
+        # map_gene_to_protein(get_locus_tags(sample_gff, 400))
     else:
-        if not os.path.isdir(gff_files):
-            gff_files = os.path.dirname(sample_gff)
-        for gff_file in os.listdir(os.path.abspath(gff_files)):
-            gff_file = os.path.abspath(gff_files) + "/" + gff_file
-            if gff_file.endswith(".gff3"):
-                result = get_taxonomy_and_proteome(gff_file)
-                locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-                # TODO: Need to refactor
-                create_protein_nodes()
-                map_gene_to_protein(get_locus_tags(gff_file, 400))
+        if os.path.isdir(gff_files):
+            for root, dirs, files in os.walk(gff_files):
+                for gff_file in files:
+                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                    if gff_file.endswith(".gff3"):
+                        result = get_taxonomy_and_proteome(gff_file)
+                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
+                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
+                        # TODO: Need to refactor
+                        create_protein_nodes()
+                        map_gene_to_protein(get_locus_tags(gff_file, 400))
 
 
 @cli.command()
-@click.option('gff_files', '--gff_files', type=click.Path(exists=True), default=sample_gff,
-              help="Path to GFF file(s) (default: '{}')".format(sample_gff))
+@click.argument('gff_files', type=click.Path(exists=True))
 def load_drugbank_data(gff_files):
     """
     Load DrugBank data.
@@ -127,22 +123,23 @@ def load_drugbank_data(gff_files):
             and check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
         create_drugbank_nodes()
     else:
-        if not os.path.isdir(gff_files):
-            gff_files = os.path.dirname(sample_gff)
-        for gff_file in gff_files:
-            if gff_file.endswith(".gff3"):
-                result = get_taxonomy_and_proteome(gff_file)
-                locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-        create_protein_nodes()
-        for gff_file in gff_files:
-            map_gene_to_protein(get_locus_tags(gff_file=gff_file, chunk=400))
-        create_drugbank_nodes()
+        if os.path.isdir(gff_files):
+            for root, dirs, files in os.walk(gff_files):
+                for gff_file in files:
+                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                    if gff_file.endswith(".gff3"):
+                        result = get_taxonomy_and_proteome(gff_file)
+                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
+                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
+                create_protein_nodes()
+                for gff_file in files:
+                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                    map_gene_to_protein(get_locus_tags(gff_file=gff_file, chunk=400))
+                create_drugbank_nodes()
 
 
 @cli.command()
-@click.option('gff_files', '--gff_files', type=click.Path(exists=True), default=sample_gff,
-              help="Path to GFF file(s) (default: '{}')".format(sample_gff))
+@click.argument('gff_files', type=click.Path(exists=True))
 def load_go_terms(gff_files):
     """
     Load GO terms.
@@ -152,19 +149,19 @@ def load_go_terms(gff_files):
     if check_csv(uniprot_data_csv):
         create_go_term_nodes()
     else:
-        if not os.path.isdir(gff_files):
-            gff_files = os.path.dirname(sample_gff)
-        for gff_file in gff_files:
-            if gff_file.endswith(".gff3"):
-                result = get_taxonomy_and_proteome(gff_file)
-                locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-        create_go_term_nodes()
+        if os.path.isdir(gff_files):
+            for root, dirs, files in os.walk(gff_files):
+                for gff_file in files:
+                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                    if gff_file.endswith(".gff3"):
+                        result = get_taxonomy_and_proteome(gff_file)
+                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
+                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
+            create_go_term_nodes()
 
 
 @cli.command()
-@click.option('gff_files', '--gff_files', type=click.Path(exists=True), default=sample_gff,
-              help="Path to GFF file(s) (default: '{}')".format(sample_gff))
+@click.argument('gff_files', type=click.Path(exists=True))
 def load_publications(gff_files):
     """
     Load Publications.
@@ -174,19 +171,19 @@ def load_publications(gff_files):
     if check_csv(uniprot_data_csv):
         create_publication_nodes()
     else:
-        if not os.path.isdir(gff_files):
-            gff_files = os.path.dirname(sample_gff)
-        for gff_file in gff_files:
-            if gff_file.endswith(".gff3"):
-                result = get_taxonomy_and_proteome(gff_file)
-                locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-        create_publication_nodes()
+        if os.path.isdir(gff_files):
+            for root, dirs, files in os.walk(gff_files):
+                for gff_file in files:
+                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                    if gff_file.endswith(".gff3"):
+                        result = get_taxonomy_and_proteome(gff_file)
+                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
+                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
+            create_publication_nodes()
 
 
 @cli.command()
-@click.option('gff_files', '--gff_files', type=click.Path(exists=True), default=sample_gff,
-              help="Path to GFF file(s) (default: '{}')".format(sample_gff))
+@click.argument('gff_files', type=click.Path(exists=True))
 def load_kegg_pathways(gff_files):
     """
     Load KEGG Pathways
@@ -198,19 +195,19 @@ def load_kegg_pathways(gff_files):
     if len(proteins) > 0:
         create_kegg_pathways_nodes()
     else:
-        if not os.path.isdir(gff_files):
-            gff_files = os.path.dirname(sample_gff)
-        for gff_file in gff_files:
-            if gff_file.endswith(".gff3"):
-                result = get_taxonomy_and_proteome(gff_file)
-                locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-        create_kegg_pathways_nodes()
+        if os.path.isdir(gff_files):
+            for root, dirs, files in os.walk(gff_files):
+                for gff_file in files:
+                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                    if gff_file.endswith(".gff3"):
+                        result = get_taxonomy_and_proteome(gff_file)
+                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
+                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
+            create_kegg_pathways_nodes()
 
 
 @cli.command()
-@click.option('gff_files', '--gff_files', type=click.Path(exists=True), default=sample_gff,
-              help="Path to GFF file(s) (default: '{}')".format(sample_gff))
+@click.argument('gff_files', type=click.Path(exists=True))
 def load_reactome_pathways(gff_files):
     """
     Load REACTOME Pathways
@@ -222,14 +219,15 @@ def load_reactome_pathways(gff_files):
     if len(proteins) > 0 and check_csv(uniprot_data_csv):
         create_reactome_pathway_nodes()
     else:
-        if not os.path.isdir(gff_files):
-            gff_files = os.path.dirname(sample_gff)
-        for gff_file in gff_files:
-            if gff_file.endswith(".gff3"):
-                result = get_taxonomy_and_proteome(gff_file)
-                locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-        create_reactome_pathway_nodes()
+        if os.path.isdir(gff_files):
+            for root, dirs, files in os.walk(gff_files):
+                for gff_file in files:
+                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                    if gff_file.endswith(".gff3"):
+                        result = get_taxonomy_and_proteome(gff_file)
+                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
+                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
+            create_reactome_pathway_nodes()
 
 
 if __name__ == '__main__':
