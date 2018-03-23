@@ -93,8 +93,6 @@ def load_uniprot_data(gff_files):
     if check_csv(uniprot_data_csv) and not gff_files:
         click.secho("Found CSV data...", fg="green")
         create_protein_nodes()
-        # TODO: Map Gene to Protein
-        # map_gene_to_protein(get_locus_tags(sample_gff, 400))
     else:
         if os.path.isdir(gff_files):
             for root, dirs, files in os.walk(gff_files):
@@ -103,18 +101,16 @@ def load_uniprot_data(gff_files):
                     if gff_file.endswith(".gff3"):
                         result = get_taxonomy_and_proteome(gff_file)
                         locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
+                        map_gene_to_orthologs(get_locus_tags(gff_file, 400))
                         query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
                         # TODO: Need to refactor
                         create_protein_nodes()
-                        map_gene_to_protein(get_locus_tags(gff_file, 400))
 
 
 @cli.command()
-@click.argument('gff_files', type=click.Path(exists=True))
-def load_drugbank_data(gff_files):
+def load_drugbank_data():
     """
     Load DrugBank data.
-    :param gff_files:
     :return:
     """
     # Let's check if we have Proteins to map to.
@@ -123,71 +119,40 @@ def load_drugbank_data(gff_files):
             and check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
         create_drugbank_nodes()
     else:
-        if os.path.isdir(gff_files):
-            for root, dirs, files in os.walk(gff_files):
-                for gff_file in files:
-                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
-                    if gff_file.endswith(".gff3"):
-                        result = get_taxonomy_and_proteome(gff_file)
-                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-                create_protein_nodes()
-                for gff_file in files:
-                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
-                    map_gene_to_protein(get_locus_tags(gff_file=gff_file, chunk=400))
-                create_drugbank_nodes()
+        sys.stderr.write(
+            "Unable to load Drugbank data!\n Check if CSV files are in place and that we have a database with Proteins.")
 
 
 @cli.command()
-@click.argument('gff_files', type=click.Path(exists=True))
-def load_go_terms(gff_files):
+def load_go_terms():
     """
     Load GO terms.
-    :param gff_files:
     :return:
     """
     if check_csv(uniprot_data_csv):
         create_go_term_nodes()
     else:
-        if os.path.isdir(gff_files):
-            for root, dirs, files in os.walk(gff_files):
-                for gff_file in files:
-                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
-                    if gff_file.endswith(".gff3"):
-                        result = get_taxonomy_and_proteome(gff_file)
-                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-            create_go_term_nodes()
+        sys.stderr.write(
+            "Unable to create GOTerms !\n Check if CSV files are in place.")
 
 
 @cli.command()
-@click.argument('gff_files', type=click.Path(exists=True))
-def load_publications(gff_files):
+def load_publications():
     """
     Load Publications.
-    :param gff_files:
     :return:
     """
     if check_csv(uniprot_data_csv):
         create_publication_nodes()
     else:
-        if os.path.isdir(gff_files):
-            for root, dirs, files in os.walk(gff_files):
-                for gff_file in files:
-                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
-                    if gff_file.endswith(".gff3"):
-                        result = get_taxonomy_and_proteome(gff_file)
-                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-            create_publication_nodes()
+        sys.stderr.write(
+            "Unable to load Publications!\n Check if CSV files are in place")
 
 
 @cli.command()
-@click.argument('gff_files', type=click.Path(exists=True))
-def load_kegg_pathways(gff_files):
+def load_kegg_pathways():
     """
     Load KEGG Pathways
-    :param gff_files:
     :return:
     """
     # Let's check if we have Proteins to map to.
@@ -195,23 +160,14 @@ def load_kegg_pathways(gff_files):
     if len(proteins) > 0:
         create_kegg_pathways_nodes()
     else:
-        if os.path.isdir(gff_files):
-            for root, dirs, files in os.walk(gff_files):
-                for gff_file in files:
-                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
-                    if gff_file.endswith(".gff3"):
-                        result = get_taxonomy_and_proteome(gff_file)
-                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-            create_kegg_pathways_nodes()
+        sys.stderr.write(
+            "Unable to load KEGG Pathways!\n Check if we have a database with Proteins.")
 
 
 @cli.command()
-@click.argument('gff_files', type=click.Path(exists=True))
-def load_reactome_pathways(gff_files):
+def load_reactome_pathways():
     """
     Load REACTOME Pathways
-    :param gff_files:
     :return:
     """
     # Let's check if we have Proteins to map to.
@@ -219,15 +175,8 @@ def load_reactome_pathways(gff_files):
     if len(proteins) > 0 and check_csv(uniprot_data_csv):
         create_reactome_pathway_nodes()
     else:
-        if os.path.isdir(gff_files):
-            for root, dirs, files in os.walk(gff_files):
-                for gff_file in files:
-                    gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
-                    if gff_file.endswith(".gff3"):
-                        result = get_taxonomy_and_proteome(gff_file)
-                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
-            create_reactome_pathway_nodes()
+        sys.stderr.write(
+            "Unable to load REACTOME Pathways!\n Check if we have a database with Proteins.")
 
 
 if __name__ == '__main__':

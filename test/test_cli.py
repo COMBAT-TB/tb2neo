@@ -41,25 +41,25 @@ def test_load_uniprot_data(cli_runner):
 
 
 def test_load_go_terms(cli_runner):
-    result = cli_runner.invoke(load_go_terms, [TEST_GFF_DIR])
+    result = cli_runner.invoke(load_go_terms)
     assert result.exit_code == 0
 
 
 def test_load_drugbank_data(cli_runner):
-    result = cli_runner.invoke(load_drugbank_data, [TEST_GFF_DIR])
+    result = cli_runner.invoke(load_drugbank_data)
     assert result.exit_code == 0
 
 
 def test_load_kegg_pathways(cli_runner):
-    result = cli_runner.invoke(load_kegg_pathways, [TEST_GFF_DIR])
+    result = cli_runner.invoke(load_kegg_pathways)
     assert result.exit_code == 0
 
 
 def test_load_reactome_pathways(cli_runner):
-    result = cli_runner.invoke(load_reactome_pathways, [TEST_GFF_DIR])
+    result = cli_runner.invoke(load_reactome_pathways)
     assert result.exit_code == 0
 
 
 def test_load_publications(cli_runner):
-    result = cli_runner.invoke(load_publications, [TEST_GFF_DIR])
+    result = cli_runner.invoke(load_publications)
     assert result.exit_code == 0
