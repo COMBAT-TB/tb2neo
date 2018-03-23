@@ -4,6 +4,7 @@ Interface to the Neo4j Database
 
 from bioservices import ChEMBL, QuickGO, Reactome, KEGG
 from py2neo import Graph
+from tqdm import tqdm
 
 from gff2neo.ncbi import fetch_publication_list
 from gff2neo.orthologs import fetch_ortholog
@@ -358,7 +359,7 @@ def create_go_term_nodes():
         import time
         start = time.time()
         reader = csv.DictReader(csv_file, delimiter=',')
-        for entry in reader:
+        for entry in tqdm(reader):
             protein_entry = entry['Entry']
             protein = None
             if protein_entry is not '':
@@ -380,7 +381,6 @@ def create_go_term_nodes():
                                      ontology=ontology)
                     graph.create(go_term)
                     quick_go_data_dict[accession] = result
-                sys.stdout.write("\nCreated {}...\n".format(terms))
             else:
                 sys.stdout.write('\nA status of {code} occurred for {go}\n'.format(code=response.status_code, go=terms))
 
@@ -391,7 +391,7 @@ def create_go_term_nodes():
                 graph.push(go_term)
 
     sys.stdout.write("\nMapping GoTerm Relations...\n")
-    for term_accession, v in quick_go_data_dict.items():
+    for term_accession, v in tqdm(quick_go_data_dict.items()):
         term = GOTerm.select(graph, term_accession).first()
         if term:
             if v.get('children'):
@@ -501,7 +501,7 @@ def create_publication_nodes():
         subset = list(p_id_set)[start:start + chunksize]
         records.extend(fetch_publication_list(subset))
     record_loaded_count = 0
-    for record in records:
+    for record in tqdm(records):
         if len(record) < 2:
             pm_id = record['id:'][0][record['id:'][0].find('able: ') + 6:]
             record = fetch_publication_list(pm_id, rettype='xml')
@@ -618,7 +618,7 @@ def create_drugbank_nodes():
     drug_set = set()
     with open(target_protein_ids_csv, "r") as csv_file:
         reader = csv.DictReader(csv_file)
-        for _target in reader:
+        for _target in tqdm(reader):
             # TODO :
             # if 'tuberculosis' in _target['Species']:
             # print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'])
@@ -651,7 +651,7 @@ def create_drugbank_nodes():
     sys.stdout.write("\nDone Creating DrugBank Nodes...\n")
 
 
-def map_cds_to_protein(protein):
+def map_gene_and_cds_to_protein(protein):
     """
     Mapping Proteins to CDS
     :param protein:
@@ -699,7 +699,7 @@ def create_protein_nodes():
     protein_interaction_dict = dict()
     with open(uniprot_data_csv, 'r') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
-        for entry in reader:
+        for entry in tqdm(reader):
             protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
             dbxref = DbXref(db="UniProt", accession=entry[
                 'Entry_Name'], version=entry['Entry'])
@@ -715,7 +715,7 @@ def create_protein_nodes():
             protein.ontology_id = protein.so_id
             protein.seqlen = entry['Length']
             protein.residues = entry['Sequence']
-            # TODO: Cater for 'MT1076 MT1237 MT3197', 'MT0511/MT0512' and 'Rv0132c LH57_00740'
+            # Catering for 'MT1076 MT1237 MT3197', 'MT0511/MT0512' and 'Rv0132c LH57_00740'
             parent = split_gene_names(parent=entry['Gene_Names_OL'])
             protein.parent = parent
             protein.family = entry['Protein_Families']
@@ -728,7 +728,7 @@ def create_protein_nodes():
             graph.push(protein)
 
             # create_chembl_nodes(protein, entry['Entry'])
-            map_cds_to_protein(protein)
+            map_gene_and_cds_to_protein(protein)
 
             create_interpro_term_nodes(protein, entry['InterPro'])
     build_protein_interaction_rels(protein_interaction_dict)
@@ -736,9 +736,9 @@ def create_protein_nodes():
     print("\nDone creating UniProt Nodes in ", end - start, "secs.")
 
 
-def map_gene_to_protein(locus_tags):
+def map_gene_to_orthologs(locus_tags):
     """
-    Mapping Genes to Proteins and orthologs
+    Mapping Genes to orthologs
     :param locus_tags:
     :return:
     """
@@ -757,13 +757,6 @@ def map_gene_to_protein(locus_tags):
                             orthologous_gene.orthologous_to_.add(gene)
                             graph.push(gene)
                             graph.push(orthologous_gene)
-                # parent = gene.uniquename[gene.uniquename.find(':') + 1:]
-                # protein = Protein.select(graph).where("_.parent='{}'".format(parent)).first()
-                # if protein:
-                #     gene.encodes.add(protein)
-                #     graph.push(gene)
-                #     protein.encoded_by.add(gene)
-                #     graph.push(protein)
     end = time()
     print("\nDone mapping Orthologs", end - start, "secs.")
 
@@ -779,7 +772,7 @@ def create_kegg_pathways_nodes():
     for organism in organisms:
         kegg.organism = organism
         pathway_ids = kegg.pathwayIds
-        for path in pathway_ids:
+        for path in tqdm(pathway_ids):
             data = kegg.parse(kegg.get(path))
             pathway = Pathway()
             pathway.accession = path[path.find(organism):].strip()
@@ -811,7 +804,7 @@ def create_reactome_pathway_nodes():
     start = time()
     with open(uniprot_data_csv, 'r') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
-        for entry in reader:
+        for entry in tqdm(reader):
             protein = entry['Entry']
             pathways = eu_mapping(protein, to='REACTOME_ID')
             if pathways:
