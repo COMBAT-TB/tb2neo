@@ -767,7 +767,7 @@ def create_kegg_pathways_nodes():
     :return:
     """
     sys.stdout.write("Creating KEGG Pathways...")
-    organisms = ['mtc', 'mtv']
+    organisms = ['mtc', 'mtu']
     start = time()
     for organism in organisms:
         kegg.organism = organism
