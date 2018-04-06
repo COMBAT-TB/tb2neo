@@ -1,9 +1,10 @@
 #Dev
 .idea
 .vscode
-data/img/*
-data/drugbank/pharmacologically_active.csv
-data/*.txt
+gff2neo/data/drugbank/pharmacologically_active.csv
+gff2neo/data/tbdtdb/*.txt
+gff2neo/data/string/
+#gff2neo/data/uniprot/
 gff2neo.egg-info
+data/img/*
 data/*.bz2
-data/uniprot_data.csv

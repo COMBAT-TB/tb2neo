@@ -1,6 +1,13 @@
 import click
 
 from gff2neo.gffproc import *
+from gff2neo.uniprot import UNIPROT_DATA
+
+CURR_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# UNIPROT_DATA = os.path.join(CURR_DIR, "data/uniprot/uniprot_data.csv")
+
+sys.stdout.write(UNIPROT_DATA)
 
 
 def check_csv(csvfile):
@@ -90,7 +97,7 @@ def load_uniprot_data(gff_files):
     :return:
     """
     click.secho("Loading UniProt data...", fg="green")
-    if check_csv(uniprot_data_csv) and not gff_files:
+    if check_csv(UNIPROT_DATA) and not gff_files:
         click.secho("Found CSV data...", fg="green")
         create_protein_nodes()
     else:
@@ -115,8 +122,8 @@ def load_drugbank_data():
     """
     # Let's check if we have Proteins to map to.
     proteins = graph.data("MATCH (p:Protein) RETURN p.entry_name LIMIT 1")
-    if len(proteins) > 0 and check_csv(uniprot_data_csv) \
-            and check_csv(target_protein_ids_csv) and check_csv(drug_vocab_csv):
+    if len(proteins) > 0 and check_csv(UNIPROT_DATA) \
+            and check_csv(TARGET_PROTEIN_IDS) and check_csv(DRUG_VOCAB):
         create_drugbank_nodes()
     else:
         sys.stderr.write(
@@ -129,7 +136,7 @@ def load_go_terms():
     Load GO terms.
     :return:
     """
-    if check_csv(uniprot_data_csv):
+    if check_csv(UNIPROT_DATA):
         create_go_term_nodes()
     else:
         sys.stderr.write(
@@ -142,7 +149,7 @@ def load_publications():
     Load Publications.
     :return:
     """
-    if check_csv(uniprot_data_csv):
+    if check_csv(UNIPROT_DATA):
         create_publication_nodes()
     else:
         sys.stderr.write(
@@ -172,7 +179,7 @@ def load_reactome_pathways():
     """
     # Let's check if we have Proteins to map to.
     proteins = graph.data("MATCH (p:Protein) RETURN p.entry_name LIMIT 1")
-    if len(proteins) > 0 and check_csv(uniprot_data_csv):
+    if len(proteins) > 0 and check_csv(UNIPROT_DATA):
         create_reactome_pathway_nodes()
     else:
         sys.stderr.write(
