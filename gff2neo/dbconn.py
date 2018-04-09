@@ -34,9 +34,10 @@ ncrna_dict = dict()
 location_dict = dict()
 go_term_set = set()
 
-target_protein_ids_csv = "data/drugbank/all_target_polypeptide_ids.csv"
-drug_vocab_csv = "data/drugbank/drugbank_vocabulary.csv"
-string_data = "data/string/83332.protein.links.detailed.v10.5.txt"
+CURR_DIR = os.path.dirname(os.path.abspath(__file__))
+TARGET_PROTEIN_IDS = os.path.join(CURR_DIR, "data/drugbank/all_target_polypeptide_ids.csv")
+DRUG_VOCAB = os.path.join(CURR_DIR, "data/drugbank/drugbank_vocabulary.csv")
+STRING_DATA = os.path.join(CURR_DIR, "data/string/83332.protein.links.detailed.v10.5.txt")
 
 
 def delete_db_data():
@@ -355,7 +356,7 @@ def create_go_term_nodes():
     sys.stdout.write("\nCreating GoTerm Nodes...\n")
     quick_go_data_dict = dict()
 
-    with open(uniprot_data_csv, 'r') as csv_file:
+    with open(UNIPROT_DATA, 'r') as csv_file:
         import time
         start = time.time()
         reader = csv.DictReader(csv_file, delimiter=',')
@@ -476,7 +477,7 @@ def create_publication_nodes():
     sys.stdout.write("\nCreating Publication Nodes...\n")
     import time
     _start = time.time()
-    with open(uniprot_data_csv, 'r') as csv_file:
+    with open(UNIPROT_DATA, 'r') as csv_file:
 
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in reader:
@@ -575,7 +576,7 @@ def build_protein_interaction_rels(protein_interaction_dict):
 #     """
 #     sys.stdout.write("\nCreating STRING-DB PPIs...\n")
 #     start = time()
-#     with open(string_data, 'r') as ppi_data:
+#     with open(STRING_DATA, 'r') as ppi_data:
 #         data = ppi_data.readlines()
 #     ppi_list = [l.strip().split() for l in data]
 #     for ppi in ppi_list:
@@ -616,7 +617,7 @@ def create_drugbank_nodes():
     """
     sys.stdout.write("\nCreating DrugBank Nodes...\n")
     drug_set = set()
-    with open(target_protein_ids_csv, "r") as csv_file:
+    with open(TARGET_PROTEIN_IDS, "r") as csv_file:
         reader = csv.DictReader(csv_file)
         for _target in tqdm(reader):
             # TODO :
@@ -639,7 +640,7 @@ def create_drugbank_nodes():
                         protein.dbxref.add(dbxref)
                         graph.push(protein)
 
-    with open(drug_vocab_csv, "r") as csv_file_:
+    with open(DRUG_VOCAB, "r") as csv_file_:
         reader = csv.DictReader(csv_file_)
         for entry in reader:
             for drug_id in drug_set:
@@ -697,7 +698,7 @@ def create_protein_nodes():
     sys.stdout.write("\nCreating Protein Nodes...\n")
     start = time()
     protein_interaction_dict = dict()
-    with open(uniprot_data_csv, 'r') as csv_file:
+    with open(UNIPROT_DATA, 'r') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in tqdm(reader):
             protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
@@ -767,7 +768,7 @@ def create_kegg_pathways_nodes():
     :return:
     """
     sys.stdout.write("Creating KEGG Pathways...")
-    organisms = ['mtc', 'mtv']
+    organisms = ['mtc', 'mtu']
     start = time()
     for organism in organisms:
         kegg.organism = organism
@@ -802,7 +803,7 @@ def create_reactome_pathway_nodes():
     """
     sys.stdout.write("\nCreating REACTOME Pathways...\n")
     start = time()
-    with open(uniprot_data_csv, 'r') as csv_file:
+    with open(UNIPROT_DATA, 'r') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in tqdm(reader):
             protein = entry['Entry']

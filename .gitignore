@@ -104,7 +104,8 @@ ENV/
 .idea
 .vscode
 
-data/drugbank/pharmacologically_active.csv
-data/string
+gff2neo/data/drugbank/pharmacologically_active.csv
+data/*.csv
 data/gff_files
 data/*.bz2
+gff2neo/data/string/

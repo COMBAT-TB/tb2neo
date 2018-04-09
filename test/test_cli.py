@@ -7,8 +7,8 @@ from gff2neo.cli import examine_gff, load_gff, load_uniprot_data, load_publicati
     load_go_terms, load_drugbank_data, load_kegg_pathways
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
-TEST_GFF = CURR_DIR + "/test_gff/h37rv-sample.gff3"
-TEST_GFF_DIR = CURR_DIR + "/test_gff/"
+TEST_GFF = os.path.join(CURR_DIR, "test_gff/h37rv-sample.gff3")
+TEST_GFF_DIR = os.path.join(CURR_DIR, "test_gff/")
 
 
 @pytest.fixture(scope="module")
