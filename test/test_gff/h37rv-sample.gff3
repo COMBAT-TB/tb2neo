@@ -19,6 +19,10 @@ Chromosome	ena	tRNA_gene	2401987	2402072	.	+	.	ID=gene:EBG00000313328;Name=leuU;
 Chromosome	ena	transcript	2401987	2402072	.	+	.	ID=transcript:EBG00000313328-1;Parent=gene:EBG00000313328;Name=leuU;biotype=tRNA;transcript_id=EBG00000313328-1
 Chromosome	ena	exon	2401987	2402072	.	+	.	Parent=transcript:EBG00000313328-1;Name=EBG00000313328-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=EBG00000313328-1;rank=1
 ###
+Chromosome	ena	pseudogene	333160	333417	.	-	.	ID=gene:Rv0277A;Name=vapB25;biotype=pseudogene;description=Possible antitoxin VapB25;gene_id=Rv0277A;logic_name=ena
+Chromosome	ena	pseudogene	333160	333417	.	-	.	ID=transcript:Rv0277A;Parent=gene:Rv0277A;Name=vapB25-1;biotype=pseudogene;transcript_id=Rv0277A
+Chromosome	ena	exon	333160	333417	.	-	.	Parent=transcript:Rv0277A;Name=Rv0277A-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=Rv0277A-1;rank=1
+###
 Chromosome	ena	pseudogene	2268268	2268726	.	-	.	ID=gene:Rv2023A;biotype=pseudogene;description=Hypothetical protein%2C pseudogene;gene_id=Rv2023A;logic_name=ena
 Chromosome	ena	pseudogene	2268268	2268726	.	-	.	ID=transcript:Rv2023A;Parent=gene:Rv2023A;biotype=pseudogene;transcript_id=Rv2023A
 Chromosome	ena	exon	2268268	2268726	.	-	.	Parent=transcript:Rv2023A;Name=Rv2023A-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=Rv2023A-1;rank=1

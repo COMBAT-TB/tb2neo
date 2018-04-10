@@ -661,6 +661,8 @@ def map_gene_and_cds_to_protein(protein):
     if protein and protein.parent:
         for tag in protein.parent:
             gene = Gene.select(graph, tag).first()
+            if not gene:
+                gene = PseudoGene.select(graph, tag).first()
             if gene:
                 gene.encodes.add(protein)
                 graph.push(gene)
@@ -768,7 +770,8 @@ def create_kegg_pathways_nodes():
     :return:
     """
     sys.stdout.write("Creating KEGG Pathways...")
-    organisms = ['mtc', 'mtu']
+    # TODO: Add mtc
+    organisms = ['mtu']
     start = time()
     for organism in organisms:
         kegg.organism = organism
