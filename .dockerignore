@@ -8,3 +8,5 @@ gff2neo/data/string/
 gff2neo.egg-info
 data/img/*
 data/*.bz2
+data/*.gff3
+data/*.gff
