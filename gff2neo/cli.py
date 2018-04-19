@@ -5,9 +5,8 @@ from gff2neo.uniprot import UNIPROT_DATA
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# UNIPROT_DATA = os.path.join(CURR_DIR, "data/uniprot/uniprot_data.csv")
 
-sys.stdout.write(UNIPROT_DATA)
+# UNIPROT_DATA = os.path.join(CURR_DIR, "data/uniprot/uniprot_data.csv")
 
 
 def check_csv(csvfile):
@@ -96,7 +95,7 @@ def load_uniprot_data(gff_files):
     :param gff_files:
     :return:
     """
-    click.secho("Loading UniProt data...", fg="green")
+    click.secho("\nLoading UniProt data...", fg="green")
     if check_csv(UNIPROT_DATA) and not gff_files:
         click.secho("Found CSV data...", fg="green")
         create_protein_nodes()

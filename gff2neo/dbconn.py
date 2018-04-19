@@ -8,11 +8,11 @@ from tqdm import tqdm
 
 from gff2neo.ncbi import fetch_publication_list
 from gff2neo.orthologs import fetch_ortholog
-from gff2neo.quickgo import fetch_quick_go_data, query_quickgo
+from gff2neo.quickgo import query_quickgo
 from gff2neo.uniprot import *
 from model.core import *
 
-graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
+graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
 
 chembl = ChEMBL(verbose=False)
@@ -330,22 +330,22 @@ def map_to_location(feature):
             graph.push(_feature)
 
 
-def create_is_a_cv_term_rel(go_set):
-    """
-    Creating IS_A relationships between CVTerms
-    :param go_set: set of GO ids
-    :return:
-    """
-    for go_id in go_set:
-        if go_id.startswith("GO:") and go_id is not 'GO_IDs':
-            is_a_list = fetch_quick_go_data(quick_go, go_id)
-            go_term = GOTerm.select(graph, go_id).first()
-            for go in is_a_list:
-                goid = go[go.find('G'):go.find('!')].strip()
-                term = GOTerm.select(graph, goid).first()
-                if term and go_term:
-                    go_term.is_a.add(term)
-                    graph.push(go_term)
+# def create_is_a_cv_term_rel(go_set):
+#     """
+#     Creating IS_A relationships between CVTerms
+#     :param go_set: set of GO ids
+#     :return:
+#     """
+#     for go_id in go_set:
+#         if go_id.startswith("GO:") and go_id is not 'GO_IDs':
+#             is_a_list = fetch_quick_go_data(quick_go, go_id)
+#             go_term = GOTerm.select(graph, go_id).first()
+#             for go in is_a_list:
+#                 goid = go[go.find('G'):go.find('!')].strip()
+#                 term = GOTerm.select(graph, goid).first()
+#                 if term and go_term:
+#                     go_term.is_a.add(term)
+#                     graph.push(go_term)
 
 
 def create_go_term_nodes():
@@ -360,7 +360,7 @@ def create_go_term_nodes():
         import time
         start = time.time()
         reader = csv.DictReader(csv_file, delimiter=',')
-        for entry in tqdm(reader):
+        for entry in reader:
             protein_entry = entry['Entry']
             protein = None
             if protein_entry is not '':
@@ -382,17 +382,18 @@ def create_go_term_nodes():
                                      ontology=ontology)
                     graph.create(go_term)
                     quick_go_data_dict[accession] = result
+                    if protein is not None:
+                        protein.assoc_goterm.add(go_term)
+                        graph.push(protein)
+                        go_term.protein.add(protein)
+                        graph.push(go_term)
+                sys.stdout.write(
+                    "Mapped {len} GOTerms to {protein}...".format(len=len(go_ids), protein=protein.uniquename))
             else:
                 sys.stdout.write('\nA status of {code} occurred for {go}\n'.format(code=response.status_code, go=terms))
 
-            if protein is not None:
-                protein.assoc_goterm.add(go_term)
-                graph.push(protein)
-                go_term.protein.add(protein)
-                graph.push(go_term)
-
     sys.stdout.write("\nMapping GoTerm Relations...\n")
-    for term_accession, v in tqdm(quick_go_data_dict.items()):
+    for term_accession, v in quick_go_data_dict.items():
         term = GOTerm.select(graph, term_accession).first()
         if term:
             if v.get('children'):
@@ -661,6 +662,8 @@ def map_gene_and_cds_to_protein(protein):
     if protein and protein.parent:
         for tag in protein.parent:
             gene = Gene.select(graph, tag).first()
+            if not gene:
+                gene = PseudoGene.select(graph, tag).first()
             if gene:
                 gene.encodes.add(protein)
                 graph.push(gene)
@@ -768,7 +771,8 @@ def create_kegg_pathways_nodes():
     :return:
     """
     sys.stdout.write("Creating KEGG Pathways...")
-    organisms = ['mtc', 'mtu']
+    # TODO: Add mtc
+    organisms = ['mtu']
     start = time()
     for organism in organisms:
         kegg.organism = organism

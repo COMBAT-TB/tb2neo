@@ -7,7 +7,6 @@ import pprint
 
 from BCBio import GFF
 from BCBio.GFF import GFFExaminer
-from tqdm import tqdm
 
 from gff2neo.dbconn import *
 
@@ -53,7 +52,7 @@ def get_locus_tags(gff_file, chunk):
     sys.stdout.write("Getting locus_tags from {}...\n".format(gff_file))
     count = 0
     locus_tags = []
-    for rec in GFF.parse(gff_file, limit_info=dict(gff_type=['gene'])):
+    for rec in GFF.parse(gff_file, limit_info=dict(gff_type=['gene', 'pseudogene'])):
         for gene in rec.features:
             locus_tag = gene.qualifiers.get("gene_id", " ")[0]
             count += 1
