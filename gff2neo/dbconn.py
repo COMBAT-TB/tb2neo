@@ -382,17 +382,16 @@ def create_go_term_nodes():
                                      ontology=ontology)
                     graph.create(go_term)
                     quick_go_data_dict[accession] = result
+                    if protein is not None:
+                        protein.assoc_goterm.add(go_term)
+                        graph.push(protein)
+                        go_term.protein.add(protein)
+                        graph.push(go_term)
             else:
                 sys.stdout.write('\nA status of {code} occurred for {go}\n'.format(code=response.status_code, go=terms))
 
-            if protein is not None:
-                protein.assoc_goterm.add(go_term)
-                graph.push(protein)
-                go_term.protein.add(protein)
-                graph.push(go_term)
-
     sys.stdout.write("\nMapping GoTerm Relations...\n")
-    for term_accession, v in tqdm(quick_go_data_dict.items()):
+    for term_accession, v in quick_go_data_dict.items():
         term = GOTerm.select(graph, term_accession).first()
         if term:
             if v.get('children'):

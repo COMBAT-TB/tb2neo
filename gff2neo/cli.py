@@ -96,7 +96,7 @@ def load_uniprot_data(gff_files):
     :param gff_files:
     :return:
     """
-    click.secho("Loading UniProt data...", fg="green")
+    click.secho("\nLoading UniProt data...", fg="green")
     if check_csv(UNIPROT_DATA) and not gff_files:
         click.secho("Found CSV data...", fg="green")
         create_protein_nodes()
