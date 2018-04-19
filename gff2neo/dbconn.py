@@ -12,7 +12,7 @@ from gff2neo.quickgo import fetch_quick_go_data, query_quickgo
 from gff2neo.uniprot import *
 from model.core import *
 
-graph = Graph(host=os.environ.get("DB", "localhost"), bolt=True,
+graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
 
 chembl = ChEMBL(verbose=False)

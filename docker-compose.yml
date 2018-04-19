@@ -3,7 +3,7 @@ services:
   loader:
     build: .
     environment:
-      DB: db
+      DATABASE_URL: db
     volumes:
       - loader_data:/code
     depends_on:

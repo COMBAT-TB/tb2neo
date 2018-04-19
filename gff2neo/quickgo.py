@@ -20,7 +20,7 @@ def fetch_quick_go_data(quick_go, go_id):
     go_is_a = []
     if go_id and go_id.startswith("GO:"):
         result = quick_go.Term(go_id, frmt="obo")
-        if result:
+        if result and not isinstance(result, int):
             for res in result.split('\n'):
                 if 'is_a' in res:
                     go_is_a.append(res)
