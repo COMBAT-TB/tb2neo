@@ -3,7 +3,8 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from gff2neo.cli import examine_gff, load_gff, load_uniprot_data, load_publications, load_reactome_pathways, \
+from gff2neo.cli import examine_gff, load_gff, load_functional_categories, load_uniprot_data, load_publications, \
+    load_reactome_pathways, \
     load_go_terms, load_drugbank_data, load_kegg_pathways
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -32,6 +33,11 @@ def test_examine_gff(cli_runner):
 
 def test_load_gff(cli_runner):
     result = cli_runner.invoke(load_gff, [TEST_GFF_DIR])
+    assert result.exit_code == 0
+
+
+def test_functional_categories(cli_runner):
+    result = cli_runner.invoke(load_functional_categories)
     assert result.exit_code == 0
 
 

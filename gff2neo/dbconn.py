@@ -3,6 +3,7 @@ Interface to the Neo4j Database
 """
 
 from bioservices import ChEMBL, QuickGO, Reactome, KEGG
+from pandas import read_csv
 from py2neo import Graph
 from tqdm import tqdm
 
@@ -479,7 +480,6 @@ def create_publication_nodes():
     import time
     _start = time.time()
     with open(UNIPROT_DATA, 'r') as csv_file:
-
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in reader:
             protein_entry = entry['Entry']
@@ -701,40 +701,39 @@ def create_protein_nodes():
     sys.stdout.write("\nCreating Protein Nodes...\n")
     start = time()
     protein_interaction_dict = dict()
-    with open(UNIPROT_DATA, 'r') as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=',')
-        for entry in tqdm(reader):
-            protein_interaction_dict[entry['Entry']] = entry['Interacts_With']
-            dbxref = DbXref(db="UniProt", accession=entry[
-                'Entry_Name'], version=entry['Entry'])
-            graph.create(dbxref)
 
-            pdb_id = None
-            if len(entry['3D']) > 0:
-                pdb_id = eu_mapping(entry['Entry'], to='PDB_ID')
-            protein = Protein()
-            protein.name = entry['Protein_Names']
-            protein.uniquename = entry['Entry']
-            protein.entry_name = entry['Entry_Name']
-            protein.ontology_id = protein.so_id
-            protein.seqlen = entry['Length']
-            protein.residues = entry['Sequence']
-            # Catering for 'MT1076 MT1237 MT3197', 'MT0511/MT0512' and 'Rv0132c LH57_00740'
-            parent = split_gene_names(parent=entry['Gene_Names_OL'])
-            protein.parent = parent
-            protein.family = entry['Protein_Families']
-            protein.function = entry['Function_CC']
-            protein.pdb_id = pdb_id
-            protein.mass = entry['Mass']
-            protein.three_d = entry['3D']
-            graph.create(protein)
-            protein.dbxref.add(dbxref)
-            graph.push(protein)
+    df = read_csv(UNIPROT_DATA).fillna("")
+    for entry in df.values:
+        protein_interaction_dict[entry[0]] = entry[6]
+        dbxref = DbXref(db="UniProt", accession=entry[1], version=entry[0])
+        graph.create(dbxref)
 
-            # create_chembl_nodes(protein, entry['Entry'])
-            map_gene_and_cds_to_protein(protein)
+        pdb_id = None
+        if entry[12] is not "":
+            pdb_id = eu_mapping(entry[0], to='PDB_ID')
+        protein = Protein()
+        protein.name = entry[9]
+        protein.uniquename = entry[0]
+        protein.entry_name = entry[1]
+        protein.ontology_id = protein.so_id
+        protein.seqlen = entry[16]
+        protein.residues = entry[14]
+        # Catering for 'MT1076 MT1237 MT3197', 'MT0511/MT0512' and 'Rv0132c LH57_00740'
+        parent = split_gene_names(parent=entry[2])
+        protein.parent = parent
+        protein.family = entry[17]
+        protein.function = entry[13]
+        protein.pdb_id = pdb_id
+        protein.mass = entry[15]
+        protein.three_d = entry[12]
+        graph.create(protein)
+        protein.dbxref.add(dbxref)
+        graph.push(protein)
 
-            create_interpro_term_nodes(protein, entry['InterPro'])
+        # create_chembl_nodes(protein, entry['Entry'])
+        map_gene_and_cds_to_protein(protein)
+        create_interpro_term_nodes(protein, entry[5])
+
     build_protein_interaction_rels(protein_interaction_dict)
     end = time()
     print("\nDone creating UniProt Nodes in ", end - start, "secs.")

@@ -5,8 +5,7 @@ from gff2neo.uniprot import UNIPROT_DATA
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
-
-# UNIPROT_DATA = os.path.join(CURR_DIR, "data/uniprot/uniprot_data.csv")
+MYCO_GFF = os.path.join(CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
 
 
 def check_csv(csvfile):
@@ -85,6 +84,20 @@ def load_gff(gff_files):
                     click.secho("Loading {}".format(gff_file), fg="green")
                     parse_gff(gff_file)
                     build_gff_relationships()
+                    # if check_csv(MYCO_GFF):
+                    #     map_functional_category(MYCO_GFF)
+
+
+@cli.command()
+def load_functional_categories():
+    """
+    Load GO terms.
+    :return:
+    """
+    if check_csv(MYCO_GFF):
+        map_functional_category(MYCO_GFF)
+    else:
+        sys.stderr.write("Unable to load !\n Check if GFF file are in place.")
 
 
 @cli.command()

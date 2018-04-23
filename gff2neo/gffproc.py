@@ -10,6 +10,8 @@ from BCBio.GFF import GFFExaminer
 
 from gff2neo.dbconn import *
 
+MYCO_GFF = os.path.join(CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
+
 
 def examine_gff_file(gff_file):
     """
@@ -95,6 +97,28 @@ def load_gff_data(gff_file, limit, organism):
                 create_transcript_nodes(feature)
                 map_to_location(feature)
     in_file.close()
+
+
+def map_functional_category(gff=None):
+    """
+    Adding functional categories to Feature Nodes
+    :param gff:
+    :return:
+    """
+    sys.stdout.write("\nAdding functional categories...")
+    with open(gff) as myco_gff:
+        for line in myco_gff:
+            if 'Functional_Category' in str(line):
+                tab_split = line.split('\t')
+                start = tab_split[3]
+                end = int(tab_split[4])
+                functional_category = tab_split[8].split(";")[-1].split("=")[-1].strip()
+                result = graph.run("match(n)-[]-(l:Location) where l.fmax = {end} return n".format(end=end)).data()
+                if result:
+                    for item in result:
+                        node = item['n']
+                        node['category'] = functional_category
+                        node.push()
 
 # def scrap_tbdtdb(locus_tags):
 #     "http://www.bioinformatics.org/tbdtdb/tdetail.php?tid=Rv0005"
