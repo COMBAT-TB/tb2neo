@@ -84,20 +84,9 @@ def load_gff(gff_files):
                     click.secho("Loading {}".format(gff_file), fg="green")
                     parse_gff(gff_file)
                     build_gff_relationships()
-                    # if check_csv(MYCO_GFF):
-                    #     map_functional_category(MYCO_GFF)
-
-
-@cli.command()
-def load_functional_categories():
-    """
-    Load GO terms.
-    :return:
-    """
-    if check_csv(MYCO_GFF):
-        map_functional_category(MYCO_GFF)
-    else:
-        sys.stderr.write("Unable to load !\n Check if GFF file are in place.")
+                    result = get_taxonomy_and_proteome(gff_file)
+                    if check_csv(MYCO_GFF) and result['taxonomy'] == '83332':
+                        map_functional_category(MYCO_GFF)
 
 
 @cli.command()
