@@ -3,7 +3,8 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from gff2neo.cli import examine_gff, load_gff, load_uniprot_data, load_publications, load_reactome_pathways, \
+from gff2neo.cli import examine_gff, load_gff, load_uniprot_data, load_publications, \
+    load_reactome_pathways, \
     load_go_terms, load_drugbank_data, load_kegg_pathways
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))

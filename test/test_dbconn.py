@@ -14,6 +14,7 @@ def test_db_nodes():
 def test_rv0001():
     gene = Gene.select(graph, 'Rv0001').first()
     assert gene.name == 'dnaA'
+    assert gene.category is not ''
 
 
 @pytest.mark.parametrize("test_input,expected", [

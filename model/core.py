@@ -42,6 +42,7 @@ class Feature(GraphObject):
     timeaccessioned = Property()
     timelastmodfied = Property()
     ontology_id = Property()
+    category = Property()
 
     belongs_to = RelatedTo("Organism", "BELONGS_TO")
     location = RelatedTo("Location", "LOCATED_AT")
