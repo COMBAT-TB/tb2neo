@@ -1,6 +1,6 @@
 # gff2neo
 
-[![Build Status](https://travis-ci.org/thobalose/gff2neo.svg?branch=master)](https://travis-ci.org/thobalose/gff2neo) [![Coverage Status](https://coveralls.io/repos/github/thobalose/gff2neo/badge.svg)](https://coveralls.io/github/thobalose/gff2neo)
+[![Build Status](https://travis-ci.org/COMBAT-TB/gff2neo.svg?branch=master)](https://travis-ci.org/COMBAT-TB/gff2neo) [![Coverage Status](https://coveralls.io/repos/github/thobalose/gff2neo/badge.svg)](https://coveralls.io/github/thobalose/gff2neo)
 
 Builds a graph database from GFF files.
 
