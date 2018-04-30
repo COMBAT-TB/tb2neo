@@ -788,9 +788,10 @@ def create_kegg_pathways_nodes():
             if data.get('GENE'):
                 for g_id in data['GENE'].keys():
                     g_id = "Rv" + g_id.strip("RVBD_") if "RV" in g_id else g_id
-                    protein_ = Protein.select(graph).where("_.parent='{}'".format(g_id))
-                    if protein_:
-                        for protein in protein_:
+                    # Protein parent is stored as an array
+                    gene = Gene.select(graph, g_id).first()
+                    if gene:
+                        for protein in gene.encodes:
                             protein.pathway.add(pathway)
                             graph.push(protein)
                             pathway.protein.add(protein)
