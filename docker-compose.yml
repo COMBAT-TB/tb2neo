@@ -6,33 +6,33 @@ services:
       DATABASE_URL: db
     volumes:
       - loader_data:/code
-    depends_on:
-      - db
+   depends_on:
+     - db
   db:
     restart: always
     build: ./neo4j/
     environment:
       NEO4J_AUTH: none
 #      Tuning
-      NEO4J_dbms_memory_pagecache_size: 8G
-      NEO4J_dbms_memory_heap_initial__size: 4G
-      NEO4J_dbms_memory_heap_max__size: 4G
+#      NEO4J_dbms_memory_pagecache_size: 8G
+#      NEO4J_dbms_memory_heap_initial__size: 4G
+#      NEO4J_dbms_memory_heap_max__size: 4G
     volumes:
-       - db_data:/data
+      - db_data:/data
     depends_on:
-       - es
+      - es
     ports:
-       - "7687:7687"
-       - "7474:7474"
-       - "7473:7473"
+      - "7687:7687"
+      - "7474:7474"
+      - "7473:7473"
   es:
     restart: always
     image: elasticsearch:2.4
-     # build: ./es/
+    # build: ./es/
     volumes:
-       - es_data:/usr/share/elasticsearch/data
+      - es_data:/usr/share/elasticsearch/data
     ports:
-       - "9200:9200"
+      - "9200:9200"
 volumes:
   loader_data:
   db_data:
@@ -41,4 +41,4 @@ volumes:
 #networks:
 #  default:
 #    external:
-#      name: combattbweb_default
+#      name: network_name

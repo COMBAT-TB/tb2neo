@@ -1,12 +1,12 @@
 """
 Interface to the Neo4j Database
 """
-
 from bioservices import ChEMBL, QuickGO, Reactome, KEGG
 from pandas import read_csv
 from py2neo import Graph
 from tqdm import tqdm
 
+from gff2neo.ftpconn import get_nucleotides
 from gff2neo.ncbi import fetch_publication_list
 from gff2neo.orthologs import fetch_ortholog
 from gff2neo.quickgo import query_quickgo
@@ -88,6 +88,7 @@ def create_chromosome_nodes():
     chromosome = Chromosome()
     chromosome.name = name
     chromosome.uniquename = uniquename
+    chromosome.residues = get_nucleotides()
     graph.create(chromosome)
 
 
@@ -834,3 +835,43 @@ def create_reactome_pathway_nodes():
                             graph.push(pathway)
     end = time()
     sys.stdout.write("\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
+
+
+def create_operon_nodes(text_file=None):
+    """
+    Adding functional categories to Feature Nodes
+    :param text_file:
+    :return:
+    """
+    sys.stdout.write("\nAdding operon data...")
+    with open(text_file) as text_file:
+        for line in text_file:
+            if 'OPERON' in str(line):
+                tab_split = line.split('\t')
+                locus = tab_split[0]
+                gene_name = tab_split[1]
+                name_operon = tab_split[10]
+                locus_operon = tab_split[11]
+                description = tab_split[7]
+                print(locus, locus_operon)
+                operon = Operon()
+                # Must we use the product as the uniquename
+                operon.uniquename = locus_operon
+                operon.description = description
+                graph.create(operon)
+                genes = locus_operon.split(',')
+                for locus_tag in genes:
+                    gene = Gene.select(graph, locus_tag.strip()).first()
+                    if gene:
+                        gene.member_of.add(operon)
+                        if len(genes) == 1:
+                            gene.co_regulated.add(gene)
+                        else:
+                            # Let's not build reverse co-regulated rel
+                            for g_id in genes[1:]:
+                                g = Gene.select(graph, g_id.strip()).first()
+                                if g:
+                                    gene.co_regulated.add(g)
+                        graph.push(gene)
+                        operon.gene.add(gene)
+                        graph.push(operon)

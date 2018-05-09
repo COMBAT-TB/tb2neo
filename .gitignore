@@ -109,5 +109,5 @@ data/*.csv
 data/gff_files
 data/*.bz2
 gff2neo/data/string/
-data/*.gff
+data/operons
 data/*.gff3

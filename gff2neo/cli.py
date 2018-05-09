@@ -6,6 +6,7 @@ from gff2neo.uniprot import UNIPROT_DATA
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MYCO_GFF = os.path.join(CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
+OPERON_DATA = os.path.join(CURR_DIR, "data/operon/mycobacterium_tuberculosis_h37rv_genome_summary.txt")
 
 
 def check_csv(csvfile):
@@ -90,6 +91,22 @@ def load_gff(gff_files):
 
 
 @cli.command()
+@click.argument('operon_dir', type=click.Path(exists=True))
+def load_operons(operon_dir):
+    """
+    Load Operons.
+    :return:
+    """
+    if os.path.isdir(operon_dir):
+        for root, dirs, files in os.walk(operon_dir):
+            for _file in files:
+                _file = '/'.join([os.path.abspath(operon_dir), _file])
+                if check_csv(_file):
+                    if _file.endswith(".txt"):
+                        create_operon_nodes(text_file=_file)
+
+
+@cli.command()
 @click.argument('gff_files', type=click.Path(exists=True))
 def load_uniprot_data(gff_files):
     """
@@ -127,8 +144,8 @@ def load_drugbank_data():
             and check_csv(TARGET_PROTEIN_IDS) and check_csv(DRUG_VOCAB):
         create_drugbank_nodes()
     else:
-        sys.stderr.write(
-            "Unable to load Drugbank data!\n Check if CSV files are in place and that we have a database with Proteins.")
+        sys.stderr.write("Unable to load Drugbank data!\n "
+                         "Check if CSV files are in place and that we have a database with Proteins.")
 
 
 @cli.command()

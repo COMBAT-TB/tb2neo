@@ -2,7 +2,7 @@ import os
 import types
 
 from gff2neo.gffproc import parse_gff, get_locus_tags
-from test_cli import TEST_GFF
+from .test_cli import TEST_GFF
 
 
 def test_parse_gff():
