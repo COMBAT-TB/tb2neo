@@ -7,6 +7,7 @@ CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MYCO_GFF = os.path.join(CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
 OPERON_DATA = os.path.join(CURR_DIR, "data/operon/mycobacterium_tuberculosis_h37rv_genome_summary.txt")
+DR_DATA_DIR = os.path.join(CURR_DIR, 'data/drdata/data/drdata/')
 
 
 def check_csv(csvfile):
@@ -104,6 +105,22 @@ def load_operons(operon_dir):
                 if check_csv(_file):
                     if _file.endswith(".txt"):
                         create_operon_nodes(text_file=_file)
+
+
+@cli.command()
+@click.argument('mutations', type=click.Path(exists=True))
+def load_dr_mutations(mutations):
+    """
+    Load Operons.
+    :return:
+    """
+    if os.path.isdir(mutations):
+        for root, dirs, files in os.walk(mutations):
+            for _file in files:
+                _file = '/'.join([os.path.abspath(mutations), _file])
+                if check_csv(_file):
+                    if _file.endswith(".txt"):
+                        create_dr_nodes(text_file=_file)
 
 
 @cli.command()

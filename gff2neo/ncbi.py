@@ -65,3 +65,22 @@ def fetch_publication_list(citations, rettype='medline'):
         else:
             records = Entrez.parse(h)
     return records
+
+
+def get_fasta():
+    Entrez.email = 'A.N.Other@example.com'
+    organism = 'Mycobacterium_tuberculosis_H37Rv'
+    accession = "NC_000962.3"
+    # gene_query = "{gene}[Gene] AND {organism}[Organism] AND {accession}[Accession] " \
+    #              "AND RefSeq[Filter]".format(gene="", organism=organism, accession=accession)
+    q = "{organism}[Organism] AND {accession}[Accession] AND RefSeq[Filter]".format(organism=organism,
+                                                                                    accession=accession)
+    handle = Entrez.esearch(db="nucleotide", term=q)
+    record = Entrez.read(handle)
+    ids = record[u'IdList']
+    seq_id = ids[0]  # you must implement an if to deal with <0 or >1 cases
+    handle = Entrez.efetch(db="nucleotide", id=seq_id, rettype="fasta", retmode="text")
+    record = handle.read()
+    # remove >NC_000962.3 Mycobacterium tuberculosis H37Rv, complete genome
+    residues = ''.join(record.strip('\n').split('\n')[1:])
+    return residues

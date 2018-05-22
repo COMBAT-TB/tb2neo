@@ -123,6 +123,10 @@ class Operon(Feature):
     _so_id = "SO:0000178"
     so_id = Property()
     description = Property()
+    start = Property()
+    end = Property()
+    coverage = Property()
+    experimentally_validated = Property()
 
     gene = RelatedTo("Gene", "MEMBER_OF")
     operon = RelatedFrom("Gene", "CO_REGULATED")

@@ -111,3 +111,4 @@ data/*.bz2
 gff2neo/data/string/
 data/operons
 data/*.gff3
+data/drdata

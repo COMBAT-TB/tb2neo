@@ -48,6 +48,7 @@ class VariantSite(GraphObject):
     alt_allele = Property()
     quality = Property()
     depth = Property()
+    consequence = Property()
     gene = Property()
     gene_id = Property()
     known = Property()
@@ -55,10 +56,10 @@ class VariantSite(GraphObject):
     pk = Property()
 
     occurs_in = RelatedTo("Gene", "OCCURS_IN")
-    location = RelatedTo("FeatureLoc", "LOCATED_AT")
+    location = RelatedTo("Location", "LOCATED_AT")
 
-    has_call = RelatedTo("Call", "HAS_CALL")
     belongs_to_vset = RelatedTo("VariantSet", "BELONGS_TO_VSET")
+    resistant_to = RelatedTo("Drug", "RESISTANT_TO")
 
     def __init__(self, chrom, pos, ref_allele, alt_allele, pk, gene=None):
         self.chrom = chrom
@@ -84,27 +85,27 @@ class CallSet(GraphObject):
         # self.vset = vset
 
 
-class Call(GraphObject):
-    # make __primarykey__ = CallSet.name+VariantSet.name+pos
-    __primarykey__ = 'pk'
-    genotype = Property()
-    ref_allele = Property()
-    alt_allele = Property()
-    gene = Property()
-    pos = Property()
-    pk = Property()
-    impact = Property()
-
-    associated_with = RelatedTo("VariantSite", "ASSOC_WITH_VARIANT")
-    belongs_to_cset = RelatedTo("CallSet", "BELONGS_TO_CSET")
-
-    def __init__(self, pos, ref_allele, alt_allele, pk, impact, gene=None):
-        self.pos = pos
-        self.ref_allele = ref_allele
-        self.alt_allele = alt_allele
-        self.impact = impact
-        self.gene = gene
-        self.pk = pk
+# class Call(GraphObject):
+#     # make __primarykey__ = CallSet.name+VariantSet.name+pos
+#     __primarykey__ = 'pk'
+#     genotype = Property()
+#     ref_allele = Property()
+#     alt_allele = Property()
+#     gene = Property()
+#     pos = Property()
+#     pk = Property()
+#     impact = Property()
+#
+#     associated_with = RelatedTo("VariantSite", "ASSOC_WITH_VARIANT")
+#     belongs_to_cset = RelatedTo("CallSet", "BELONGS_TO_CSET")
+#
+#     def __init__(self, pos, ref_allele, alt_allele, pk, impact, gene=None):
+#         self.pos = pos
+#         self.ref_allele = ref_allele
+#         self.alt_allele = alt_allele
+#         self.impact = impact
+#         self.gene = gene
+#         self.pk = pk
 
 
 class FastTree(GraphObject):

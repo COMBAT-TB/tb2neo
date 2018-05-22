@@ -6,8 +6,8 @@ services:
       DATABASE_URL: db
     volumes:
       - loader_data:/code
-   depends_on:
-     - db
+    depends_on:
+      - db
   db:
     restart: always
     build: ./neo4j/

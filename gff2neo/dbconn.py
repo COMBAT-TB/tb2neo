@@ -193,7 +193,7 @@ def create_rna_nodes(feature):
         ncrna.biotype = biotype
         graph.create(ncrna)
         ncrna_dict[unique_name] = ncrna
-    if feature.type == 'rRNA_gene' or 'rRNA':
+    if feature.type == 'rRNA_gene':
         rrna = RRna()
         rrna.name = name
         rrna.parent = parent[parent.find(':') + 1:]
@@ -298,37 +298,44 @@ def map_to_location(feature):
             _feature = gene_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
+            _feature.residues = _feature.get_residues()
             graph.push(_feature)
         elif feature.type == 'pseudogene':
             _feature = pseudogene_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
+            _feature.residues = _feature.get_residues()
             graph.push(_feature)
         elif feature.type in rna:
             if feature.type == 'tRNA_gene':
                 _feature = trna_dict.get(srcfeature_id)
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
+                _feature.residues = _feature.get_residues()
                 graph.push(_feature)
             if feature.type == 'ncRNA_gene':
                 _feature = ncrna_dict.get(srcfeature_id)
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
+                _feature.residues = _feature.get_residues()
                 graph.push(_feature)
             if feature.type == 'rRNA_gene':
                 _feature = rrna_dict.get(srcfeature_id)
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
+                _feature.residues = _feature.get_residues()
                 graph.push(_feature)
         elif feature.type == 'CDS':
             _feature = cds_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
+            _feature.residues = _feature.get_residues()
             graph.push(_feature)
         elif feature.type == 'mRNA':
             _feature = transcript_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
+            _feature.residues = _feature.get_residues()
             graph.push(_feature)
 
 
@@ -835,6 +842,15 @@ def create_reactome_pathway_nodes():
                             graph.push(pathway)
     end = time()
     sys.stdout.write("\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
+
+
+def create_dr_nodes(text_file=None):
+    sys.stdout.write("\nAdding operon data...")
+    with open(text_file) as text_file:
+        for line in text_file:
+            tab_split = line.split('\t')
+            print(tab_split)
+            print(tab_split[0].capitalize())
 
 
 def create_operon_nodes(text_file=None):

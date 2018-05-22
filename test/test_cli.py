@@ -3,8 +3,8 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from gff2neo.cli import examine_gff, load_gff, load_uniprot_data, load_publications, \
-    load_reactome_pathways, load_go_terms, load_drugbank_data, load_kegg_pathways, load_operons
+from gff2neo.cli import examine_gff, load_gff, load_uniprot_data, load_publications, load_reactome_pathways, \
+    load_go_terms, load_drugbank_data, load_kegg_pathways
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 TEST_GFF = os.path.join(CURR_DIR, "test_gff/h37rv-sample.gff3")
@@ -37,9 +37,14 @@ def test_load_gff(cli_runner):
     assert result.exit_code == 0
 
 
-def test_load_operons(cli_runner):
-    result = cli_runner.invoke(load_operons, [TEST_OPERON_FILE_DIR])
-    assert result.exit_code == 0
+# def test_load_operons(cli_runner):
+#     result = cli_runner.invoke(load_operons, [TEST_OPERON_FILE_DIR])
+#     assert result.exit_code == 0
+
+#
+# def test_load_dr_mutations(cli_runner):
+#     result = cli_runner.invoke(load_dr_mutations, [DR_DATA_DIR])
+#     assert result.exit_code == 0
 
 
 def test_load_uniprot_data(cli_runner):

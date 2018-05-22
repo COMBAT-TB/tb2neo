@@ -5,7 +5,7 @@ OPERON_DIR=data/operons
 
 gff2neo examine_gff "${GFF_FILES_DIR}"
 gff2neo load_gff "${GFF_FILES_DIR}"
-gff2neo load_operons "${OPERON_DIR}"
+#gff2neo load_operons "${OPERON_DIR}"
 gff2neo load_uniprot_data "${GFF_FILES_DIR}"
 gff2neo load_drugbank_data
 gff2neo load_go_terms
