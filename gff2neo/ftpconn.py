@@ -2,8 +2,6 @@ from ftplib import FTP, all_errors
 from gzip import GzipFile
 from io import BytesIO
 
-import Bio.SeqIO
-
 from gff2neo.ncbi import get_fasta
 
 FILE_PATH = '/pub/bacteria/release-39/fasta/bacteria_0_collection/mycobacterium_tuberculosis_h37rv/dna'
@@ -30,15 +28,16 @@ def download_fasta(url, file_path, fasta_file):
     return zipped_file
 
 
-def get_nucleotides():
+def get_nucleotides(strain):
     """
     Gets zipped fasta file and returns seq string
     :return:
     """
     try:
-        nucleotides = get_fasta()
-    except IOError:
-        fasta_zip = download_fasta(url=URL, file_path=FILE_PATH, fasta_file=FASTA_FILE)
-        seq_rec = Bio.SeqIO.read(fasta_zip, "fasta")
-        nucleotides = str(seq_rec.seq)
+        nucleotides = get_fasta(strain=strain)
+    except IOError as e:
+        raise e
+        # fasta_zip = download_fasta(url=URL, file_path=FILE_PATH, fasta_file=FASTA_FILE)
+        # seq_rec = Bio.SeqIO.read(fasta_zip, "fasta")
+        # nucleotides = str(seq_rec.seq)
     return nucleotides

@@ -5,14 +5,16 @@ from gff2neo.uniprot import UNIPROT_DATA
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
-MYCO_GFF = os.path.join(CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
-OPERON_DATA = os.path.join(CURR_DIR, "data/operon/mycobacterium_tuberculosis_h37rv_genome_summary.txt")
+MYCO_GFF = os.path.join(
+    CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
+OPERON_DATA = os.path.join(
+    CURR_DIR, "data/operon/mycobacterium_tuberculosis_h37rv_genome_summary.txt")
 DR_DATA_DIR = os.path.join(CURR_DIR, 'data/drdata/data/drdata/')
 
 
 def check_csv(csvfile):
     """
-    Check if csv file exists and is not empty
+    Check if csv file exists and is not empty.
     :param csvfile:
     :return:
     """
@@ -30,7 +32,7 @@ uniprot_config = {
 
 def get_taxonomy_and_proteome(gff_file):
     """
-    Get Taxonomy and Proteome
+    Get Taxonomy and Proteome.
     :param gff_file:
     :return:
     """
@@ -49,6 +51,42 @@ def cli():
     This script parses a GFF file and builds a Neo4j Graph database.
     """
     pass
+
+
+@cli.command()
+def delete():
+    """
+    Delete existing data.
+    :return:
+    """
+    # Deleting existing data
+    delete_db_data()
+
+
+@cli.command()
+@click.argument('strain')
+def load_chromosome(strain):
+    """
+    Load Chromosome for specified strain.
+    :param strain: H37RV or CDC1551
+    :return:
+    """
+    supported_strains = ["h37rv", "cdc1551"]
+
+    error_mess = "Unable to create Chromosome for strain='{strain}'\nWe currently support {supported}".format(
+        strain=strain, supported=supported_strains)
+
+    if strain and str(strain).lower() in supported_strains:
+        if "h37rv" == str(strain).lower():
+            strain = "h37rv"
+        elif "cdc1551" == str(strain).lower():
+            strain = "cdc1551"
+        else:
+            raise ValueError(error_mess)
+        click.echo("Loading {strain} Chromosome...".format(strain=strain))
+        create_chromosome_nodes(strain=strain)
+    else:
+        sys.stderr.write(error_mess)
 
 
 @cli.command()
@@ -76,8 +114,6 @@ def load_gff(gff_files):
     :param gff_files:
     :return:
     """
-    # Deleting existing data
-    delete_db_data()
     if os.path.isdir(gff_files):
         for root, dirs, files in os.walk(gff_files):
             for gff_file in files:
@@ -111,7 +147,8 @@ def load_operons(operon_dir):
 @click.argument('mutations', type=click.Path(exists=True))
 def load_dr_mutations(mutations):
     """
-    Load Operons.
+    Load Known Drug Resistant mutations.
+    :param mutations:
     :return:
     """
     if os.path.isdir(mutations):
@@ -142,9 +179,11 @@ def load_uniprot_data(gff_files):
                     gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
                     if gff_file.endswith(".gff3"):
                         result = get_taxonomy_and_proteome(gff_file)
-                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
+                        locus_tags = get_locus_tags(
+                            gff_file=gff_file, chunk=400)
                         map_gene_to_orthologs(get_locus_tags(gff_file, 400))
-                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
+                        query_uniprot(
+                            locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
                         # TODO: Need to refactor
                         create_protein_nodes()
 
@@ -194,7 +233,7 @@ def load_publications():
 @cli.command()
 def load_kegg_pathways():
     """
-    Load KEGG Pathways
+    Load KEGG Pathways.
     :return:
     """
     # Let's check if we have Proteins to map to.
@@ -209,7 +248,7 @@ def load_kegg_pathways():
 @cli.command()
 def load_reactome_pathways():
     """
-    Load REACTOME Pathways
+    Load REACTOME Pathways.
     :return:
     """
     # Let's check if we have Proteins to map to.

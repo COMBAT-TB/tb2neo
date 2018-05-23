@@ -1,17 +1,18 @@
 import pytest
 
-from gff2neo.dbconn import graph, split_gene_names
-from model.core import Gene
+from gff2neo.dbconn import graph, split_gene_names, create_chromosome_nodes
+from model.core import Gene, Chromosome
 
 
-# def test_create_chromosome_nodes():
-#     create_chromosome_nodes()
-#     chromosome = Chromosome.select(graph).first()
-#     assert chromosome.residues[:4] == 'TTGA'
+def test_create_chromosome_nodes():
+    create_chromosome_nodes(strain="h37rv")
+    chromosome = Chromosome.select(graph).first()
+    assert chromosome.residues[:4] == "TTGA"
 
 
 def test_db_nodes():
     result = graph.node_labels
+    assert "Chromosome" in result
     assert "Gene" in result
     assert "Transcript" in result
     assert "CDS" in result
@@ -19,9 +20,10 @@ def test_db_nodes():
 
 
 def test_rv0001():
-    gene = Gene.select(graph, 'Rv0001').first()
-    assert gene.name == 'dnaA'
-    assert gene.category is not ''
+    gene = Gene.select(graph, "Rv0001").first()
+    assert gene.name == "dnaA"
+    assert gene.category is not ""
+    assert gene.residues is not ""
 
 
 @pytest.mark.parametrize("test_input,expected", [

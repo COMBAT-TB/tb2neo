@@ -1,7 +1,10 @@
 """
 Interface to the Neo4j Database
 """
-from bioservices import ChEMBL, QuickGO, Reactome, KEGG
+import os
+import sys
+
+from bioservices import KEGG, ChEMBL, QuickGO, Reactome
 from pandas import read_csv
 from py2neo import Graph
 from tqdm import tqdm
@@ -36,9 +39,11 @@ location_dict = dict()
 go_term_set = set()
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
-TARGET_PROTEIN_IDS = os.path.join(CURR_DIR, "data/drugbank/all_target_polypeptide_ids.csv")
+TARGET_PROTEIN_IDS = os.path.join(
+    CURR_DIR, "data/drugbank/all_target_polypeptide_ids.csv")
 DRUG_VOCAB = os.path.join(CURR_DIR, "data/drugbank/drugbank_vocabulary.csv")
-STRING_DATA = os.path.join(CURR_DIR, "data/string/83332.protein.links.detailed.v10.5.txt")
+STRING_DATA = os.path.join(
+    CURR_DIR, "data/string/83332.protein.links.detailed.v10.5.txt")
 
 
 def delete_db_data():
@@ -73,12 +78,13 @@ def create_organism_nodes(gff_file=None):
     species = "M. tuberculosis"
     common_name = "TB"
 
-    organism = Organism(strain=strain, genus=genus, species=species, common_name=common_name)
+    organism = Organism(strain=strain, genus=genus,
+                        species=species, common_name=common_name)
     graph.create(organism)
     return organism
 
 
-def create_chromosome_nodes():
+def create_chromosome_nodes(strain):
     """
     Create Chromosome Nodes
     :return:
@@ -88,7 +94,10 @@ def create_chromosome_nodes():
     chromosome = Chromosome()
     chromosome.name = name
     chromosome.uniquename = uniquename
-    chromosome.residues = get_nucleotides()
+    try:
+        chromosome.residues = get_nucleotides(strain=strain)
+    except IOError as e:
+        raise e
     graph.create(chromosome)
 
 
@@ -396,10 +405,9 @@ def create_go_term_nodes():
                         graph.push(protein)
                         go_term.protein.add(protein)
                         graph.push(go_term)
-                sys.stdout.write(
-                    "Mapped {len} GOTerms to {protein}...".format(len=len(go_ids), protein=protein.uniquename))
             else:
-                sys.stdout.write('\nA status of {code} occurred for {go}\n'.format(code=response.status_code, go=terms))
+                sys.stdout.write('\nA status of {code} occurred for {go}\n'.format(
+                    code=response.status_code, go=terms))
 
     sys.stdout.write("\nMapping GoTerm Relations...\n")
     for term_accession, v in quick_go_data_dict.items():
@@ -433,7 +441,8 @@ def create_go_term_nodes():
             #             graph.create(go_term)
 
     end = time.time()
-    print("Created {} GoTerms in {} seconds.".format(len(go_term_set), end - start))
+    sys.stdout.write("Created {} GoTerms in {} seconds.".format(
+        len(go_term_set), end - start))
     # create_is_a_cv_term_rel(go_term_set)
 
 
@@ -445,7 +454,8 @@ def create_interpro_term_nodes(protein, interpro_ids):
     :return:
     """
     # http://generic-model-organism-system-database.450254.n5.nabble.com/Re-GMOD-devel-Storing-Interpro-domains-in-Chado-td459778.html
-    terms = [interpro_id for interpro_id in interpro_ids.split("; ") if interpro_id is not '']
+    terms = [interpro_id for interpro_id in interpro_ids.split(
+        "; ") if interpro_id is not '']
     for interpro in terms:
         import time
         dbxref = DbXref(db="InterPro", accession=interpro, version=time.time())
@@ -494,7 +504,8 @@ def create_publication_nodes():
             protein = None
             if protein_entry is not '':
                 protein = Protein.select(graph, protein_entry).first()
-            pubmed_ids = [p for p in entry['PubMed'].split("; ") if p is not '']
+            pubmed_ids = [p for p in entry['PubMed'].split(
+                "; ") if p is not '']
             for p_id in set(pubmed_ids):
                 pub = Publication()
                 pub.pmid = p_id
@@ -522,7 +533,7 @@ def create_publication_nodes():
             volume = article['Journal']['JournalIssue']['Volume']
             issue = article['Journal']['JournalIssue']['Issue']
             date_of_pub = article['Journal']['JournalIssue']['PubDate']['Month'] + " " + \
-                          article['Journal']['JournalIssue']['PubDate']['Year']
+                article['Journal']['JournalIssue']['PubDate']['Year']
             pub_place = rec['MedlineCitation']['MedlineJournalInfo']['Country']
             publisher = None
             author = None
@@ -556,7 +567,8 @@ def create_publication_nodes():
         create_author_nodes(publication, full_author)
         record_loaded_count += 1
     end = time.time()
-    sys.stdout.write("Created Publications in {} seconds.".format(end - _start))
+    sys.stdout.write(
+        "Created Publications in {} seconds.".format(end - _start))
 
 
 def build_protein_interaction_rels(protein_interaction_dict):
@@ -636,7 +648,8 @@ def create_drugbank_nodes():
                 "_.entry_name='{}'".format(_target['Uniprot Title']))
             if protein_:
                 for protein in protein_:
-                    drug_ids = [x for x in _target['Drug IDs'].split('; ') if x is not '']
+                    drug_ids = [x for x in _target['Drug IDs'].split(
+                        '; ') if x is not '']
                     for _id in drug_ids:
                         drug_set.add(_id)
                         dbxref = DbXref(db="DrugBank", accession=_id)
@@ -762,7 +775,8 @@ def map_gene_to_orthologs(locus_tags):
                 if tag.startswith('Rv'):
                     ortholog = fetch_ortholog(locus_tag=str(tag))
                     if ortholog:
-                        orthologous_gene = Gene.select(graph, str(ortholog)).first()
+                        orthologous_gene = Gene.select(
+                            graph, str(ortholog)).first()
                         if orthologous_gene:
                             gene.orthologous_to.add(orthologous_gene)
                             orthologous_gene.orthologous_to_.add(gene)
@@ -805,7 +819,8 @@ def create_kegg_pathways_nodes():
                             pathway.protein.add(protein)
                             graph.push(pathway)
     end = time()
-    sys.stdout.write("\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
+    sys.stdout.write(
+        "\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
 
 
 def create_reactome_pathway_nodes():
@@ -824,7 +839,8 @@ def create_reactome_pathway_nodes():
                 for pathway_id in pathways:
                     path_res = reactome.query_by_id("Pathway", pathway_id)
                     if not isinstance(path_res, int):
-                        print(protein, "Pathway: {} - {}".format(pathway_id, path_res['displayName']))
+                        print(
+                            protein, "Pathway: {} - {}".format(pathway_id, path_res['displayName']))
                         pathway = Pathway()
                         pathway.accession = pathway_id
                         pathway._type = path_res['schemaClass']
@@ -841,7 +857,8 @@ def create_reactome_pathway_nodes():
                             pathway.protein.add(_protein)
                             graph.push(pathway)
     end = time()
-    sys.stdout.write("\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
+    sys.stdout.write(
+        "\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
 
 
 def create_dr_nodes(text_file=None):

@@ -11,5 +11,5 @@ from gff2neo.ftpconn import get_nucleotides
 
 
 def test_get_nucleotides():
-    result = get_nucleotides()
+    result = get_nucleotides(strain="h37rv")
     assert isinstance(result, str) is True

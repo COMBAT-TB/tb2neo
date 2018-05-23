@@ -17,5 +17,5 @@ def test_fetch_publication_list(test_input, expected):
 
 
 def test_get_fasta():
-    res = get_fasta()
+    res = get_fasta(strain="h37rv")
     assert res[:4] == 'TTGA'

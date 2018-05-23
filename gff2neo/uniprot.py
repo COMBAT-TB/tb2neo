@@ -30,7 +30,8 @@ def search_uniprot(query, columns, taxonomy, proteome):
     query = "taxonomy:{}+AND+proteome:{}+AND+{}".format(taxonomy,
                                                         proteome, query)
 
-    result = uniprot_.search(query=query, frmt="tab", columns=columns, sort=None)
+    result = uniprot_.search(query=query, frmt="tab",
+                             columns=columns, sort=None)
     reader = csv.reader(StringIO(result), delimiter='\t')
     try:
         next(reader)
@@ -95,7 +96,8 @@ def query_uniprot(locus_tags, taxonomy, proteome):
         for entry in data:
             results.append(entry)
     end_time = time()
-    sys.stdout.write("\nDone fetching data from UniProt in {} secs.".format(end_time - start_time))
+    sys.stdout.write(
+        "\nDone fetching data from UniProt in {} secs.".format(end_time - start_time))
     if len(results) > 0:
         write_to_csv(results)
     return results
