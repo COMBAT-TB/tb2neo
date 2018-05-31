@@ -25,4 +25,5 @@ from gff2neo.quickgo import query_quickgo
 
 ])
 def test_query_quickgo(test_input, expected):
-    assert isinstance(test_input, expected) is True
+    assert test_input == expected
+    assert isinstance(expected, int) is True

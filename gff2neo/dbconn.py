@@ -236,8 +236,9 @@ def create_featureloc_nodes(feature):
     :return:
     """
     srcfeature_id = get_feature_name(feature).get("UniqueName")
-    primary_key = feature.location.start + feature.location.end
-    feature_loc = Location(pk=primary_key, fmin=feature.location.start, fmax=feature.location.end,
+    # Add 1 to start. Ensembl GFF in one based.
+    primary_key = (feature.location.start + 1) + feature.location.end
+    feature_loc = Location(pk=primary_key, fmin=(feature.location.start + 1), fmax=feature.location.end,
                            strand=feature.location.strand)
     graph.create(feature_loc)
     location_dict[srcfeature_id] = feature_loc
@@ -802,24 +803,27 @@ def create_kegg_pathways_nodes():
         pathway_ids = kegg.pathwayIds
         for path in tqdm(pathway_ids):
             data = kegg.parse(kegg.get(path))
-            pathway = Pathway()
-            pathway.accession = path[path.find(organism):].strip()
-            pathway._class = data.get('CLASS')
-            pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
-            pathway.summation = data.get('DESCRIPTION')
-            pathway.species = data.get('ORGANISM')
-            graph.create(pathway)
-            if data.get('GENE'):
-                for g_id in data['GENE'].keys():
-                    g_id = "Rv" + g_id.strip("RVBD_") if "RV" in g_id else g_id
-                    # Protein parent is stored as an array
-                    gene = Gene.select(graph, g_id).first()
-                    if gene:
-                        for protein in gene.encodes:
-                            protein.pathway.add(pathway)
-                            graph.push(protein)
-                            pathway.protein.add(protein)
-                            graph.push(pathway)
+            if isinstance(data, dict) is True:
+                pathway = Pathway()
+                pathway.accession = path[path.find(organism):].strip()
+                pathway._class = data.get('CLASS')
+                pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
+                pathway.summation = data.get('DESCRIPTION')
+                pathway.species = data.get('ORGANISM')
+                graph.create(pathway)
+                if data.get('GENE'):
+                    for g_id in data['GENE'].keys():
+                        g_id = "Rv" + g_id.strip("RVBD_") if "RV" in g_id else g_id
+                        # Protein parent is stored as an array
+                        gene = Gene.select(graph, g_id).first()
+                        if gene:
+                            for protein in gene.encodes:
+                                protein.pathway.add(pathway)
+                                graph.push(protein)
+                                pathway.protein.add(protein)
+                                graph.push(pathway)
+            else:
+                sys.stderr.write("Data is: {}\n".format(data))
     end = time()
     sys.stdout.write(
         "\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
@@ -877,20 +881,22 @@ def create_known_mutation_nodes(**kwargs):
     graph.create(v_set)
     graph.create(call_set)
 
-    variant = Variant(chrom=kwargs.get("chrom", ""), pos=kwargs.get("pos", ""), loc_in_seq=kwargs.get("loc_in_seq", ""),
+    variant = Variant(chrom=kwargs.get("chrom", ""), pos=kwargs.get("pos", ""),
                       ref_allele=kwargs.get("ref_allele", ""), alt_allele=kwargs.get("alt_allele", ""),
                       gene=kwargs.get("gene", ""), pk=kwargs.get("pk", ""), consequence=kwargs.get("consequence", ""))
-
+    variant.loc_in_seq = kwargs.get("loc_in_seq", "")
     variant.belongs_to_cset.add(call_set)
     call_set.has_variants.add(variant)
 
-    graph.create(variant)
-    graph.push(call_set)
-
-    gene = Gene.select(graph, str(variant.gene)).first()
+    drug = Drug.select(graph, kwargs.get("drugbank_id", "")).first()
+    if drug:
+        variant.resistant_to.add(drug)
+    gene = Gene.select(graph, kwargs.get("gene", "")).first()
     if gene:
         variant.occurs_in.add(gene)
-        graph.push(variant)
+
+    graph.create(variant)
+    graph.push(call_set)
 
 
 def create_operon_nodes(text_file=None):

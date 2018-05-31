@@ -79,7 +79,7 @@ class Variant(GraphObject):
     gene = Property()
     gene_id = Property()
     known = Property()
-    novel = Property()
+    promoter = Property()
     impact = Property()
 
     occurs_in = RelatedTo("Gene", "OCCURS_IN")
