@@ -1,8 +1,6 @@
 """
 Interface to the Neo4j Database
 """
-import os
-import sys
 
 from bioservices import KEGG, ChEMBL, QuickGO, Reactome
 from pandas import read_csv
@@ -10,11 +8,11 @@ from py2neo import Graph
 from tqdm import tqdm
 
 from gff2neo.ftpconn import get_nucleotides
+from gff2neo.model.vcfmodel import *
 from gff2neo.ncbi import fetch_publication_list
 from gff2neo.orthologs import fetch_ortholog
 from gff2neo.quickgo import query_quickgo
 from gff2neo.uniprot import *
-from model.core import *
 
 graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
@@ -186,7 +184,7 @@ def create_rna_nodes(feature):
     biotype = feature.qualifiers['biotype'][0]
     parent = feature.qualifiers.get("Parent", " ")[0]
 
-    if feature.type == 'tRNA_gene':
+    if feature.type == 'tRNA_gene' and biotype == "tRNA":
         trna = TRna()
         trna.name = name
         trna.parent = parent[parent.find(':') + 1:]
@@ -194,7 +192,7 @@ def create_rna_nodes(feature):
         trna.biotype = biotype
         graph.create(trna)
         trna_dict[unique_name] = trna
-    if feature.type == 'ncRNA_gene':
+    if feature.type == 'ncRNA_gene' and biotype == "ncRNA":
         ncrna = NCRna()
         ncrna.name = name
         ncrna.parent = parent[parent.find(':') + 1:]
@@ -202,7 +200,7 @@ def create_rna_nodes(feature):
         ncrna.biotype = biotype
         graph.create(ncrna)
         ncrna_dict[unique_name] = ncrna
-    if feature.type == 'rRNA_gene':
+    if feature.type == 'rRNA_gene' and biotype == "rRNA":
         rrna = RRna()
         rrna.name = name
         rrna.parent = parent[parent.find(':') + 1:]
@@ -390,7 +388,7 @@ def create_go_term_nodes():
             response = query_quickgo(terms)
             if response.status_code == 200:
                 data = response.json()
-                for result in data['results']:
+                for result in tqdm(data['results']):
                     accession = result['id']
                     # quick_go_data[accession] = result
                     name = result['name']
@@ -410,7 +408,7 @@ def create_go_term_nodes():
                     code=response.status_code, go=terms))
 
     sys.stdout.write("\nMapping GoTerm Relations...\n")
-    for term_accession, v in quick_go_data_dict.items():
+    for term_accession, v in tqdm(quick_go_data_dict.items()):
         term = GOTerm.select(graph, term_accession).first()
         if term:
             if v.get('children'):
@@ -533,7 +531,7 @@ def create_publication_nodes():
             volume = article['Journal']['JournalIssue']['Volume']
             issue = article['Journal']['JournalIssue']['Issue']
             date_of_pub = article['Journal']['JournalIssue']['PubDate']['Month'] + " " + \
-                article['Journal']['JournalIssue']['PubDate']['Year']
+                          article['Journal']['JournalIssue']['PubDate']['Year']
             pub_place = rec['MedlineCitation']['MedlineJournalInfo']['Country']
             publisher = None
             author = None
@@ -643,13 +641,12 @@ def create_drugbank_nodes():
         for _target in tqdm(reader):
             # TODO :
             # if 'tuberculosis' in _target['Species']:
-            # print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'])
+            # print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'], _target['Species'])
             protein_ = Protein.select(graph).where(
                 "_.entry_name='{}'".format(_target['Uniprot Title']))
             if protein_:
                 for protein in protein_:
-                    drug_ids = [x for x in _target['Drug IDs'].split(
-                        '; ') if x is not '']
+                    drug_ids = [x for x in _target['Drug IDs'].split(';') if x is not '']
                     for _id in drug_ids:
                         drug_set.add(_id)
                         dbxref = DbXref(db="DrugBank", accession=_id)
@@ -703,6 +700,11 @@ def map_gene_and_cds_to_protein(protein):
 
 
 def split_gene_names(parent):
+    """
+    Split gene names that have spaces and /
+    :param parent:
+    :return:
+    """
     if not parent:
         return None
     if ';' in parent:
@@ -729,9 +731,9 @@ def create_protein_nodes():
         dbxref = DbXref(db="UniProt", accession=entry[1], version=entry[0])
         graph.create(dbxref)
 
-        pdb_id = None
-        if entry[12] is not "":
-            pdb_id = eu_mapping(entry[0], to='PDB_ID')
+        # pdb_id = None
+        # if entry[12] is not "":
+        pdb_id = eu_mapping(entry[0], to='PDB_ID')
         protein = Protein()
         protein.name = entry[9]
         protein.uniquename = entry[0]
@@ -861,13 +863,34 @@ def create_reactome_pathway_nodes():
         "\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
 
 
-def create_dr_nodes(text_file=None):
-    sys.stdout.write("\nAdding operon data...")
-    with open(text_file) as text_file:
-        for line in text_file:
-            tab_split = line.split('\t')
-            print(tab_split)
-            print(tab_split[0].capitalize())
+def create_known_mutation_nodes(**kwargs):
+    """
+    Create Known mutations
+    :return:
+    """
+    v_set = VariantSet(name=kwargs.get("vset_name", ""), owner=kwargs.get("vset_owner", ""))
+    call_set = CallSet(name=kwargs.get("cset_name", ""))
+
+    call_set.belongs_to_vset.add(v_set)
+    v_set.has_callsets.add(call_set)
+
+    graph.create(v_set)
+    graph.create(call_set)
+
+    variant = Variant(chrom=kwargs.get("chrom", ""), pos=kwargs.get("pos", ""), loc_in_seq=kwargs.get("loc_in_seq", ""),
+                      ref_allele=kwargs.get("ref_allele", ""), alt_allele=kwargs.get("alt_allele", ""),
+                      gene=kwargs.get("gene", ""), pk=kwargs.get("pk", ""), consequence=kwargs.get("consequence", ""))
+
+    variant.belongs_to_cset.add(call_set)
+    call_set.has_variants.add(variant)
+
+    graph.create(variant)
+    graph.push(call_set)
+
+    gene = Gene.select(graph, str(variant.gene)).first()
+    if gene:
+        variant.occurs_in.add(gene)
+        graph.push(variant)
 
 
 def create_operon_nodes(text_file=None):

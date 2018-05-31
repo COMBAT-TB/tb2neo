@@ -51,3 +51,8 @@ Chromosome	ena	mRNA	2072596	2073084	.	+	.	ID=transcript:CCP44593;Parent=gene:Rv1
 Chromosome	ena	exon	2072596	2073084	.	+	.	Parent=transcript:CCP44593;Name=CCP44593-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP44593-1;rank=1
 Chromosome	ena	CDS	2072596	2073084	.	+	0	ID=CDS:CCP44593;Parent=transcript:CCP44593;protein_id=CCP44593
 ###
+Chromosome	ena	gene	2518115	2519365	.	+	.	ID=gene:Rv2245;Name=kasA;biotype=protein_coding;description=3-oxoacyl-[acyl-carrier protein] synthase 1 KasA (beta-ketoacyl-ACP synthase) (KAS I);gene_id=Rv2245;logic_name=ena
+Chromosome	ena	mRNA	2518115	2519365	.	+	.	ID=transcript:CCP45025;Parent=gene:Rv2245;Name=kasA-1;biotype=protein_coding;transcript_id=CCP45025
+Chromosome	ena	exon	2518115	2519365	.	+	.	Parent=transcript:CCP45025;Name=CCP45025-1;constitutive=1;ensembl_end_phase=0;ensembl_phase=0;exon_id=CCP45025-1;rank=1
+Chromosome	ena	CDS	2518115	2519365	.	+	0	ID=CDS:CCP45025;Parent=transcript:CCP45025;protein_id=CCP45025
+###

@@ -1,3 +1,6 @@
+"""
+Testing ncbi module
+"""
 import types
 
 import pytest

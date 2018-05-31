@@ -1,11 +1,10 @@
-
-gene: Rv0005, drug: Ofloxacin
-gene: Rv0006, drug: Ofloxacin
-gene: Rv0667, drug: Rifampicin
-gene: Rv0682, drug: Streptomycin
-gene: Rv1484, drug: Isoniazid
-gene: Rv1908c, drug: Isoniazid
-gene: Rv2043c, drug: Pyrazinamide
-gene: Rv3793, drug: Ethambutol
-gene: Rv3794, drug: Ethambutol
-gene: Rv3795, drug: Ethambutol
+ Rv0005, Ofloxacin
+ Rv0006, Ofloxacin
+ Rv0667, Rifampicin
+ Rv0682, Streptomycin
+ Rv1484, Isoniazid
+ Rv1908c, Isoniazid
+ Rv2043c, Pyrazinamide
+ Rv3793, Ethambutol
+ Rv3794, Ethambutol
+ Rv3795, Ethambutol

@@ -1,7 +1,11 @@
+"""
+Cli
+"""
 import click
 
 from gff2neo.gffproc import *
 from gff2neo.uniprot import UNIPROT_DATA
+from gff2neo.variants import process_mutation_file
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -9,7 +13,7 @@ MYCO_GFF = os.path.join(
     CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
 OPERON_DATA = os.path.join(
     CURR_DIR, "data/operon/mycobacterium_tuberculosis_h37rv_genome_summary.txt")
-DR_DATA_DIR = os.path.join(CURR_DIR, 'data/drdata/data/drdata/')
+DR_DATA_DIR = os.path.join(CURR_DIR, 'data/mutations/')
 
 
 def check_csv(csvfile):
@@ -145,7 +149,7 @@ def load_operons(operon_dir):
 
 @cli.command()
 @click.argument('mutations', type=click.Path(exists=True))
-def load_dr_mutations(mutations):
+def load_known_mutations(mutations):
     """
     Load Known Drug Resistant mutations.
     :param mutations:
@@ -156,8 +160,7 @@ def load_dr_mutations(mutations):
             for _file in files:
                 _file = '/'.join([os.path.abspath(mutations), _file])
                 if check_csv(_file):
-                    if _file.endswith(".txt"):
-                        create_dr_nodes(text_file=_file)
+                    process_mutation_file(in_file=_file)
 
 
 @cli.command()
@@ -168,20 +171,21 @@ def load_uniprot_data(gff_files):
     :param gff_files:
     :return:
     """
-    click.secho("\nLoading UniProt data...", fg="green")
     if check_csv(UNIPROT_DATA) and not gff_files:
-        click.secho("Found CSV data...", fg="green")
+        click.secho("\nLoading UniProt data from csv...", fg="green")
         create_protein_nodes()
     else:
         if os.path.isdir(gff_files):
             for root, dirs, files in os.walk(gff_files):
+                click.secho("\nLoading UniProt data from gff...", fg="green")
                 for gff_file in files:
                     gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
                     if gff_file.endswith(".gff3"):
                         result = get_taxonomy_and_proteome(gff_file)
                         locus_tags = get_locus_tags(
                             gff_file=gff_file, chunk=400)
-                        map_gene_to_orthologs(get_locus_tags(gff_file, 400))
+                        # TODO: When we have loaded the CDC1551 strain
+                        # map_gene_to_orthologs(get_locus_tags(gff_file, 400))
                         query_uniprot(
                             locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
                         # TODO: Need to refactor

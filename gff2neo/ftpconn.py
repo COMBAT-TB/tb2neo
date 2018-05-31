@@ -1,3 +1,6 @@
+"""
+Interface to Ensembl ftp
+"""
 from ftplib import FTP, all_errors
 from gzip import GzipFile
 from io import BytesIO

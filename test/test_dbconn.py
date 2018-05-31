@@ -1,7 +1,10 @@
+"""
+Test dbconn module
+"""
 import pytest
 
 from gff2neo.dbconn import graph, split_gene_names, create_chromosome_nodes
-from model.core import Gene, Chromosome
+from gff2neo.model.core import Gene, Chromosome
 
 
 def test_create_chromosome_nodes():

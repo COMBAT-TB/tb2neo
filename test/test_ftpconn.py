@@ -1,3 +1,6 @@
+"""
+Testing ftpconn module
+"""
 from gff2neo.ftpconn import get_nucleotides
 
 

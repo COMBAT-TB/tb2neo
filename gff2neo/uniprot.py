@@ -42,6 +42,11 @@ def search_uniprot(query, columns, taxonomy, proteome):
 
 
 def write_to_csv(results):
+    """
+    Write to CSV
+    :param results:
+    :return:
+    """
     file_exists = os.path.isfile(UNIPROT_DATA)
     sys.stdout.write("\nWriting to csv...")
     fieldnames = [

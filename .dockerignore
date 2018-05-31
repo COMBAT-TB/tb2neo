@@ -7,6 +7,6 @@ gff2neo/data/string/
 #gff2neo/data/uniprot/
 gff2neo.egg-info
 data/img/*
-data/*.bz2
-data/*.gff3
-data/*.gff
+*.gff
+*.bz2
+*.gff3

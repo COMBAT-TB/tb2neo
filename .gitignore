@@ -107,9 +107,9 @@ ENV/
 gff2neo/data/drugbank/pharmacologically_active.csv
 data/*.csv
 data/gff_files
-data/*.bz2
 data/*.gz
 gff2neo/data/string/
 data/operons
-data/*.gff3
+*.gff3
 data/drdata
+*.bz2

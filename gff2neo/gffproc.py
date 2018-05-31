@@ -31,7 +31,6 @@ def parse_gff(gff_file):
     Parse GFF file
     :return:
     """
-    sys.stdout.write("Parsing GFF {}...".format(gff_file))
     organism = create_organism_nodes(gff_file)
     # we are not interested in exons as this is a bacterial genome
     limits = [["mRNA"], ["gene", "CDS", "tRNA_gene",
@@ -75,7 +74,6 @@ def load_gff_data(gff_file, limit, organism):
     :param limit:
     :return:
     """
-    sys.stdout.write("\nExtract and load features to Neo4j.")
     in_file = open(gff_file)
     limit_info = dict(gff_type=limit)
     for rec in GFF.parse(gff_file, limit_info=limit_info):
@@ -135,4 +133,4 @@ def map_functional_category(gff=None):
 #                 if len(links) > 0:
 #                     for drug in links:
 #                         print("\n", lt, "is targeted by", drug.text)
-#                         tbdtdb.write("\ngene: {}, drug: {}".format(lt, drug.text))
+#                         tbdtdb.write("{}\t{}\n".format(lt, drug.text))
