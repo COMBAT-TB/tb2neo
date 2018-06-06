@@ -875,8 +875,8 @@ def create_known_mutation_nodes(**kwargs):
     v_set = VariantSet(name=kwargs.get("vset_name", ""), owner=kwargs.get("vset_owner", ""))
     call_set = CallSet(name=kwargs.get("cset_name", ""))
 
-    call_set.belongs_to_vset.add(v_set)
     v_set.has_callsets.add(call_set)
+    call_set.belongs_to_vset.add(v_set)
 
     graph.create(v_set)
     graph.create(call_set)
@@ -884,16 +884,28 @@ def create_known_mutation_nodes(**kwargs):
     variant = Variant(chrom=kwargs.get("chrom", ""), pos=kwargs.get("pos", ""),
                       ref_allele=kwargs.get("ref_allele", ""), alt_allele=kwargs.get("alt_allele", ""),
                       gene=kwargs.get("gene", ""), pk=kwargs.get("pk", ""), consequence=kwargs.get("consequence", ""))
-    variant.loc_in_seq = kwargs.get("loc_in_seq", "")
+    variant.loc_in_seq = kwargs.get("loc_in_seq")
+    variant.promoter = kwargs.get("promoter")
+    variant.biotype = kwargs.get("biotype")
+
     variant.belongs_to_cset.add(call_set)
     call_set.has_variants.add(variant)
 
-    drug = Drug.select(graph, kwargs.get("drugbank_id", "")).first()
+    drug = Drug.select(graph, str(kwargs.get("drugbank_id")).upper()).first()
     if drug:
         variant.resistant_to.add(drug)
-    gene = Gene.select(graph, kwargs.get("gene", "")).first()
+    elif kwargs.get("drugbank_id") and kwargs.get("drug_name"):
+        drug = Drug(accession=kwargs.get("drugbank_id"), name=kwargs.get("drug_name").capitalize())
+        graph.create(drug)
+        variant.resistant_to.add(drug)
+
+    gene = Gene.select(graph).where("_.name=~'(?i).*{}.*'".format(str(kwargs.get("gene")).lower())).first()
     if gene:
         variant.occurs_in.add(gene)
+    else:
+        rna = RRna.select(graph).where("_.name=~'(?i).*{}.*'".format(str(kwargs.get("gene")).lower())).first()
+        if rna:
+            variant.occurs_in_.add(rna)
 
     graph.create(variant)
     graph.push(call_set)

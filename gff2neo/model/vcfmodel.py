@@ -25,9 +25,9 @@ class VariantSet(GraphObject):
     history_id = Property()
     col_id = Property()
 
-    has_variant = RelatedFrom("Variant", "BELONGS_TO")
-    forms_tree = RelatedFrom("FastTree", "FROM_VARIANT_SET")
-    has_callsets = RelatedFrom("CallSet", "HAS_CALL_SET")
+    has_variant = RelatedTo("Variant", "BELONGS_TO")
+    forms_tree = RelatedTo("FastTree", "FROM_VARIANT_SET")
+    has_callsets = RelatedTo("CallSet", "CALL_SET")
 
     def __init__(self, name, owner, history_id=None, col_id=None):
         self.name = name
@@ -48,8 +48,8 @@ class CallSet(GraphObject):
     vset = Property()
     identifier = Property()
 
-    belongs_to_vset = RelatedTo("VariantSet", "BELONGS_TO")
-    has_variants = RelatedTo("Variant", "HAS_VARIANT")
+    belongs_to_vset = RelatedFrom("VariantSet", "CALL_SET")
+    has_variants = RelatedFrom("Variant", "HAS_VARIANT")
 
     def __init__(self, name):
         self.name = name
@@ -83,9 +83,11 @@ class Variant(GraphObject):
     impact = Property()
 
     occurs_in = RelatedTo("Gene", "OCCURS_IN")
+    occurs_in_ = RelatedTo("RRna", "OCCURS_IN")
+
     location = RelatedTo("Location", "LOCATED_AT")
 
-    belongs_to_cset = RelatedTo("CallSet", "BELONGS_TO")
+    belongs_to_cset = RelatedTo("CallSet", "HAS_VARIANT")
     resistant_to = RelatedTo("Drug", "RESISTANT_TO")
 
     def __init__(self, chrom, pos, ref_allele, alt_allele, pk, impact=None, gene=None, consequence=None):

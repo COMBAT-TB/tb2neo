@@ -159,7 +159,7 @@ def load_known_mutations(mutations):
         for root, dirs, files in os.walk(mutations):
             for _file in files:
                 _file = '/'.join([os.path.abspath(mutations), _file])
-                if check_csv(_file):
+                if check_csv(_file) and _file.endswith(".txt"):
                     process_mutation_file(in_file=_file)
 
 
