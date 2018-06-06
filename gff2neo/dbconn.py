@@ -2,7 +2,7 @@
 Interface to the Neo4j Database
 """
 
-from bioservices import KEGG, ChEMBL, QuickGO, Reactome
+from bioservices import KEGG, ChEMBL, QuickGO, reactome
 from pandas import read_csv
 from py2neo import Graph
 from tqdm import tqdm
@@ -20,7 +20,7 @@ graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
 chembl = ChEMBL(verbose=False)
 quick_go = QuickGO(verbose=False)
 quick_go.url = 'http://www.ebi.ac.uk/QuickGO-Old'
-reactome = Reactome(verbose=False)
+reactome_old = reactome.ReactomeOld(verbose=False)
 kegg = KEGG(verbose=False)
 
 # watch("neo4j.bolt")
@@ -843,7 +843,7 @@ def create_reactome_pathway_nodes():
             pathways = eu_mapping(protein, to='REACTOME_ID')
             if pathways:
                 for pathway_id in pathways:
-                    path_res = reactome.query_by_id("Pathway", pathway_id)
+                    path_res = reactome_old.query_by_id("Pathway", pathway_id)
                     if not isinstance(path_res, int):
                         print(
                             protein, "Pathway: {} - {}".format(pathway_id, path_res['displayName']))
