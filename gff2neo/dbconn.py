@@ -872,6 +872,9 @@ def create_known_mutation_nodes(**kwargs):
     Create Known mutations
     :return:
     """
+    fluoroquinolones = ["ciprofloxacin", "ofloxacin", "levofloxacin", "moxifloxacin"]
+    aminoglyconsides = ["amikacin", "kanamycin", "streptomycin", "capreomycin"]
+
     v_set = VariantSet(name=kwargs.get("vset_name", ""), owner=kwargs.get("vset_owner", ""))
     call_set = CallSet(name=kwargs.get("cset_name", ""))
 
@@ -891,13 +894,29 @@ def create_known_mutation_nodes(**kwargs):
     variant.belongs_to_cset.add(call_set)
     call_set.has_variants.add(variant)
 
-    drug = Drug.select(graph, str(kwargs.get("drugbank_id")).upper()).first()
-    if drug:
-        variant.resistant_to.add(drug)
-    elif kwargs.get("drugbank_id") and kwargs.get("drug_name"):
-        drug = Drug(accession=kwargs.get("drugbank_id"), name=kwargs.get("drug_name").capitalize())
-        graph.create(drug)
-        variant.resistant_to.add(drug)
+    def map_drug_class_to_variant(_class):
+        """
+        Map all drugs in class to variant
+        :param _class:
+        :return:
+        """
+        for item in _class:
+            drugs = Drug.select(graph).where("_.name=~'(?i).*{}.*'".format(item))
+            for _drug in drugs:
+                variant.resistant_to.add(_drug)
+
+    if kwargs.get("drug_name") == "aminoglycosides":
+        map_drug_class_to_variant(aminoglyconsides)
+    elif kwargs.get("drug_name") == "fluoroquinolones":
+        map_drug_class_to_variant(fluoroquinolones)
+    else:
+        drug = Drug.select(graph, str(kwargs.get("drugbank_id")).upper()).first()
+        if drug:
+            variant.resistant_to.add(drug)
+        elif kwargs.get("drugbank_id") and kwargs.get("drug_name"):
+            drug = Drug(accession=kwargs.get("drugbank_id"), name=kwargs.get("drug_name").capitalize())
+            graph.create(drug)
+            variant.resistant_to.add(drug)
 
     gene = Gene.select(graph).where("_.name=~'(?i).*{}.*'".format(str(kwargs.get("gene")).lower())).first()
     if gene:

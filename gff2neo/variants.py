@@ -22,15 +22,14 @@ def process_mutation_file(in_file):
     if in_file and in_file.endswith(".txt"):
         sys.stdout.write("\nAdding known mutations...\n")
         with open(in_file) as in_file:
-            cset_name = str(in_file).split('/')[-1]
+            cset_name = str(in_file.name).split('/')[-1]
             vset_name = "doi.org/10.1186/s13073-015-0164-0"
             vset_owner = "Coll et al"
             for line in tqdm(in_file):
                 tab_split = line.split('\t')
                 drug_name = tab_split[0].lower()
-                # TODO: FLUOROQUINOLONES is a group of drugs
                 if 'aminosalisylic_acid' in drug_name:
-                    drug_name = 'Aminosalisylic acid'
+                    drug_name = 'Aminosalicylic acid'
                 if drug_name not in drugbank_dict.values():
                     k_drug = kegg.find("drug", str(drug_name))
                     drug_id = k_drug.split('\t')[0]
