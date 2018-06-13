@@ -18,6 +18,7 @@ def process_mutation_file(in_file):
     :param in_file:
     :return:
     """
+    drug_groups = ["aminoglycosides", "fluoroquinolones"]
     drugbank_dict, drugbank_id, biotype = dict(), None, ''
     if in_file and in_file.endswith(".txt"):
         sys.stdout.write("\nAdding known mutations...\n")
@@ -28,9 +29,9 @@ def process_mutation_file(in_file):
             for line in tqdm(in_file):
                 tab_split = line.split('\t')
                 drug_name = tab_split[0].lower()
-                if 'aminosalisylic_acid' in drug_name:
+                if 'aminosalicylic_acid' in drug_name:
                     drug_name = 'Aminosalicylic acid'
-                if drug_name not in drugbank_dict.values():
+                if drug_name not in drugbank_dict.values() or drug_groups:
                     k_drug = kegg.find("drug", str(drug_name))
                     drug_id = k_drug.split('\t')[0]
                     drug_info = kegg.parse(kegg.get(drug_id))
@@ -41,7 +42,7 @@ def process_mutation_file(in_file):
                             if drugbank_id:
                                 drugbank_dict[drugbank_id] = drug_name
                     else:
-                        print(drug_info, drug_id)
+                        print(drug_info, drug_id, drug_name)
                 else:
                     for drug_id, name in drugbank_dict.items():
                         if drug_name == name:
@@ -67,9 +68,10 @@ def process_mutation_file(in_file):
                 print(drug_name, gene_name, consequence)
                 create_known_mutation_nodes(chrom="Chr1", pos=variant_pos, ref_allele=str(ref_allele),
                                             alt_allele=str(alt_allele), gene=gene_name, promoter=promoter,
-                                            pk=consequence + variant_pos + ref_allele + alt_allele,
-                                            consequence=consequence,
-                                            vset_name=vset_name, vset_owner=vset_owner, cset_name=cset_name,
+                                            pk=str(drug_name + consequence +
+                                                   variant_pos + ref_allele + alt_allele).lower(),
+                                            consequence=consequence, vset_name=vset_name, vset_owner=vset_owner,
+                                            cset_name=cset_name,
                                             drugbank_id=drugbank_id, drug_name=drug_name, biotype=biotype)
 
     elif in_file and in_file.endswith(".xlsx"):

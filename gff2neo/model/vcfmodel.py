@@ -81,6 +81,7 @@ class Variant(GraphObject):
     known = Property()
     promoter = Property()
     impact = Property()
+    drug = Property()
 
     occurs_in = RelatedTo("Gene", "OCCURS_IN")
     occurs_in_ = RelatedTo("RRna", "OCCURS_IN")

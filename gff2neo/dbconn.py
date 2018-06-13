@@ -890,6 +890,7 @@ def create_known_mutation_nodes(**kwargs):
     variant.loc_in_seq = kwargs.get("loc_in_seq")
     variant.promoter = kwargs.get("promoter")
     variant.biotype = kwargs.get("biotype")
+    variant.drug = kwargs.get("drug_name")
 
     variant.belongs_to_cset.add(call_set)
     call_set.has_variants.add(variant)
