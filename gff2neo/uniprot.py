@@ -13,6 +13,7 @@ from time import time
 from bioservices import UniProt
 
 uniprot_ = UniProt(verbose=False)
+uniprot_._url = "https://www.uniprot.org"
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 UNIPROT_DATA = os.path.join(CURR_DIR, "data/uniprot/uniprot_data.csv")

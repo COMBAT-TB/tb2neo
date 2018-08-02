@@ -1,6 +1,8 @@
 """
 Testing ftpconn module
 """
+import pytest
+
 from gff2neo.ftpconn import get_nucleotides
 
 
@@ -12,7 +14,7 @@ from gff2neo.ftpconn import get_nucleotides
 #     result = download_fasta(url=URL, file_path=FILE_PATH, fasta_file=FASTA_FILE)
 #     assert isinstance(result, GzipFile) is True
 
-
+@pytest.mark.skip(reason="heavy on mem")
 def test_get_nucleotides():
     result = get_nucleotides(strain="h37rv")
     assert isinstance(result, str) is True

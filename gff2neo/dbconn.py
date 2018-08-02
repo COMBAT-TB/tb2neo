@@ -891,7 +891,7 @@ def create_known_mutation_nodes(**kwargs):
     variant.promoter = kwargs.get("promoter")
     variant.biotype = kwargs.get("biotype")
     variant.drug = kwargs.get("drug_name")
-
+    variant.sources = kwargs.get("sources")
     variant.belongs_to_cset.add(call_set)
     call_set.has_variants.add(variant)
 

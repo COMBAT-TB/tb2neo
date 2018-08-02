@@ -93,5 +93,4 @@ def get_fasta(strain):
     record = handle.read()
     # remove >NC_000962.3 Mycobacterium tuberculosis H37Rv, complete genome
     residues = ''.join(record.strip('\n').split('\n')[1:])
-    print(residues[:50])
     return residues

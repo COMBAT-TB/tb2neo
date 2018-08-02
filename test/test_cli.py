@@ -38,6 +38,7 @@ def test_delete(cli_runner):
     assert result.exit_code == 0
 
 
+# @pytest.mark.skip(reason="no way of currently testing this")
 def test_load_chromosome(cli_runner):
     result = cli_runner.invoke(load_chromosome, ["h37rv"])
     assert result.exit_code == 0
