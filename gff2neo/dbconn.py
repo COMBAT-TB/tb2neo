@@ -2,16 +2,17 @@
 Interface to the Neo4j Database
 """
 
-from bioservices import ChEMBL, QuickGO, Reactome, KEGG
+from bioservices import KEGG, ChEMBL, QuickGO, reactome
 from pandas import read_csv
 from py2neo import Graph
 from tqdm import tqdm
 
+from gff2neo.ftpconn import get_nucleotides
+from gff2neo.model.vcfmodel import *
 from gff2neo.ncbi import fetch_publication_list
 from gff2neo.orthologs import fetch_ortholog
 from gff2neo.quickgo import query_quickgo
 from gff2neo.uniprot import *
-from model.core import *
 
 graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
@@ -19,7 +20,7 @@ graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
 chembl = ChEMBL(verbose=False)
 quick_go = QuickGO(verbose=False)
 quick_go.url = 'http://www.ebi.ac.uk/QuickGO-Old'
-reactome = Reactome(verbose=False)
+reactome_old = reactome.ReactomeOld(verbose=False)
 kegg = KEGG(verbose=False)
 
 # watch("neo4j.bolt")
@@ -36,9 +37,11 @@ location_dict = dict()
 go_term_set = set()
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
-TARGET_PROTEIN_IDS = os.path.join(CURR_DIR, "data/drugbank/all_target_polypeptide_ids.csv")
+TARGET_PROTEIN_IDS = os.path.join(
+    CURR_DIR, "data/drugbank/all_target_polypeptide_ids.csv")
 DRUG_VOCAB = os.path.join(CURR_DIR, "data/drugbank/drugbank_vocabulary.csv")
-STRING_DATA = os.path.join(CURR_DIR, "data/string/83332.protein.links.detailed.v10.5.txt")
+STRING_DATA = os.path.join(
+    CURR_DIR, "data/string/83332.protein.links.detailed.v10.5.txt")
 
 
 def delete_db_data():
@@ -73,12 +76,13 @@ def create_organism_nodes(gff_file=None):
     species = "M. tuberculosis"
     common_name = "TB"
 
-    organism = Organism(strain=strain, genus=genus, species=species, common_name=common_name)
+    organism = Organism(strain=strain, genus=genus,
+                        species=species, common_name=common_name)
     graph.create(organism)
     return organism
 
 
-def create_chromosome_nodes():
+def create_chromosome_nodes(strain):
     """
     Create Chromosome Nodes
     :return:
@@ -88,6 +92,10 @@ def create_chromosome_nodes():
     chromosome = Chromosome()
     chromosome.name = name
     chromosome.uniquename = uniquename
+    try:
+        chromosome.residues = get_nucleotides(strain=strain)
+    except IOError as e:
+        raise e
     graph.create(chromosome)
 
 
@@ -176,7 +184,7 @@ def create_rna_nodes(feature):
     biotype = feature.qualifiers['biotype'][0]
     parent = feature.qualifiers.get("Parent", " ")[0]
 
-    if feature.type == 'tRNA_gene':
+    if feature.type == 'tRNA_gene' and biotype == "tRNA":
         trna = TRna()
         trna.name = name
         trna.parent = parent[parent.find(':') + 1:]
@@ -184,7 +192,7 @@ def create_rna_nodes(feature):
         trna.biotype = biotype
         graph.create(trna)
         trna_dict[unique_name] = trna
-    if feature.type == 'ncRNA_gene':
+    if feature.type == 'ncRNA_gene' and biotype == "ncRNA":
         ncrna = NCRna()
         ncrna.name = name
         ncrna.parent = parent[parent.find(':') + 1:]
@@ -192,7 +200,7 @@ def create_rna_nodes(feature):
         ncrna.biotype = biotype
         graph.create(ncrna)
         ncrna_dict[unique_name] = ncrna
-    if feature.type == 'rRNA_gene' or 'rRNA':
+    if feature.type == 'rRNA_gene' and biotype == "rRNA":
         rrna = RRna()
         rrna.name = name
         rrna.parent = parent[parent.find(':') + 1:]
@@ -228,8 +236,9 @@ def create_featureloc_nodes(feature):
     :return:
     """
     srcfeature_id = get_feature_name(feature).get("UniqueName")
-    primary_key = feature.location.start + feature.location.end
-    feature_loc = Location(pk=primary_key, fmin=feature.location.start, fmax=feature.location.end,
+    # Add 1 to start. Ensembl GFF in one based.
+    primary_key = (feature.location.start + 1) + feature.location.end
+    feature_loc = Location(pk=primary_key, fmin=(feature.location.start + 1), fmax=feature.location.end,
                            strand=feature.location.strand)
     graph.create(feature_loc)
     location_dict[srcfeature_id] = feature_loc
@@ -297,37 +306,44 @@ def map_to_location(feature):
             _feature = gene_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
+            _feature.residues = _feature.get_residues()
             graph.push(_feature)
         elif feature.type == 'pseudogene':
             _feature = pseudogene_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
+            _feature.residues = _feature.get_residues()
             graph.push(_feature)
         elif feature.type in rna:
             if feature.type == 'tRNA_gene':
                 _feature = trna_dict.get(srcfeature_id)
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
+                _feature.residues = _feature.get_residues()
                 graph.push(_feature)
             if feature.type == 'ncRNA_gene':
                 _feature = ncrna_dict.get(srcfeature_id)
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
+                _feature.residues = _feature.get_residues()
                 graph.push(_feature)
             if feature.type == 'rRNA_gene':
                 _feature = rrna_dict.get(srcfeature_id)
                 _feature.location.add(location)
                 _feature.located_on.add(chromosome)
+                _feature.residues = _feature.get_residues()
                 graph.push(_feature)
         elif feature.type == 'CDS':
             _feature = cds_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
+            _feature.residues = _feature.get_residues()
             graph.push(_feature)
         elif feature.type == 'mRNA':
             _feature = transcript_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
+            _feature.residues = _feature.get_residues()
             graph.push(_feature)
 
 
@@ -373,7 +389,7 @@ def create_go_term_nodes():
             response = query_quickgo(terms)
             if response.status_code == 200:
                 data = response.json()
-                for result in data['results']:
+                for result in tqdm(data['results']):
                     accession = result['id']
                     # quick_go_data[accession] = result
                     name = result['name']
@@ -388,13 +404,12 @@ def create_go_term_nodes():
                         graph.push(protein)
                         go_term.protein.add(protein)
                         graph.push(go_term)
-                sys.stdout.write(
-                    "Mapped {len} GOTerms to {protein}...".format(len=len(go_ids), protein=protein.uniquename))
             else:
-                sys.stdout.write('\nA status of {code} occurred for {go}\n'.format(code=response.status_code, go=terms))
+                sys.stdout.write('\nA status of {code} occurred for {go}\n'.format(
+                    code=response.status_code, go=terms))
 
     sys.stdout.write("\nMapping GoTerm Relations...\n")
-    for term_accession, v in quick_go_data_dict.items():
+    for term_accession, v in tqdm(quick_go_data_dict.items()):
         term = GOTerm.select(graph, term_accession).first()
         if term:
             if v.get('children'):
@@ -425,7 +440,8 @@ def create_go_term_nodes():
             #             graph.create(go_term)
 
     end = time.time()
-    print("Created {} GoTerms in {} seconds.".format(len(go_term_set), end - start))
+    sys.stdout.write("Created {} GoTerms in {} seconds.".format(
+        len(go_term_set), end - start))
     # create_is_a_cv_term_rel(go_term_set)
 
 
@@ -437,7 +453,8 @@ def create_interpro_term_nodes(protein, interpro_ids):
     :return:
     """
     # http://generic-model-organism-system-database.450254.n5.nabble.com/Re-GMOD-devel-Storing-Interpro-domains-in-Chado-td459778.html
-    terms = [interpro_id for interpro_id in interpro_ids.split("; ") if interpro_id is not '']
+    terms = [interpro_id for interpro_id in interpro_ids.split(
+        "; ") if interpro_id is not '']
     for interpro in terms:
         import time
         dbxref = DbXref(db="InterPro", accession=interpro, version=time.time())
@@ -486,7 +503,8 @@ def create_publication_nodes():
             protein = None
             if protein_entry is not '':
                 protein = Protein.select(graph, protein_entry).first()
-            pubmed_ids = [p for p in entry['PubMed'].split("; ") if p is not '']
+            pubmed_ids = [p for p in entry['PubMed'].split(
+                "; ") if p is not '']
             for p_id in set(pubmed_ids):
                 pub = Publication()
                 pub.pmid = p_id
@@ -548,7 +566,8 @@ def create_publication_nodes():
         create_author_nodes(publication, full_author)
         record_loaded_count += 1
     end = time.time()
-    sys.stdout.write("Created Publications in {} seconds.".format(end - _start))
+    sys.stdout.write(
+        "Created Publications in {} seconds.".format(end - _start))
 
 
 def build_protein_interaction_rels(protein_interaction_dict):
@@ -623,12 +642,12 @@ def create_drugbank_nodes():
         for _target in tqdm(reader):
             # TODO :
             # if 'tuberculosis' in _target['Species']:
-            # print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'])
+            # print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'], _target['Species'])
             protein_ = Protein.select(graph).where(
                 "_.entry_name='{}'".format(_target['Uniprot Title']))
             if protein_:
                 for protein in protein_:
-                    drug_ids = [x for x in _target['Drug IDs'].split('; ') if x is not '']
+                    drug_ids = [x for x in _target['Drug IDs'].split(';') if x is not '']
                     for _id in drug_ids:
                         drug_set.add(_id)
                         dbxref = DbXref(db="DrugBank", accession=_id)
@@ -682,6 +701,11 @@ def map_gene_and_cds_to_protein(protein):
 
 
 def split_gene_names(parent):
+    """
+    Split gene names that have spaces and /
+    :param parent:
+    :return:
+    """
     if not parent:
         return None
     if ';' in parent:
@@ -708,9 +732,9 @@ def create_protein_nodes():
         dbxref = DbXref(db="UniProt", accession=entry[1], version=entry[0])
         graph.create(dbxref)
 
-        pdb_id = None
-        if entry[12] is not "":
-            pdb_id = eu_mapping(entry[0], to='PDB_ID')
+        # pdb_id = None
+        # if entry[12] is not "":
+        pdb_id = eu_mapping(entry[0], to='PDB_ID')
         protein = Protein()
         protein.name = entry[9]
         protein.uniquename = entry[0]
@@ -754,7 +778,8 @@ def map_gene_to_orthologs(locus_tags):
                 if tag.startswith('Rv'):
                     ortholog = fetch_ortholog(locus_tag=str(tag))
                     if ortholog:
-                        orthologous_gene = Gene.select(graph, str(ortholog)).first()
+                        orthologous_gene = Gene.select(
+                            graph, str(ortholog)).first()
                         if orthologous_gene:
                             gene.orthologous_to.add(orthologous_gene)
                             orthologous_gene.orthologous_to_.add(gene)
@@ -778,26 +803,30 @@ def create_kegg_pathways_nodes():
         pathway_ids = kegg.pathwayIds
         for path in tqdm(pathway_ids):
             data = kegg.parse(kegg.get(path))
-            pathway = Pathway()
-            pathway.accession = path[path.find(organism):].strip()
-            pathway._class = data.get('CLASS')
-            pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
-            pathway.summation = data.get('DESCRIPTION')
-            pathway.species = data.get('ORGANISM')
-            graph.create(pathway)
-            if data.get('GENE'):
-                for g_id in data['GENE'].keys():
-                    g_id = "Rv" + g_id.strip("RVBD_") if "RV" in g_id else g_id
-                    # Protein parent is stored as an array
-                    gene = Gene.select(graph, g_id).first()
-                    if gene:
-                        for protein in gene.encodes:
-                            protein.pathway.add(pathway)
-                            graph.push(protein)
-                            pathway.protein.add(protein)
-                            graph.push(pathway)
+            if isinstance(data, dict) is True:
+                pathway = Pathway()
+                pathway.accession = path[path.find(organism):].strip()
+                pathway._class = data.get('CLASS')
+                pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
+                pathway.summation = data.get('DESCRIPTION')
+                pathway.species = data.get('ORGANISM')
+                graph.create(pathway)
+                if data.get('GENE'):
+                    for g_id in data['GENE'].keys():
+                        g_id = "Rv" + g_id.strip("RVBD_") if "RV" in g_id else g_id
+                        # Protein parent is stored as an array
+                        gene = Gene.select(graph, g_id).first()
+                        if gene:
+                            for protein in gene.encodes:
+                                protein.pathway.add(pathway)
+                                graph.push(protein)
+                                pathway.protein.add(protein)
+                                graph.push(pathway)
+            else:
+                sys.stderr.write("Data is: {}\n".format(data))
     end = time()
-    sys.stdout.write("\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
+    sys.stdout.write(
+        "\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
 
 
 def create_reactome_pathway_nodes():
@@ -814,9 +843,10 @@ def create_reactome_pathway_nodes():
             pathways = eu_mapping(protein, to='REACTOME_ID')
             if pathways:
                 for pathway_id in pathways:
-                    path_res = reactome.query_by_id("Pathway", pathway_id)
+                    path_res = reactome_old.query_by_id("Pathway", pathway_id)
                     if not isinstance(path_res, int):
-                        print(protein, "Pathway: {} - {}".format(pathway_id, path_res['displayName']))
+                        print(
+                            protein, "Pathway: {} - {}".format(pathway_id, path_res['displayName']))
                         pathway = Pathway()
                         pathway.accession = pathway_id
                         pathway._type = path_res['schemaClass']
@@ -833,4 +863,109 @@ def create_reactome_pathway_nodes():
                             pathway.protein.add(_protein)
                             graph.push(pathway)
     end = time()
-    sys.stdout.write("\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
+    sys.stdout.write(
+        "\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
+
+
+def create_known_mutation_nodes(**kwargs):
+    """
+    Create Known mutations
+    :return:
+    """
+    fluoroquinolones = ["ciprofloxacin", "ofloxacin", "levofloxacin", "moxifloxacin"]
+    aminoglyconsides = ["amikacin", "kanamycin", "streptomycin", "capreomycin"]
+
+    v_set = VariantSet(name=kwargs.get("vset_name", ""), owner=kwargs.get("vset_owner", ""))
+    call_set = CallSet(name=kwargs.get("cset_name", ""))
+
+    v_set.has_callsets.add(call_set)
+    call_set.belongs_to_vset.add(v_set)
+
+    graph.create(v_set)
+    graph.create(call_set)
+
+    variant = Variant(chrom=kwargs.get("chrom", ""), pos=kwargs.get("pos", ""),
+                      ref_allele=kwargs.get("ref_allele", ""), alt_allele=kwargs.get("alt_allele", ""),
+                      gene=kwargs.get("gene", ""), pk=kwargs.get("pk", ""), consequence=kwargs.get("consequence", ""))
+    variant.loc_in_seq = kwargs.get("loc_in_seq")
+    variant.promoter = kwargs.get("promoter")
+    variant.biotype = kwargs.get("biotype")
+    variant.drug = kwargs.get("drug_name")
+    variant.sources = kwargs.get("sources")
+    variant.belongs_to_cset.add(call_set)
+    call_set.has_variants.add(variant)
+
+    def map_drug_class_to_variant(_class):
+        """
+        Map all drugs in class to variant
+        :param _class:
+        :return:
+        """
+        for item in _class:
+            drugs = Drug.select(graph).where("_.name=~'(?i).*{}.*'".format(item))
+            for _drug in drugs:
+                variant.resistant_to.add(_drug)
+
+    if kwargs.get("drug_name") == "aminoglycosides":
+        map_drug_class_to_variant(aminoglyconsides)
+    elif kwargs.get("drug_name") == "fluoroquinolones":
+        map_drug_class_to_variant(fluoroquinolones)
+    else:
+        drug = Drug.select(graph, str(kwargs.get("drugbank_id")).upper()).first()
+        if drug:
+            variant.resistant_to.add(drug)
+        elif kwargs.get("drugbank_id") and kwargs.get("drug_name"):
+            drug = Drug(accession=kwargs.get("drugbank_id"), name=kwargs.get("drug_name").capitalize())
+            graph.create(drug)
+            variant.resistant_to.add(drug)
+
+    gene = Gene.select(graph).where("_.name=~'(?i).*{}.*'".format(str(kwargs.get("gene")).lower())).first()
+    if gene:
+        variant.occurs_in.add(gene)
+    else:
+        rna = RRna.select(graph).where("_.name=~'(?i).*{}.*'".format(str(kwargs.get("gene")).lower())).first()
+        if rna:
+            variant.occurs_in_.add(rna)
+
+    graph.create(variant)
+    graph.push(call_set)
+
+
+def create_operon_nodes(text_file=None):
+    """
+    Adding functional categories to Feature Nodes
+    :param text_file:
+    :return:
+    """
+    sys.stdout.write("\nAdding operon data...")
+    with open(text_file) as text_file:
+        for line in text_file:
+            if 'OPERON' in str(line):
+                tab_split = line.split('\t')
+                locus = tab_split[0]
+                gene_name = tab_split[1]
+                name_operon = tab_split[10]
+                locus_operon = tab_split[11]
+                description = tab_split[7]
+                print(locus, locus_operon)
+                operon = Operon()
+                # Must we use the product as the uniquename
+                operon.uniquename = locus_operon
+                operon.description = description
+                graph.create(operon)
+                genes = locus_operon.split(',')
+                for locus_tag in genes:
+                    gene = Gene.select(graph, locus_tag.strip()).first()
+                    if gene:
+                        gene.member_of.add(operon)
+                        if len(genes) == 1:
+                            gene.co_regulated.add(gene)
+                        else:
+                            # Let's not build reverse co-regulated rel
+                            for g_id in genes[1:]:
+                                g = Gene.select(graph, g_id.strip()).first()
+                                if g:
+                                    gene.co_regulated.add(g)
+                        graph.push(gene)
+                        operon.gene.add(gene)
+                        graph.push(operon)

@@ -4,7 +4,7 @@ import pytest
 
 from gff2neo.gffproc import get_locus_tags
 from gff2neo.uniprot import query_uniprot, eu_mapping
-from test_cli import TEST_GFF
+from .test_cli import TEST_GFF
 
 
 def test_search_uniprot():

@@ -1,5 +1,5 @@
-FROM python:2.7-slim
-MAINTAINER Thoba Lose "thoba@sanbi.ac.za"
+FROM python:2-slim
+LABEL MAINTAINER="thoba@sanbi.ac.za"
 
 RUN apt-get update -y --fix-missing && \
     apt-get upgrade -y && \

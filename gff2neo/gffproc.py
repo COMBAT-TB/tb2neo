@@ -10,7 +10,8 @@ from BCBio.GFF import GFFExaminer
 
 from gff2neo.dbconn import *
 
-MYCO_GFF = os.path.join(CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
+MYCO_GFF = os.path.join(
+    CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
 
 
 def examine_gff_file(gff_file):
@@ -30,11 +31,10 @@ def parse_gff(gff_file):
     Parse GFF file
     :return:
     """
-    sys.stdout.write("Parsing GFF {}...".format(gff_file))
     organism = create_organism_nodes(gff_file)
-    create_chromosome_nodes()
     # we are not interested in exons as this is a bacterial genome
-    limits = [["mRNA"], ["gene", "CDS", "tRNA_gene", "ncRNA_gene", "rRNA_gene", "rRNA"], ["pseudogene"]]
+    limits = [["mRNA"], ["gene", "CDS", "tRNA_gene",
+                         "ncRNA_gene", "rRNA_gene", "rRNA"], ["pseudogene"]]
     for limit in limits:
         sys.stdout.write("\nLoading {}...".format(limit))
         # print("\nLoading", limit, "...")
@@ -74,12 +74,11 @@ def load_gff_data(gff_file, limit, organism):
     :param limit:
     :return:
     """
-    sys.stdout.write("\nExtract and load features to Neo4j.")
     in_file = open(gff_file)
     limit_info = dict(gff_type=limit)
     for rec in GFF.parse(gff_file, limit_info=limit_info):
         for feature in tqdm(rec.features):
-            rna = ["tRNA_gene", "ncRNA_gene", "rRNA_gene", "rRNA"]
+            rna = ["tRNA_gene", "ncRNA_gene", "rRNA_gene"]
             create_featureloc_nodes(feature)
             if feature.type == 'gene':
                 create_gene_nodes(feature, organism)
@@ -112,8 +111,10 @@ def map_functional_category(gff=None):
                 tab_split = line.split('\t')
                 start = tab_split[3]
                 end = int(tab_split[4])
-                functional_category = tab_split[8].split(";")[-1].split("=")[-1].strip()
-                result = graph.run("match(n)-[]-(l:Location) where l.fmax = {end} return n".format(end=end)).data()
+                functional_category = tab_split[8].split(
+                    ";")[-1].split("=")[-1].strip()
+                result = graph.run(
+                    "match(n)-[]-(l:Location) where l.fmax = {end} return n".format(end=end)).data()
                 if result:
                     for item in result:
                         node = item['n']
@@ -132,4 +133,4 @@ def map_functional_category(gff=None):
 #                 if len(links) > 0:
 #                     for drug in links:
 #                         print("\n", lt, "is targeted by", drug.text)
-#                         tbdtdb.write("\ngene: {}, drug: {}".format(lt, drug.text))
+#                         tbdtdb.write("{}\t{}\n".format(lt, drug.text))

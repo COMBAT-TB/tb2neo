@@ -1,16 +1,24 @@
+"""
+Cli
+"""
 import click
 
 from gff2neo.gffproc import *
 from gff2neo.uniprot import UNIPROT_DATA
+from gff2neo.variants import process_mutation_file
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
-MYCO_GFF = os.path.join(CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
+MYCO_GFF = os.path.join(
+    CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
+OPERON_DATA = os.path.join(
+    CURR_DIR, "data/operon/mycobacterium_tuberculosis_h37rv_genome_summary.txt")
+DR_DATA_DIR = os.path.join(CURR_DIR, 'data/mutations/')
 
 
 def check_csv(csvfile):
     """
-    Check if csv file exists and is not empty
+    Check if csv file exists and is not empty.
     :param csvfile:
     :return:
     """
@@ -28,7 +36,7 @@ uniprot_config = {
 
 def get_taxonomy_and_proteome(gff_file):
     """
-    Get Taxonomy and Proteome
+    Get Taxonomy and Proteome.
     :param gff_file:
     :return:
     """
@@ -47,6 +55,42 @@ def cli():
     This script parses a GFF file and builds a Neo4j Graph database.
     """
     pass
+
+
+@cli.command()
+def delete():
+    """
+    Delete existing data.
+    :return:
+    """
+    # Deleting existing data
+    delete_db_data()
+
+
+@cli.command()
+@click.argument('strain')
+def load_chromosome(strain):
+    """
+    Load Chromosome for specified strain.
+    :param strain: H37RV or CDC1551
+    :return:
+    """
+    supported_strains = ["h37rv", "cdc1551"]
+
+    error_mess = "Unable to create Chromosome for strain='{strain}'\nWe currently support {supported}".format(
+        strain=strain, supported=supported_strains)
+
+    if strain and str(strain).lower() in supported_strains:
+        if "h37rv" == str(strain).lower():
+            strain = "h37rv"
+        elif "cdc1551" == str(strain).lower():
+            strain = "cdc1551"
+        else:
+            raise ValueError(error_mess)
+        click.echo("Loading {strain} Chromosome...".format(strain=strain))
+        create_chromosome_nodes(strain=strain)
+    else:
+        sys.stderr.write(error_mess)
 
 
 @cli.command()
@@ -74,8 +118,6 @@ def load_gff(gff_files):
     :param gff_files:
     :return:
     """
-    # Deleting existing data
-    delete_db_data()
     if os.path.isdir(gff_files):
         for root, dirs, files in os.walk(gff_files):
             for gff_file in files:
@@ -90,6 +132,38 @@ def load_gff(gff_files):
 
 
 @cli.command()
+@click.argument('operon_dir', type=click.Path(exists=True))
+def load_operons(operon_dir):
+    """
+    Load Operons.
+    :return:
+    """
+    if os.path.isdir(operon_dir):
+        for root, dirs, files in os.walk(operon_dir):
+            for _file in files:
+                _file = '/'.join([os.path.abspath(operon_dir), _file])
+                if check_csv(_file):
+                    if _file.endswith(".txt"):
+                        create_operon_nodes(text_file=_file)
+
+
+@cli.command()
+@click.argument('mutations', type=click.Path(exists=True))
+def load_known_mutations(mutations):
+    """
+    Load Known Drug Resistant mutations.
+    :param mutations:
+    :return:
+    """
+    if os.path.isdir(mutations):
+        for root, dirs, files in os.walk(mutations):
+            for _file in files:
+                _file = '/'.join([os.path.abspath(mutations), _file])
+                if check_csv(_file) and _file.endswith(".txt"):
+                    process_mutation_file(in_file=_file)
+
+
+@cli.command()
 @click.argument('gff_files', type=click.Path(exists=True))
 def load_uniprot_data(gff_files):
     """
@@ -97,20 +171,23 @@ def load_uniprot_data(gff_files):
     :param gff_files:
     :return:
     """
-    click.secho("\nLoading UniProt data...", fg="green")
     if check_csv(UNIPROT_DATA) and not gff_files:
-        click.secho("Found CSV data...", fg="green")
+        click.secho("\nLoading UniProt data from csv...", fg="green")
         create_protein_nodes()
     else:
         if os.path.isdir(gff_files):
             for root, dirs, files in os.walk(gff_files):
+                click.secho("\nLoading UniProt data from gff...", fg="green")
                 for gff_file in files:
                     gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
                     if gff_file.endswith(".gff3"):
                         result = get_taxonomy_and_proteome(gff_file)
-                        locus_tags = get_locus_tags(gff_file=gff_file, chunk=400)
-                        map_gene_to_orthologs(get_locus_tags(gff_file, 400))
-                        query_uniprot(locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
+                        locus_tags = get_locus_tags(
+                            gff_file=gff_file, chunk=400)
+                        # TODO: When we have loaded the CDC1551 strain
+                        # map_gene_to_orthologs(get_locus_tags(gff_file, 400))
+                        query_uniprot(
+                            locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
                         # TODO: Need to refactor
                         create_protein_nodes()
 
@@ -127,8 +204,8 @@ def load_drugbank_data():
             and check_csv(TARGET_PROTEIN_IDS) and check_csv(DRUG_VOCAB):
         create_drugbank_nodes()
     else:
-        sys.stderr.write(
-            "Unable to load Drugbank data!\n Check if CSV files are in place and that we have a database with Proteins.")
+        sys.stderr.write("Unable to load Drugbank data!\n "
+                         "Check if CSV files are in place and that we have a database with Proteins.")
 
 
 @cli.command()
@@ -160,7 +237,7 @@ def load_publications():
 @cli.command()
 def load_kegg_pathways():
     """
-    Load KEGG Pathways
+    Load KEGG Pathways.
     :return:
     """
     # Let's check if we have Proteins to map to.
@@ -175,7 +252,7 @@ def load_kegg_pathways():
 @cli.command()
 def load_reactome_pathways():
     """
-    Load REACTOME Pathways
+    Load REACTOME Pathways.
     :return:
     """
     # Let's check if we have Proteins to map to.

@@ -13,6 +13,7 @@ from time import time
 from bioservices import UniProt
 
 uniprot_ = UniProt(verbose=False)
+uniprot_._url = "https://www.uniprot.org"
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 UNIPROT_DATA = os.path.join(CURR_DIR, "data/uniprot/uniprot_data.csv")
@@ -30,7 +31,8 @@ def search_uniprot(query, columns, taxonomy, proteome):
     query = "taxonomy:{}+AND+proteome:{}+AND+{}".format(taxonomy,
                                                         proteome, query)
 
-    result = uniprot_.search(query=query, frmt="tab", columns=columns, sort=None)
+    result = uniprot_.search(query=query, frmt="tab",
+                             columns=columns, sort=None)
     reader = csv.reader(StringIO(result), delimiter='\t')
     try:
         next(reader)
@@ -41,6 +43,11 @@ def search_uniprot(query, columns, taxonomy, proteome):
 
 
 def write_to_csv(results):
+    """
+    Write to CSV
+    :param results:
+    :return:
+    """
     file_exists = os.path.isfile(UNIPROT_DATA)
     sys.stdout.write("\nWriting to csv...")
     fieldnames = [
@@ -95,7 +102,8 @@ def query_uniprot(locus_tags, taxonomy, proteome):
         for entry in data:
             results.append(entry)
     end_time = time()
-    sys.stdout.write("\nDone fetching data from UniProt in {} secs.".format(end_time - start_time))
+    sys.stdout.write(
+        "\nDone fetching data from UniProt in {} secs.".format(end_time - start_time))
     if len(results) > 0:
         write_to_csv(results)
     return results

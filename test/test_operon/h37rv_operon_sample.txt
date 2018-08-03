@@ -1,0 +1,17 @@
+LOCUS	SYMBOL	SYNOYM	LENGTH	START	STOP	STRAND	NAME	CHROMOSOME	ANNOTATION	ANNOTATION NAME
+Rv0001	dnaA		1524	1	1524	+	chromosomal replication initiator protein	1
+Rv0001	dnaA		1524	1	1524	+	chromosomal replication initiator protein	1	COG:L	Replication, recombination and repair
+Rv0001	dnaA		1524	1	1524	+	chromosomal replication initiator protein	1	Pfam	PF00308.10	Bac_DnaA	Bacterial  dnaA  protein
+Rv0001	dnaA		1524	1	1524	+	chromosomal replication initiator protein	1	Pfam	PF08299.3	Bac_DnaA_C	Bacterial  dnaA  protein helix-turn-helix domain
+Rv0001	dnaA		1524	1	1524	+	chromosomal replication initiator protein	1	OPERON	dnaA-dnaA	Rv0001
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	EC:2.7.7.7	DNA-directed DNA polymerase.
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	GO:0003887	DNA-directed DNA polymerase activity
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	KEGG:03030	DNA polymerase
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	KEGG:00230	Purine metabolism
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	KEGG:00240	Pyrimidine metabolism
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	COG:L	Replication, recombination and repair
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	Pfam	PF00712.11	DNA_pol3_beta	DNA polymerase III beta subunit, N-terminal domain
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	Pfam	PF02767.8	DNA_pol3_beta_2	DNA polymerase III beta subunit, central domain
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	Pfam	PF02768.7	DNA_pol3_beta_3	DNA polymerase III beta subunit, C-terminal domain
+Rv0002	dnaN		1209	2052	3260	+	DNA polymerase III beta chain	1	OPERON	dnaN-Rv0004	Rv0002, Rv0003, Rv0004

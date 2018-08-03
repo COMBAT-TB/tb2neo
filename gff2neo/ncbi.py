@@ -48,14 +48,16 @@ def fetch_publication_list(citations, rettype='medline'):
     failed = True
     for i in range(retries):
         try:
-            h = Entrez.efetch(db='pubmed', id=citation_string, rettype=rettype, retmode='text')
+            h = Entrez.efetch(db='pubmed', id=citation_string,
+                              rettype=rettype, retmode='text')
             failed = False
         except HTTPError:
             pass
         else:
             break
         finally:
-            time.sleep(0.4)  # we are not allowed to hit NCBI more than 3 times per second
+            # we are not allowed to hit NCBI more than 3 times per second
+            time.sleep(0.4)
     if failed:
         print("Retrieval from PubMed failed")
         records = []
@@ -65,3 +67,30 @@ def fetch_publication_list(citations, rettype='medline'):
         else:
             records = Entrez.parse(h)
     return records
+
+
+def get_fasta(strain):
+    Entrez.email = 'A.N.Other@example.com'
+    if strain and strain == "h37rv":
+        organism = 'Mycobacterium_tuberculosis_H37Rv'
+        accession = "NC_000962.3"
+    elif strain and strain == "cdc1551":
+        organism = 'Mycobacterium_tuberculosis_CDC1551'
+        accession = "NC_002755.2"
+    else:
+        organism = None
+        accession = None
+    # gene_query = "{gene}[Gene] AND {organism}[Organism] AND {accession}[Accession] " \
+    #              "AND RefSeq[Filter]".format(gene="", organism=organism, accession=accession)
+    q = "{organism}[Organism] AND {accession}[Accession] AND RefSeq[Filter]".format(organism=organism,
+                                                                                    accession=accession)
+    handle = Entrez.esearch(db="nucleotide", term=q)
+    record = Entrez.read(handle)
+    ids = record[u'IdList']
+    seq_id = ids[0]  # you must implement an if to deal with <0 or >1 cases
+    handle = Entrez.efetch(db="nucleotide", id=seq_id,
+                           rettype="fasta", retmode="text")
+    record = handle.read()
+    # remove >NC_000962.3 Mycobacterium tuberculosis H37Rv, complete genome
+    residues = ''.join(record.strip('\n').split('\n')[1:])
+    return residues
