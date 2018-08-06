@@ -7,7 +7,6 @@ from gff2neo.dbconn import graph, split_gene_names, create_chromosome_nodes
 from gff2neo.model.core import Gene, Chromosome
 
 
-@pytest.mark.skip(reason="not loading node")
 def test_create_chromosome_nodes():
     create_chromosome_nodes(strain="h37rv")
     chromosome = Chromosome.select(graph).first()
@@ -16,7 +15,7 @@ def test_create_chromosome_nodes():
 
 def test_db_nodes():
     result = graph.node_labels
-    # assert "Chromosome" in result
+    assert "Chromosome" in result
     assert "Gene" in result
     assert "Transcript" in result
     assert "CDS" in result
