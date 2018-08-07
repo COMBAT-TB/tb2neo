@@ -48,9 +48,8 @@ def _process_coll_mutations(in_file, cset_name):
     :return:
     """
     sys.stdout.write("\nProcessing {cset}...\n".format(cset=cset_name))
-    drug_groups = ["aminoglycosides", "fluoroquinolones"]
     drugbank_id, biotype = None, ''
-    vset_name = "doi.org/10.1186/s13073-015-0164-0"
+    vset_name = "10.1186/s13073-015-0164-0"
     vset_owner = "Coll, F. et al."
     for line in in_file:
         tab_split = line.strip().split('\t')
@@ -111,9 +110,10 @@ def _process_tbprofiler_mutations(in_file, cset_name):
     :param cset_name:
     :return:
     """
-    drugbank_dict, drugbank_id, biotype = dict(), None, ''
-    vset_name = "https://github.com/jodyphelan/TBProfiler"
-    vset_owner = "Coll, F. et al."
+    sys.stdout.write("\nProcessing {cset}...\n".format(cset=cset_name))
+    drugbank_id, biotype = None, ''
+    vset_name = "TBProfiler"
+    vset_owner = "https://github.com/jodyphelan"
     for line in in_file:
         tab_split = line.split('\t')
         drug_name = tab_split[0].lower()
@@ -125,7 +125,7 @@ def _process_tbprofiler_mutations(in_file, cset_name):
         if "_promoter" in tab_split[4]:
             promoter = tab_split[4]
             gene_name = tab_split[4].split("_")[0]
-            biotype = 'promoter'
+            biotype = "promoter"
         else:
             gene_name = tab_split[4]
             promoter = None
@@ -134,9 +134,9 @@ def _process_tbprofiler_mutations(in_file, cset_name):
         # Pro241Pro to ['Pro', '241', 'Pro']
         amino_change = re.split('(\d+)', consequence)
         if amino_change[0] == amino_change[2] and consequence.isalnum() and any(c.islower() for c in consequence):
-            biotype = 'synonymous'
+            biotype = "synonymous"
         elif amino_change[0] is not amino_change[2] and consequence.isalnum() and any(c.islower() for c in consequence):
-            biotype = 'non-synonymous'
+            biotype = "non-synonymous"
         elif consequence.isupper() and not any(c.islower() for c in consequence) and '-' not in consequence:
             biotype = "indel"
 

@@ -1,41 +1,31 @@
-# from py2neo.ogm import GraphObject, Property, RelatedTo, RelatedFrom
 import uuid
 
 from gff2neo.model.core import *
 
-# class Phenotype(GraphObject):
-#     __primarykey__ = 'type'
-#     # type {XDR, DR, MDR, SUS}
-#     _type = Property()
-#     has_var = RelatedFrom("Variant", "HAS_VAR")
-# Adapting GA4GH Variant Data Model
-# https://ga4gh-schemas.readthedocs.io/en/latest/api/variants.html
-# VariantSet = Phenotype
-# TODO: Dataset and ReferenceSet?
-REF_COL_ID = str(uuid.uuid3(uuid.NAMESPACE_DNS, 'www.internationalgenome.org'))
 
+# https://ga4gh-schemas.readthedocs.io/en/latest/api/variants.html
 
 class VariantSet(GraphObject):
     """
     VariantSet is the collection of CallSets
     """
-    __primarykey__ = 'col_id'
+    __primarykey__ = 'vset_id'
     name = Property()
     owner = Property()
     history_id = Property()
-    col_id = Property()
+    vset_id = Property()
 
     has_variant = RelatedTo("Variant", "BELONGS_TO")
     forms_tree = RelatedTo("FastTree", "FROM_VARIANT_SET")
     has_callsets = RelatedTo("CallSet", "CALL_SET")
 
-    def __init__(self, name, owner, history_id=None, col_id=None):
+    def __init__(self, name, owner, history_id=None, vset_id=None):
         self.name = name
         self.owner = owner
         self.history_id = history_id
-        if not col_id:
-            col_id = REF_COL_ID
-        self.col_id = col_id
+        if not vset_id:
+            vset_id = str(uuid.uuid3(uuid.NAMESPACE_DNS, name))
+        self.vset_id = vset_id
 
 
 # CallSet = VCF file
@@ -56,7 +46,6 @@ class CallSet(GraphObject):
         # self.vset = vset
 
 
-# VariantSite = Variant
 class Variant(GraphObject):
     """
     VariantSite is the Variant
