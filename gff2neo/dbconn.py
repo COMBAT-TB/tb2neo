@@ -2,6 +2,8 @@
 Interface to the Neo4j Database
 """
 
+import zipfile
+
 from bioservices import KEGG, ChEMBL, QuickGO, reactome
 from pandas import read_csv
 from py2neo import Graph
@@ -37,9 +39,8 @@ location_dict = dict()
 go_term_set = set()
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
-TARGET_PROTEIN_IDS = os.path.join(
-    CURR_DIR, "data/drugbank/all_target_polypeptide_ids.csv")
-DRUG_VOCAB = os.path.join(CURR_DIR, "data/drugbank/drugbank_vocabulary.csv")
+TARGET_PROTEIN_IDS = os.path.join(CURR_DIR, "data/drugbank/drugbank_approved_target_polypeptide_ids.csv.zip")
+DRUG_VOCAB = os.path.join(CURR_DIR, "data/drugbank/drugbank_all_drugbank_vocabulary.csv.zip")
 STRING_DATA = os.path.join(
     CURR_DIR, "data/string/83332.protein.links.detailed.v10.5.txt")
 
@@ -637,38 +638,46 @@ def create_drugbank_nodes():
     """
     sys.stdout.write("\nCreating DrugBank Nodes...\n")
     drug_set = set()
-    with open(TARGET_PROTEIN_IDS, "r") as csv_file:
-        reader = csv.DictReader(csv_file)
-        for _target in tqdm(reader):
-            # TODO :
-            # if 'tuberculosis' in _target['Species']:
-            # print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'], _target['Species'])
-            protein_ = Protein.select(graph).where(
-                "_.entry_name='{}'".format(_target['Uniprot Title']))
-            if protein_:
-                for protein in protein_:
-                    drug_ids = [x for x in _target['Drug IDs'].split(';') if x is not '']
-                    for _id in drug_ids:
-                        drug_set.add(_id)
-                        dbxref = DbXref(db="DrugBank", accession=_id)
-                        graph.create(dbxref)
+    zipped_tpi = zipfile.ZipFile(TARGET_PROTEIN_IDS)
+    df = read_csv(zipped_tpi.open("all.csv")).fillna("")
+    for entry in df.values:
+        uniprot_entry = entry[6]
+        dbank_ids = entry[12]
+        protein_ = Protein.select(graph).where(
+            "_.entry_name='{}'".format(uniprot_entry))
+        if protein_:
+            for protein in protein_:
+                print(protein.entry_name, dbank_ids)
+                drug_ids = [x for x in dbank_ids.split(';') if x is not '']
+                for _id in drug_ids:
+                    drug_set.add(_id)
+                    dbxref = DbXref(db="DrugBank", accession=_id)
+                    graph.create(dbxref)
+                    drug = Drug.select(graph, _id).first()
+                    if drug:
+                        drug.target.add(protein)
+                    else:
                         drug = Drug(accession=_id)
                         graph.create(drug)
-                        drug.target.add(protein)
-                        graph.push(drug)
-                        protein.drug.add(drug)
-                        protein.dbxref.add(dbxref)
-                        graph.push(protein)
-
-    with open(DRUG_VOCAB, "r") as csv_file_:
-        reader = csv.DictReader(csv_file_)
-        for entry in reader:
-            for drug_id in drug_set:
-                if entry['DrugBank ID'] == drug_id:
-                    drug = Drug.select(graph, drug_id).first()
-                    drug.name = entry['Common name']
-                    drug.synonyms = entry['Synonyms']
+                    drug.target.add(protein)
                     graph.push(drug)
+                    protein.drug.add(drug)
+                    protein.dbxref.add(dbxref)
+                    graph.push(protein)
+
+    zipped_dv = zipfile.ZipFile(DRUG_VOCAB)
+    df = read_csv(zipped_dv.open("drugbank vocabulary.csv")).fillna("")
+    for entry in df.values:
+        dbank_id = entry[0]
+        commom_name = entry[2]
+        synonyms = entry[5]
+        drug = Drug.select(graph, dbank_id).first()
+        if drug:
+            print(drug.accession, dbank_id, commom_name)
+            drug.name = commom_name
+            drug.synonyms = synonyms
+            graph.push(drug)
+
     sys.stdout.write("\nDone Creating DrugBank Nodes...\n")
 
 

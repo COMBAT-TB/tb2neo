@@ -1,3 +1,6 @@
-## DrugBank Data
-* `all_target_polypeptide_ids.csv` is from [DrugBank](https://www.drugbank.ca/releases/latest#protein-identifiers). Released: 2018-04-02.
-* `gff2neo/data/drugbank/drugbank_vocabulary.csv` from [doi:10.1038/ng.3767](https://www.nature.com/articles/ng.3767#integrated-supplementary-information).
+# [DrugBank](https://www.drugbank.ca) Data
+
+* `drugbank_all_drugbank_vocabulary.csv.zip`
+    * v5.1.1:2018-07-03
+* `drugbank_approved_target_polypeptide_ids.csv.zip`
+    * v5.1.1: 2018-07-03
