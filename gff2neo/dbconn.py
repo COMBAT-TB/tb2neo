@@ -348,24 +348,6 @@ def map_to_location(feature):
             graph.push(_feature)
 
 
-# def create_is_a_cv_term_rel(go_set):
-#     """
-#     Creating IS_A relationships between CVTerms
-#     :param go_set: set of GO ids
-#     :return:
-#     """
-#     for go_id in go_set:
-#         if go_id.startswith("GO:") and go_id is not 'GO_IDs':
-#             is_a_list = fetch_quick_go_data(quick_go, go_id)
-#             go_term = GOTerm.select(graph, go_id).first()
-#             for go in is_a_list:
-#                 goid = go[go.find('G'):go.find('!')].strip()
-#                 term = GOTerm.select(graph, goid).first()
-#                 if term and go_term:
-#                     go_term.is_a.add(term)
-#                     graph.push(go_term)
-
-
 def create_go_term_nodes():
     """
     Create GOTerm Nodes and build Protein relationships.
@@ -422,28 +404,15 @@ def create_go_term_nodes():
                         if 'is_a' in child_relation:
                             term.is_a.add(child_go)
                         elif 'part_of' in child_relation:
-                            term.part_of.add(child_go)
+                            term.part_of_go.add(child_go)
                         elif 'regulates' in child_relation:
                             term.regulates.add(child_go)
                         elif 'capable_of' in child_relation:
                             term.capable_of.add(child_go)
                     graph.push(term)
-
-            # for go_id in go_ids:
-            #     go_term_set.add(go_id)
-            #     if go_id.startswith("GO:") and go_id is not 'GO_IDs':
-            #         result = quick_go.Term(go_id, frmt="obo")
-            #         if result and not isinstance(result, int):
-            #             result = result.split('\n')
-            #             name = result[2].split(":")[1]
-            #             _def = result[3].split(":")[1]
-            #             go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
-            #             graph.create(go_term)
-
     end = time.time()
     sys.stdout.write("Created {} GoTerms in {} seconds.".format(
         len(go_term_set), end - start))
-    # create_is_a_cv_term_rel(go_term_set)
 
 
 def create_interpro_term_nodes(protein, interpro_ids):
@@ -956,7 +925,6 @@ def create_operon_nodes(text_file=None):
                 name_operon = tab_split[10]
                 locus_operon = tab_split[11]
                 description = tab_split[7]
-                print(locus, locus_operon)
                 operon = Operon()
                 # Must we use the product as the uniquename
                 operon.uniquename = locus_operon
@@ -978,3 +946,32 @@ def create_operon_nodes(text_file=None):
                         graph.push(gene)
                         operon.gene.add(gene)
                         graph.push(operon)
+
+
+def map_srna_to_mrna(text_file):
+    """
+    Map sRNA to the mRNA they regulate
+    :param text_file:
+    :return:
+    """
+    sys.stdout.write("\nAdding sRNA data...")
+    with open(text_file) as text_file:
+        next(text_file)
+        for line in text_file:
+            tab_split = line.split('\t')
+            srna_name = tab_split[0]
+            # srna_fmax = tab_split[2]
+            mrna_name = tab_split[7]
+            # mrna_fmax = tab_split[9]
+            ncrna = NCRna.select(graph).where(
+                "_.name=~'(?i).*{}.*'".format(srna_name.lower())).first()
+            if ncrna:
+                mrnas = mrna_name.split()
+                if "-" in mrna_name:
+                    mrnas = mrna_name.split("-")
+                for name in mrnas:
+                    gene = Gene.select(graph).where(
+                        "_.uniquename=~'(?i).*{}.*'".format(name.lower())).first()
+                    if gene:
+                        ncrna.regulates_gene.add(gene)
+                        graph.push(ncrna)

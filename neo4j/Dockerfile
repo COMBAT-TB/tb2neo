@@ -1,4 +1,4 @@
-FROM neo4j:3.2.8
+FROM neo4j:3.4
 LABEL Maintainer="lose.thoba@gmail.com"
 
 ENV GRAPHAWARE_PROD_URL https://products.graphaware.com/download
@@ -12,7 +12,7 @@ RUN apk update \
 #     && wget ${GRAPHAWARE_PROD_URL}/uuid/graphaware-uuid-3.3.0.51.14.jar \
 #     -P plugins/ \
 #     && ls plugins/
-RUN wget https://github.com/neo4j-contrib/neo4j-elasticsearch/releases/download/3.2.3/neo4j-elasticsearch-3.2.3.jar \
+RUN wget https://github.com/neo4j-contrib/neo4j-elasticsearch/releases/download/3.4.5/neo4j-elasticsearch-3.4.5.jar \
     -P plugins/
 COPY neo4j.conf conf/
 
