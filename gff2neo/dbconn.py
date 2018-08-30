@@ -2,6 +2,8 @@
 Interface to the Neo4j Database
 """
 
+import zipfile
+
 from bioservices import KEGG, ChEMBL, QuickGO, reactome
 from pandas import read_csv
 from py2neo import Graph
@@ -37,9 +39,8 @@ location_dict = dict()
 go_term_set = set()
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
-TARGET_PROTEIN_IDS = os.path.join(
-    CURR_DIR, "data/drugbank/all_target_polypeptide_ids.csv")
-DRUG_VOCAB = os.path.join(CURR_DIR, "data/drugbank/drugbank_vocabulary.csv")
+TARGET_PROTEIN_IDS = os.path.join(CURR_DIR, "data/drugbank/drugbank_approved_target_polypeptide_ids.csv.zip")
+DRUG_VOCAB = os.path.join(CURR_DIR, "data/drugbank/drugbank_all_drugbank_vocabulary.csv.zip")
 STRING_DATA = os.path.join(
     CURR_DIR, "data/string/83332.protein.links.detailed.v10.5.txt")
 
@@ -347,24 +348,6 @@ def map_to_location(feature):
             graph.push(_feature)
 
 
-# def create_is_a_cv_term_rel(go_set):
-#     """
-#     Creating IS_A relationships between CVTerms
-#     :param go_set: set of GO ids
-#     :return:
-#     """
-#     for go_id in go_set:
-#         if go_id.startswith("GO:") and go_id is not 'GO_IDs':
-#             is_a_list = fetch_quick_go_data(quick_go, go_id)
-#             go_term = GOTerm.select(graph, go_id).first()
-#             for go in is_a_list:
-#                 goid = go[go.find('G'):go.find('!')].strip()
-#                 term = GOTerm.select(graph, goid).first()
-#                 if term and go_term:
-#                     go_term.is_a.add(term)
-#                     graph.push(go_term)
-
-
 def create_go_term_nodes():
     """
     Create GOTerm Nodes and build Protein relationships.
@@ -421,28 +404,15 @@ def create_go_term_nodes():
                         if 'is_a' in child_relation:
                             term.is_a.add(child_go)
                         elif 'part_of' in child_relation:
-                            term.part_of.add(child_go)
+                            term.part_of_go.add(child_go)
                         elif 'regulates' in child_relation:
                             term.regulates.add(child_go)
                         elif 'capable_of' in child_relation:
                             term.capable_of.add(child_go)
                     graph.push(term)
-
-            # for go_id in go_ids:
-            #     go_term_set.add(go_id)
-            #     if go_id.startswith("GO:") and go_id is not 'GO_IDs':
-            #         result = quick_go.Term(go_id, frmt="obo")
-            #         if result and not isinstance(result, int):
-            #             result = result.split('\n')
-            #             name = result[2].split(":")[1]
-            #             _def = result[3].split(":")[1]
-            #             go_term = GOTerm(accession=go_id, name=name.strip(), definition=_def.strip())
-            #             graph.create(go_term)
-
     end = time.time()
     sys.stdout.write("Created {} GoTerms in {} seconds.".format(
         len(go_term_set), end - start))
-    # create_is_a_cv_term_rel(go_term_set)
 
 
 def create_interpro_term_nodes(protein, interpro_ids):
@@ -637,38 +607,46 @@ def create_drugbank_nodes():
     """
     sys.stdout.write("\nCreating DrugBank Nodes...\n")
     drug_set = set()
-    with open(TARGET_PROTEIN_IDS, "r") as csv_file:
-        reader = csv.DictReader(csv_file)
-        for _target in tqdm(reader):
-            # TODO :
-            # if 'tuberculosis' in _target['Species']:
-            # print(_target['Gene Name'], _target['Uniprot Title'], _target['Drug IDs'], _target['Species'])
-            protein_ = Protein.select(graph).where(
-                "_.entry_name='{}'".format(_target['Uniprot Title']))
-            if protein_:
-                for protein in protein_:
-                    drug_ids = [x for x in _target['Drug IDs'].split(';') if x is not '']
-                    for _id in drug_ids:
-                        drug_set.add(_id)
-                        dbxref = DbXref(db="DrugBank", accession=_id)
-                        graph.create(dbxref)
+    zipped_tpi = zipfile.ZipFile(TARGET_PROTEIN_IDS)
+    df = read_csv(zipped_tpi.open("all.csv")).fillna("")
+    for entry in df.values:
+        uniprot_entry = entry[6]
+        dbank_ids = entry[12]
+        protein_ = Protein.select(graph).where(
+            "_.entry_name='{}'".format(uniprot_entry))
+        if protein_:
+            for protein in protein_:
+                print(protein.entry_name, dbank_ids)
+                drug_ids = [x for x in dbank_ids.split(';') if x is not '']
+                for _id in drug_ids:
+                    drug_set.add(_id)
+                    dbxref = DbXref(db="DrugBank", accession=_id)
+                    graph.create(dbxref)
+                    drug = Drug.select(graph, _id).first()
+                    if drug:
+                        drug.target.add(protein)
+                    else:
                         drug = Drug(accession=_id)
                         graph.create(drug)
-                        drug.target.add(protein)
-                        graph.push(drug)
-                        protein.drug.add(drug)
-                        protein.dbxref.add(dbxref)
-                        graph.push(protein)
-
-    with open(DRUG_VOCAB, "r") as csv_file_:
-        reader = csv.DictReader(csv_file_)
-        for entry in reader:
-            for drug_id in drug_set:
-                if entry['DrugBank ID'] == drug_id:
-                    drug = Drug.select(graph, drug_id).first()
-                    drug.name = entry['Common name']
-                    drug.synonyms = entry['Synonyms']
+                    drug.target.add(protein)
                     graph.push(drug)
+                    protein.drug.add(drug)
+                    protein.dbxref.add(dbxref)
+                    graph.push(protein)
+
+    zipped_dv = zipfile.ZipFile(DRUG_VOCAB)
+    df = read_csv(zipped_dv.open("drugbank vocabulary.csv")).fillna("")
+    for entry in df.values:
+        dbank_id = entry[0]
+        commom_name = entry[2]
+        synonyms = entry[5]
+        drug = Drug.select(graph, dbank_id).first()
+        if drug:
+            print(drug.accession, dbank_id, commom_name)
+            drug.name = commom_name
+            drug.synonyms = synonyms
+            graph.push(drug)
+
     sys.stdout.write("\nDone Creating DrugBank Nodes...\n")
 
 
@@ -947,7 +925,6 @@ def create_operon_nodes(text_file=None):
                 name_operon = tab_split[10]
                 locus_operon = tab_split[11]
                 description = tab_split[7]
-                print(locus, locus_operon)
                 operon = Operon()
                 # Must we use the product as the uniquename
                 operon.uniquename = locus_operon
@@ -969,3 +946,32 @@ def create_operon_nodes(text_file=None):
                         graph.push(gene)
                         operon.gene.add(gene)
                         graph.push(operon)
+
+
+def map_srna_to_mrna(text_file):
+    """
+    Map sRNA to the mRNA they regulate
+    :param text_file:
+    :return:
+    """
+    sys.stdout.write("\nAdding sRNA data...")
+    with open(text_file) as text_file:
+        next(text_file)
+        for line in text_file:
+            tab_split = line.split('\t')
+            srna_name = tab_split[0]
+            # srna_fmax = tab_split[2]
+            mrna_name = tab_split[7]
+            # mrna_fmax = tab_split[9]
+            ncrna = NCRna.select(graph).where(
+                "_.name=~'(?i).*{}.*'".format(srna_name.lower())).first()
+            if ncrna:
+                mrnas = mrna_name.split()
+                if "-" in mrna_name:
+                    mrnas = mrna_name.split("-")
+                for name in mrnas:
+                    gene = Gene.select(graph).where(
+                        "_.uniquename=~'(?i).*{}.*'".format(name.lower())).first()
+                    if gene:
+                        ncrna.regulates_gene.add(gene)
+                        graph.push(ncrna)

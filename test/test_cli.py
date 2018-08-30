@@ -8,10 +8,11 @@ from click.testing import CliRunner
 
 from gff2neo.cli import delete, examine_gff, load_gff, load_uniprot_data, load_publications, load_reactome_pathways, \
     load_go_terms, load_drugbank_data, load_kegg_pathways, load_chromosome, load_known_mutations, \
-    load_operons
+    load_operons, load_srna_data, SRNA_TXTFILE
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 TEST_GFF = os.path.join(CURR_DIR, "test_gff/h37rv-sample.gff3")
+MYCO_TEST_GFF = os.path.join(CURR_DIR, "test_myco_gff/test_myco_h37rv.gff")
 TEST_GFF_DIR = os.path.join(CURR_DIR, "test_gff/")
 TEST_OPERON_FILE = os.path.join(
     CURR_DIR, "test/test_operon/h37rv_operon_sample.txt")
@@ -93,4 +94,9 @@ def test_load_reactome_pathways(cli_runner):
 
 def test_load_publications(cli_runner):
     result = cli_runner.invoke(load_publications)
+    assert result.exit_code == 0
+
+
+def test_load_srna_data(cli_runner):
+    result = cli_runner.invoke(load_srna_data, [SRNA_TXTFILE])
     assert result.exit_code == 0

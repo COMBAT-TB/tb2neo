@@ -4,8 +4,8 @@ Cli
 import click
 
 from gff2neo.gffproc import *
+from gff2neo.mutations import process_mutation_file
 from gff2neo.uniprot import UNIPROT_DATA
-from gff2neo.variants import process_mutation_file
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -13,6 +13,8 @@ MYCO_GFF = os.path.join(
     CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
 OPERON_DATA = os.path.join(
     CURR_DIR, "data/operon/mycobacterium_tuberculosis_h37rv_genome_summary.txt")
+SRNA_TXTFILE = os.path.join(
+    CURR_DIR, "data/srna/")
 DR_DATA_DIR = os.path.join(CURR_DIR, 'data/mutations/')
 
 
@@ -262,6 +264,22 @@ def load_reactome_pathways():
     else:
         sys.stderr.write(
             "Unable to load REACTOME Pathways!\n Check if we have a database with Proteins.")
+
+
+@cli.command()
+@click.argument('srna_dir', type=click.Path(exists=True))
+def load_srna_data(srna_dir):
+    """
+    Load regulatory sRNA data.
+    :return:
+    """
+    if os.path.isdir(srna_dir):
+        for root, dirs, files in os.walk(srna_dir):
+            for _file in files:
+                _file = '/'.join([os.path.abspath(srna_dir), _file])
+                if check_csv(_file):
+                    if _file.endswith(".txt"):
+                        map_srna_to_mrna(text_file=_file)
 
 
 if __name__ == '__main__':

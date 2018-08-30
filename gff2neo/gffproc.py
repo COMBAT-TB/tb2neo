@@ -111,14 +111,17 @@ def map_functional_category(gff=None):
                 tab_split = line.split('\t')
                 start = tab_split[3]
                 end = int(tab_split[4])
-                functional_category = tab_split[8].split(
-                    ";")[-1].split("=")[-1].strip()
+                info = tab_split[8].split(";")
+                functional_category = info[-1].split("=")[-1].strip()
                 result = graph.run(
                     "match(n)-[]-(l:Location) where l.fmax = {end} return n".format(end=end)).data()
                 if result:
                     for item in result:
                         node = item['n']
                         node['category'] = functional_category
+                        # update RNA nodes
+                        if node['biotype'] and 'rna' in str(node['biotype']).lower():
+                            node['description'] = info[3].replace('Product=', '')
                         node.push()
 
 # def scrap_tbdtdb(locus_tags):

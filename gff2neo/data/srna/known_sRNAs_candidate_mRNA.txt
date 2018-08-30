@@ -1,0 +1,18 @@
+sRNA	start	end	type	strand	function	reference	mRNA	start	end
+mcr19	575033	575069	cis	+	Fragment of putative small regulatory RNA (DiChiara et al., 2010)		Rv0485	573984	575300
+ASdes	918264	918458	cis	+	Putative small regulatory RNA (Arnvig and Young, 2009)		Rv0824c	917734	918750
+F6	293604	293705	trans	+	Putative small regulatory RNA (Arnvig and Young, 2009; DiChiara et al., 2010)		Rv0243-Rv0244c	1655511	1655514
+MTS0858	1220388	1220487	trans	-	Putative small regulatory RNA (Arnvig et al., 2011)		Rv1092c-Rv1093	1220574	1221854
+mcr11	1413094	1413224	trans	-	Putative small regulatory RNA (Arnvig and Young, 2009; DiChiara et al., 2010)		Rv1264-Rv1265	1413260	1413940
+mcr3	1471619	1471742	trans	+	Putative small regulatory RNA (DiChiara et al., 2010)		rrn	1471846	1473382
+mcr10	1283693	1283815	cis	+	Putative small regulatory RNA (DiChiara et al., 2010)		Rv1157c	1283056	1284171
+G2	1914962	1915190	trans	-	Putative small regulatory RNA (Arnvig and Young, 2009)		Rv1689-Rv1690	1915527	1915910
+mpr6	1365274	1365365	trans	+	Fragment of putative small regulatory RNA (DiChiara et al., 2010)		Rv1221-Rv1222	1365344	1365808
+B11	4099386	4099478	trans	-	Putative small regulatory RNA (Arnvig and Young, 2009; DiChiara et al., 2010)		Rv3660c-Rv3661	4099647	4100510
+C8	4168154	4168281	trans	-	Possible 4.5S RNA in signal (Arnvig and Young, 2009; DiChiara et al., 2010)		Rv3722c	4168049	4168052
+AS1726	1952291	1952503	cis	-	Putative small regulatory RNA (Arnvig and Young, 2009)		Rv1726	1951852	1953237
+AS1890	2139419	2139656	cis	+	Putative small regulatory RNA (Arnvig and Young, 2009)		Rv1890c	2139076	2139687
+ASpks	2299745	2299886	cis	+	Putative small regulatory RNA (Arnvig and Young, 2009)		Rv2048c	2294531	2306986
+mcr5	2437823	2437866	cis	-	Fragment of putative small regulatory RNA (DiChiara et al., 2010)		Rv2175c	2437886	2437446
+mcr16	2517032	2517134	cis	-	Putative small regulatory RNA (DiChiara et al., 2010)		Rv2243	2516787	2517695
+B55	704187	704247	trans	+	Putative small regulatory RNA (Arnvig and Young, 2009)		Rv0609A	703830	704057

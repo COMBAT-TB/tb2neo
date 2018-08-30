@@ -177,6 +177,7 @@ class TRna(Feature):
     biotype = Property()
 
     part_of = RelatedTo("Transcript", "PART_OF")
+    regulates_gene = RelatedTo("Gene", "REGULATES")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
@@ -191,6 +192,7 @@ class NCRna(Feature):
     biotype = Property()
 
     part_of = RelatedTo("Transcript", "PART_OF")
+    regulates_gene = RelatedTo("Gene", "REGULATES")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
@@ -205,6 +207,7 @@ class RRna(Feature):
     biotype = Property()
 
     part_of = RelatedTo("Transcript", "PART_OF")
+    regulates_gene = RelatedTo("Gene", "REGULATES")
 
     def __init__(self, so_id=_so_id):
         self.so_id = so_id
@@ -374,7 +377,7 @@ class GOTerm(GraphObject):
     namespace = Property()
 
     is_a = RelatedTo("GOTerm", "IS_A")
-    part_of = RelatedTo("GOTerm", "PART_OF")
+    part_of_go = RelatedTo("GOTerm", "PART_OF")
     regulates = RelatedTo("GOTerm", "REGULATES")
     capable_of = RelatedTo("GOTerm", "CAPABLE_OF")
     protein = RelatedFrom("Protein", "ASSOCIATED_WITH")
