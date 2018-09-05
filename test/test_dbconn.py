@@ -17,7 +17,8 @@ def test_db_nodes():
     result = graph.node_labels
     assert "Chromosome" in result
     assert "Gene" in result
-    assert "Transcript" in result
+    assert "MRna" in result
+    # assert "Transcript" in result
     assert "CDS" in result
     # assert "Operon" in result
 

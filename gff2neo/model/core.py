@@ -152,6 +152,22 @@ class PseudoGene(Feature):
         self.so_id = so_id
 
 
+class MRna(Feature):
+    """
+    mRNA is_a Feature
+    """
+    _so_id = "SO:0000234"
+    so_id = Property()
+    biotype = Property()
+
+    part_of_g = RelatedTo("Gene", "PART_OF")
+    part_of_pg = RelatedTo("PseudoGene", "PART_OF")
+    part_of_cds = RelatedFrom("CDS", "PART_OF")
+
+    def __init__(self, so_id=_so_id):
+        self.so_id = so_id
+
+
 class Transcript(Feature):
     """
     Transcript is_a Feature
@@ -170,7 +186,7 @@ class Transcript(Feature):
 
 class TRna(Feature):
     """
-    TRna is_a Feature
+    tRNA is_a Feature
     """
     _so_id = "SO:0000253"
     so_id = Property()
@@ -185,7 +201,7 @@ class TRna(Feature):
 
 class NCRna(Feature):
     """
-    NCRna is_a Feature
+    ncRNA is_a Feature
     """
     _so_id = "SO:0000655"
     so_id = Property()
@@ -200,7 +216,7 @@ class NCRna(Feature):
 
 class RRna(Feature):
     """
-    RRna is_a Feature
+    rRNA is_a Feature
     """
     _so_id = "SO:0000252"
     so_id = Property()
@@ -213,6 +229,7 @@ class RRna(Feature):
         self.so_id = so_id
 
 
+# Prokaryotes don't really have exons or introns
 class Exon(Feature):
     """
     Exon is_a Feature
@@ -255,9 +272,9 @@ class Chromosome(Feature):
 
 class Protein(Feature):
     """
-    Protein is_a Feature
+    Protein (Polypeptide) is_a Feature
+
     """
-    # more commonly known as a Protein - we should call it that - pvh
     _so_id = "SO:0000104"
     so_id = Property()
     entry_name = Property()
@@ -314,6 +331,7 @@ class Location(GraphObject):
         self.residue_info = residue_info
         self.locgroup = locgroup
         self.rank = rank
+        # http://gmod.org/wiki/Chado_Sequence_Module#Feature_Locations
         if self.fmin > self.fmax:
             raise ValueError(
                 "fmin cannot be greater than fmax: {} > {}.".format(self.fmin, self.fmax))

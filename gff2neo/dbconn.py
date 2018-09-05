@@ -28,6 +28,7 @@ kegg = KEGG(verbose=False)
 # watch("neo4j.bolt")
 
 gene_dict = dict()
+mrna_dict = dict()
 transcript_dict = dict()
 pseudogene_dict = dict()
 cds_dict = dict()
@@ -93,10 +94,7 @@ def create_chromosome_nodes(strain):
     chromosome = Chromosome()
     chromosome.name = name
     chromosome.uniquename = uniquename
-    try:
-        chromosome.residues = get_nucleotides(strain=strain)
-    except IOError as e:
-        raise e
+    chromosome.residues = get_nucleotides(strain=strain)
     graph.create(chromosome)
 
 
@@ -126,9 +124,30 @@ def create_gene_nodes(feature, organism):
     gene_dict[unique_name] = gene
 
 
-def create_transcript_nodes(feature):
+def create_mrna_nodes(feature):
     """
-    Create Transcipt Nodes
+    Create mRNA Nodes
+    :param feature:
+    :return:
+    """
+    names = get_feature_name(feature)
+    name = names.get("Name", names.get("UniqueName"))
+    unique_name = names.get("UniqueName", name)
+    biotype = feature.qualifiers['biotype'][0]
+    parent = feature.qualifiers.get("Parent", " ")[0]
+
+    mrna = MRna()
+    mrna.name = name
+    mrna.parent = parent[parent.find(':') + 1:]
+    mrna.uniquename = unique_name
+    mrna.biotype = biotype
+    graph.create(mrna)
+    mrna_dict[unique_name] = mrna
+
+
+def creat_transcript_nodes(feature):
+    """
+    Create Transcript Nodes
     :param feature:
     :return:
     """
@@ -144,7 +163,7 @@ def create_transcript_nodes(feature):
     transcript.uniquename = unique_name
     transcript.biotype = biotype
     graph.create(transcript)
-    transcript_dict[unique_name] = transcript
+    # transcript_dict[unique_name] = transcript
 
 
 def create_pseudogene_nodes(feature, organism):
@@ -268,25 +287,34 @@ def build_gff_relationships():
     :return:
     """
     sys.stdout.write("\nBuilding GFF Relationships...\n")
-    for t, transcript in transcript_dict.items():
-        if transcript.parent in gene_dict.keys():
-            gene = gene_dict.get(transcript.parent)
-            transcript.part_of_g.add(gene)
-            graph.push(transcript)
-            gene.part_of.add(transcript)
+    for m, mrna in mrna_dict.items():
+        if mrna.parent in gene_dict.keys():
+            gene = gene_dict.get(mrna.parent)
+            mrna.part_of_g.add(gene)
+            graph.push(mrna)
+            gene.part_of.add(mrna)
             graph.push(gene)
         for p, pseudogene in pseudogene_dict.items():
-            if transcript.parent == pseudogene.uniquename:
-                transcript.part_of_pg.add(pseudogene)
-                graph.push(transcript)
-                pseudogene.part_of.add(transcript)
+            if mrna.parent == pseudogene.uniquename:
+                mrna.part_of_pg.add(pseudogene)
+                graph.push(mrna)
+                pseudogene.part_of.add(mrna)
                 graph.push(pseudogene)
         for c, cds in cds_dict.items():
-            if transcript.uniquename == cds.parent:
-                cds.part_of.add(transcript)
+            if mrna.uniquename == cds.parent:
+                cds.part_of.add(mrna)
                 graph.push(cds)
-                transcript.part_of_cds.add(cds)
-                graph.push(transcript)
+                mrna.part_of_cds.add(cds)
+                graph.push(mrna)
+    # for t, transcript in transcript_dict.items():
+    #     if transcript.parent in ncrna_dict.keys():
+    #         ncrna = ncrna_dict.get(transcript.parent)
+    #         ncrna.part_of.add(transcript)
+    #         graph.push(ncrna)
+    #     if transcript.parent in trna_dict.keys():
+    #         trna = trna_dict.get(transcript.parent)
+    #         trna.part_of.add(transcript)
+    #         graph.push(trna)
     sys.stdout.write("\nDone Building GFF Relationships...\n")
 
 
@@ -341,7 +369,7 @@ def map_to_location(feature):
             _feature.residues = _feature.get_residues()
             graph.push(_feature)
         elif feature.type == 'mRNA':
-            _feature = transcript_dict.get(srcfeature_id)
+            _feature = mrna_dict.get(srcfeature_id)
             _feature.location.add(location)
             _feature.located_on.add(chromosome)
             _feature.residues = _feature.get_residues()

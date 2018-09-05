@@ -1,4 +1,4 @@
-FROM neo4j:3.4
+FROM neo4j:3.3
 LABEL Maintainer="lose.thoba@gmail.com"
 
 ENV GRAPHAWARE_PROD_URL https://products.graphaware.com/download

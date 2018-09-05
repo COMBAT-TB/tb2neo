@@ -86,15 +86,19 @@ def load_gff_data(gff_file, limit, organism):
             elif feature.type == 'pseudogene':
                 create_pseudogene_nodes(feature, organism)
                 map_to_location(feature)
-            elif feature.type in rna:
-                create_rna_nodes(feature)
-                map_to_location(feature)
             elif feature.type == 'CDS':
                 create_cds_nodes(feature)
                 map_to_location(feature)
             elif feature.type == 'mRNA':
-                create_transcript_nodes(feature)
+                create_mrna_nodes(feature)
                 map_to_location(feature)
+            elif feature.type in rna:
+                create_rna_nodes(feature)
+                map_to_location(feature)
+            elif feature.type == 'transcript':
+                creat_transcript_nodes(feature)
+                map_to_location(feature)
+
     in_file.close()
 
 
