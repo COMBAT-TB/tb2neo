@@ -37,7 +37,7 @@ def query_quickgo(go_term_ids):
     """
     s = Session()
     s.mount(BASE_URL, HTTPAdapter(
-        max_retries=Retry(total=5, backoff_factor=0.2, status_forcelist=[500])
+        max_retries=Retry(total=10, backoff_factor=0.2, status_forcelist=[500])
     ))
     url = BASE_URL + "/ontology/go/terms/"
     headers = {'Accept': 'application/json'}

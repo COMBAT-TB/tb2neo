@@ -400,7 +400,7 @@ def create_go_term_nodes():
             response = query_quickgo(terms)
             if response.status_code == 200:
                 data = response.json()
-                for result in tqdm(data['results']):
+                for result in data['results']:
                     accession = result['id']
                     # quick_go_data[accession] = result
                     name = result['name']
@@ -420,7 +420,7 @@ def create_go_term_nodes():
                     code=response.status_code, go=terms))
 
     sys.stdout.write("\nMapping GoTerm Relations...\n")
-    for term_accession, v in tqdm(quick_go_data_dict.items()):
+    for term_accession, v in quick_go_data_dict.items():
         term = GOTerm.select(graph, term_accession).first()
         if term:
             if v.get('children'):
