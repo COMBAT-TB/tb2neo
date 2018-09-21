@@ -1,4 +1,4 @@
-version: '2'
+version: "2"
 services:
   loader:
     build: .
@@ -6,6 +6,7 @@ services:
       DATABASE_URL: db
     volumes:
       - loader_data:/code
+    network_mode: "bridge"
     depends_on:
       - db
       - es
@@ -14,12 +15,13 @@ services:
     build: ./neo4j/
     environment:
       NEO4J_AUTH: none
-#      Tuning
-#      NEO4J_dbms_memory_pagecache_size: 8G
-#      NEO4J_dbms_memory_heap_initial__size: 4G
-#      NEO4J_dbms_memory_heap_max__size: 4G
+    #      Tuning
+    #      NEO4J_dbms_memory_pagecache_size: 8G
+    #      NEO4J_dbms_memory_heap_initial__size: 4G
+    #      NEO4J_dbms_memory_heap_max__size: 4G
     volumes:
       - db_data:/data
+    network_mode: "bridge"
     depends_on:
       - es
     ports:
@@ -31,6 +33,7 @@ services:
     image: elasticsearch:2.4
     volumes:
       - es_data:/usr/share/elasticsearch/data
+    network_mode: "bridge"
     ports:
       - "9200:9200"
 volumes:

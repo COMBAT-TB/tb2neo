@@ -230,7 +230,7 @@ def load_publications():
     :return:
     """
     if check_csv(UNIPROT_DATA):
-        create_publication_nodes()
+        create_publication_nodes(uniprot_data=UNIPROT_DATA)
     else:
         sys.stderr.write(
             "Unable to load Publications!\n Check if CSV files are in place")

@@ -19,6 +19,7 @@ TEST_OPERON_FILE = os.path.join(
     CURR_DIR, "test/test_operon/h37rv_operon_sample.txt")
 TEST_OPERON_FILE_DIR = os.path.join(CURR_DIR, "test_operon/")
 TEST_MUTATIONS_DIR = os.path.join(CURR_DIR, "test_mutations/")
+UNIPROT_DATA = os.path.join(CURR_DIR, "test_uniprot_data/uniprot_data.csv")
 
 
 @pytest.fixture(scope="module")
