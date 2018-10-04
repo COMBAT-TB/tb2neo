@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from gff2neo.ftpconn import get_nucleotides
 from gff2neo.model.vcfmodel import *
-from gff2neo.ncbi import fetch_publication_list
+from gff2neo.ncbi import fetch_publication_list, search_pubmed
 from gff2neo.orthologs import fetch_ortholog
 from gff2neo.quickgo import query_quickgo
 from gff2neo.uniprot import *
@@ -485,38 +485,44 @@ def create_author_nodes(publication, full_author):
             graph.push(publication)
 
 
-def create_publication_nodes():
+def create_publication_nodes(uniprot_data):
     """
     Create Publication Nodes
     :return:
     """
-    p_id_set = set()
+    pmid_set = set()
     sys.stdout.write("\nCreating Publication Nodes...\n")
     import time
     _start = time.time()
-    with open(UNIPROT_DATA, 'r') as csv_file:
-        reader = csv.DictReader(csv_file, delimiter=',')
-        for entry in reader:
-            protein_entry = entry['Entry']
-            protein = None
-            if protein_entry is not '':
-                protein = Protein.select(graph, protein_entry).first()
-            pubmed_ids = [p for p in entry['PubMed'].split(
+    df = read_csv(uniprot_data).fillna("")
+
+    for entry in df.values:
+        locus_tag = entry[2].strip()
+        gene_name_prim = entry[7].strip()
+        genename = gene_name_prim if gene_name_prim is not '' else locus_tag
+        pmids = search_pubmed(genename)  # list
+        if pmids:
+            pmid_set.update(pmids)
+        protein_entry = entry[0]
+        protein = None
+        if protein_entry is not '':
+            protein = Protein.select(graph, protein_entry).first()
+            uniprot_pmids = [p for p in entry[11].split(
                 "; ") if p is not '']
-            for p_id in set(pubmed_ids):
-                pub = Publication()
-                pub.pmid = p_id
-                graph.create(pub)
-                p_id_set.add(p_id)
-                if protein:
-                    protein.published_in.add(pub)
-                    graph.push(protein)
+            pmid_set.update(uniprot_pmids)
+        for p_id in pmid_set:
+            pub = Publication()
+            pub.pmid = p_id
+            graph.create(pub)
+            if protein:
+                protein.published_in.add(pub)
+                graph.push(protein)
     # Let's build a set before calling API and DB
-    num_ids = len(p_id_set)
+    num_ids = len(pmid_set)
     chunksize = 500
     records = []
     for start in range(0, num_ids, chunksize):
-        subset = list(p_id_set)[start:start + chunksize]
+        subset = list(pmid_set)[start:start + chunksize]
         records.extend(fetch_publication_list(subset))
     record_loaded_count = 0
     for record in tqdm(records):
@@ -566,6 +572,7 @@ def create_publication_nodes():
     end = time.time()
     sys.stdout.write(
         "Created Publications in {} seconds.".format(end - _start))
+    return pmid_set
 
 
 def build_protein_interaction_rels(protein_interaction_dict):

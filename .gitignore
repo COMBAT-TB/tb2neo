@@ -115,3 +115,5 @@ data/operons
 *.gff3
 data/drdata
 *.bz2
+backups/
+*test.yml

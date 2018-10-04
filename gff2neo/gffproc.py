@@ -125,7 +125,8 @@ def map_functional_category(gff=None):
                         node['category'] = functional_category
                         # update RNA nodes
                         if node['biotype'] and 'rna' in str(node['biotype']).lower():
-                            node['description'] = info[3].replace('Product=', '')
+                            node['description'] = info[3].replace(
+                                'Product=', '')
                         node.push()
 
 # def scrap_tbdtdb(locus_tags):

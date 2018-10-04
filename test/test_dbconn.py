@@ -3,10 +3,12 @@ Test dbconn module
 """
 import pytest
 
-from gff2neo.dbconn import graph, split_gene_names, create_chromosome_nodes
+from gff2neo.dbconn import graph, split_gene_names, create_chromosome_nodes, create_publication_nodes
 from gff2neo.model.core import Gene, Chromosome
+from test_cli import UNIPROT_DATA
 
 
+@pytest.mark.skip(reason="heavy on mem")
 def test_create_chromosome_nodes():
     create_chromosome_nodes(strain="h37rv")
     chromosome = Chromosome.select(graph).first()
@@ -31,9 +33,12 @@ def test_rv0001():
 
 
 @pytest.mark.parametrize("test_input,expected", [
-    ("MATCH (g:Gene) OPTIONAL MATCH ((g)<-[:PART_OF]-(t)) RETURN t.parent", type(None)),
-    ("MATCH (g:Gene) OPTIONAL MATCH ((g)-[:LOCATED_AT]->(l)) RETURN l.fmax", type(None)),
-    ("MATCH (g:Gene) OPTIONAL MATCH ((g)-[:ENCODES]->(p)) RETURN p.parent", type(None)),
+    ("MATCH (g:Gene) OPTIONAL MATCH ((g)<-[:PART_OF]-(t)) RETURN t.parent",
+     type(None)),
+    ("MATCH (g:Gene) OPTIONAL MATCH ((g)-[:LOCATED_AT]->(l)) RETURN l.fmax",
+     type(None)),
+    ("MATCH (g:Gene) OPTIONAL MATCH ((g)-[:ENCODES]->(p)) RETURN p.parent",
+     type(None)),
 ])
 def test_db_data(test_input, expected):
     assert isinstance(type(graph.evaluate(test_input)), expected) is False
@@ -47,3 +52,8 @@ def test_db_data(test_input, expected):
 ])
 def test_split_gene_name(test_input, expected):
     assert isinstance(test_input, expected) is True
+
+
+def test_create_publication_nodes():
+    res = create_publication_nodes(uniprot_data=UNIPROT_DATA)
+    assert isinstance(res, set)

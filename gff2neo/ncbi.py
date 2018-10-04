@@ -1,6 +1,7 @@
 """
 Interface to NCBI.
 """
+import sys
 import time
 
 try:
@@ -12,24 +13,23 @@ from Bio import Entrez
 from Bio import Medline
 
 
-# def fetch_publications(citation):
-#     """
-#     Fetch Publications.
-#     :param citation:
-#     :return:
-#     """
-#     print("=========================================")
-#     print("Fetching publication data from PubMed.")
-#     print("=========================================")
-#     time.sleep(2)
-#     Entrez.email = 'A.N.Other@example.com'
-#     try:
-#         h = Entrez.efetch(db='pubmed', id=citation, rettype='medline', retmode='text')
-#     except HTTPError:
-#         time.sleep(200)
-#         h = Entrez.efetch(db='pubmed', id=citation, rettype='medline', retmode='text')
-#     records = Medline.parse(h)
-#     return records
+def search_pubmed(genename):
+    """
+    Search PubMed
+    :param genename:
+    :return:
+    """
+    term = "{genename} AND tuberculosis".format(genename=genename)
+    Entrez.email = 'support@sanbi.ac.za'
+    try:
+        h = Entrez.esearch(db='pubmed', term=term)
+        result = Entrez.read(h)
+        print('{pubs} publications contain: {term}\n'.format(
+            term=term, pubs=result['Count']))
+        ids = result['IdList']
+    except HTTPError as e:
+        sys.stderr.write("{e}".format(e=e))
+    return ids
 
 
 def fetch_publication_list(citations, rettype='medline'):
@@ -80,10 +80,12 @@ def get_fasta(strain):
     else:
         organism = None
         accession = None
-    # gene_query = "{gene}[Gene] AND {organism}[Organism] AND {accession}[Accession] " \
-    #              "AND RefSeq[Filter]".format(gene="", organism=organism, accession=accession)
-    q = "{organism}[Organism] AND {accession}[Accession] AND RefSeq[Filter]".format(organism=organism,
-                                                                                    accession=accession)
+    # gene_query = "{gene}[Gene] AND {organism}[Organism] " \
+    #              "AND {accession}[Accession] AND RefSeq[Filter]" \
+    #              "".format(gene="", organism=organism, accession=accession)
+    q = "{organism}[Organism] AND {accession}[Accession] " \
+        "AND RefSeq[Filter]".format(organism=organism,
+                                    accession=accession)
     handle = Entrez.esearch(db="nucleotide", term=q)
     record = Entrez.read(handle)
     ids = record[u'IdList']
@@ -93,4 +95,7 @@ def get_fasta(strain):
     record = handle.read()
     # remove >NC_000962.3 Mycobacterium tuberculosis H37Rv, complete genome
     residues = ''.join(record.strip('\n').split('\n')[1:])
-    return residues
+    if isinstance(residues, str):
+        return residues
+    else:
+        return None

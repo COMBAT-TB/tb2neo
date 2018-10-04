@@ -11,8 +11,10 @@ from gff2neo.ftpconn import get_nucleotides
 #         download_fasta(url=None, file_path=FILE_PATH, fasta_file=FASTA_FILE)
 
 # def test_download_fasta():
-#     result = download_fasta(url=URL, file_path=FILE_PATH, fasta_file=FASTA_FILE)
+#     result = download_fasta(url=URL, file_path=FILE_PATH,
+#                             fasta_file=FASTA_FILE)
 #     assert isinstance(result, GzipFile) is True
+
 
 @pytest.mark.skip(reason="heavy on mem")
 def test_get_nucleotides():
