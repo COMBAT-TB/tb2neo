@@ -24,8 +24,6 @@ def search_pubmed(genename):
     try:
         h = Entrez.esearch(db='pubmed', term=term)
         result = Entrez.read(h)
-        print('{pubs} publications contain: {term}\n'.format(
-            term=term, pubs=result['Count']))
         ids = result['IdList']
     except HTTPError as e:
         sys.stderr.write("{e}".format(e=e))
