@@ -4,12 +4,15 @@ Interface for GFF processing.
 from __future__ import print_function
 
 import pprint
-
+import os
+import sys
+from tqdm import tqdm
 from BCBio import GFF
 from BCBio.GFF import GFFExaminer
 
-from gff2neo.dbconn import *
+from gff2neo.dbconn import graph, create_organism_nodes, create_featureloc_nodes, create_gene_nodes, creat_transcript_nodes, create_cds_nodes, create_rna_nodes, create_mrna_nodes, create_pseudogene_nodes, map_to_location
 
+CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 MYCO_GFF = os.path.join(
     CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
 
@@ -118,7 +121,8 @@ def map_functional_category(gff=None):
                 info = tab_split[8].split(";")
                 functional_category = info[-1].split("=")[-1].strip()
                 result = graph.run(
-                    "match(n)-[]-(l:Location) where l.fmax = {end} return n".format(end=end)).data()
+                    "match(n)-[]-(l:Location) where l.fmax = {end} return n"
+                    .format(end=end)).data()
                 if result:
                     for item in result:
                         node = item['n']

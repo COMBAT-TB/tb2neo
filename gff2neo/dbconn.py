@@ -98,6 +98,11 @@ def create_chromosome_nodes(strain):
     chromosome.uniquename = uniquename
     chromosome.residues = get_nucleotides(strain=strain)
     graph.create(chromosome)
+    organism = Organism.select(graph).first()
+    chromosome.belongs_to.add(organism)
+    graph.push(chromosome)
+
+
 
 
 def create_gene_nodes(feature, organism):
@@ -502,9 +507,10 @@ def create_publication_nodes(uniprot_data):
         locus_tag = entry[2].strip()
         gene_name_prim = entry[7].strip()
         genename = gene_name_prim if gene_name_prim is not '' else locus_tag
-        pmids = search_pubmed(genename)  # list
-        if pmids:
-            pmid_set.update(pmids)
+        # TODO: Try optimise
+        # pmids = search_pubmed(genename)  # list
+        # if pmids:
+        #     pmid_set.update(pmids)
         protein_entry = entry[0]
         protein = None
         if protein_entry is not '':

@@ -6,7 +6,6 @@ services:
       DATABASE_URL: db
     volumes:
       - loader_data:/code
-    network_mode: "bridge"
     depends_on:
       - db
       - es
@@ -21,7 +20,6 @@ services:
     #      NEO4J_dbms_memory_heap_max__size: 4G
     volumes:
       - db_data:/data
-    network_mode: "bridge"
     depends_on:
       - es
     ports:
@@ -33,7 +31,6 @@ services:
     image: elasticsearch:2.4
     volumes:
       - es_data:/usr/share/elasticsearch/data
-    network_mode: "bridge"
     ports:
       - "9200:9200"
 volumes:
