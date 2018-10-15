@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 from gff2neo.ftpconn import get_nucleotides
 from gff2neo.model.vcfmodel import *
-from gff2neo.ncbi import fetch_publication_list, search_pubmed
+from gff2neo.ncbi import fetch_publication_list
 from gff2neo.orthologs import fetch_ortholog
 from gff2neo.quickgo import query_quickgo
 from gff2neo.uniprot import *
@@ -101,8 +101,6 @@ def create_chromosome_nodes(strain):
     organism = Organism.select(graph).first()
     chromosome.belongs_to.add(organism)
     graph.push(chromosome)
-
-
 
 
 def create_gene_nodes(feature, organism):
@@ -545,7 +543,7 @@ def create_publication_nodes(uniprot_data):
             volume = article['Journal']['JournalIssue']['Volume']
             issue = article['Journal']['JournalIssue']['Issue']
             date_of_pub = article['Journal']['JournalIssue']['PubDate']['Month'] + " " + \
-                article['Journal']['JournalIssue']['PubDate']['Year']
+                          article['Journal']['JournalIssue']['PubDate']['Year']
             pub_place = rec['MedlineCitation']['MedlineJournalInfo']['Country']
             publisher = None
             author = None
@@ -795,7 +793,7 @@ def create_kegg_pathways_nodes():
                 if data.get('GENE'):
                     for g_id in data['GENE'].keys():
                         g_id = "Rv" + \
-                            g_id.strip("RVBD_") if "RV" in g_id else g_id
+                               g_id.strip("RVBD_") if "RV" in g_id else g_id
                         # Protein parent is stored as an array
                         gene = Gene.select(graph, g_id).first()
                         if gene:

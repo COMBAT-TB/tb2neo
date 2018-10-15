@@ -4,13 +4,11 @@ Interface for GFF processing.
 from __future__ import print_function
 
 import pprint
-import os
-import sys
-from tqdm import tqdm
+
 from BCBio import GFF
 from BCBio.GFF import GFFExaminer
 
-from gff2neo.dbconn import graph, create_organism_nodes, create_featureloc_nodes, create_gene_nodes, creat_transcript_nodes, create_cds_nodes, create_rna_nodes, create_mrna_nodes, create_pseudogene_nodes, map_to_location
+from gff2neo.dbconn import *
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 MYCO_GFF = os.path.join(
