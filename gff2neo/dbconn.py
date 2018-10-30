@@ -1,7 +1,6 @@
 """
 Interface to the Neo4j Database
 """
-
 import zipfile
 
 from bioservices import KEGG, ChEMBL, QuickGO, reactome
@@ -53,7 +52,7 @@ def delete_db_data():
     Delete existing data.
     :return:
     """
-    # print("Deleting all nodes and relationships in {}".format(graph))
+    # sys.stdout.write("Deleting all nodes and relationships in {}".format(graph))
     sys.stdout.write(
         "Deleting all nodes and relationships in {}\n".format(graph))
 
@@ -263,7 +262,8 @@ def create_featureloc_nodes(feature):
     srcfeature_id = get_feature_name(feature).get("UniqueName")
     # Add 1 to start. Ensembl GFF in one based.
     primary_key = (feature.location.start + 1) + feature.location.end
-    feature_loc = Location(pk=primary_key, fmin=(feature.location.start + 1), fmax=feature.location.end,
+    feature_loc = Location(pk=primary_key, fmin=(feature.location.start + 1),
+                           fmax=feature.location.end,
                            strand=feature.location.strand)
     graph.create(feature_loc)
     location_dict[srcfeature_id] = feature_loc
@@ -411,7 +411,8 @@ def create_go_term_nodes():
                     name = result['name']
                     definition = result['definition']['text']
                     ontology = result['aspect']
-                    go_term = GOTerm(accession=accession, name=name.strip(), definition=definition.strip(),
+                    go_term = GOTerm(accession=accession, name=name.strip(),
+                                     definition=definition.strip(),
                                      ontology=ontology)
                     graph.create(go_term)
                     quick_go_data_dict[accession] = result
@@ -421,8 +422,9 @@ def create_go_term_nodes():
                         go_term.protein.add(protein)
                         graph.push(go_term)
             else:
-                sys.stdout.write('\nA status of {code} occurred for {go}\n'.format(
-                    code=response.status_code, go=terms))
+                sys.stderr.write(
+                    '\nA status of {code} occurred for {go}\n'.format(
+                        code=response.status_code, go=terms))
 
     sys.stdout.write("\nMapping GoTerm Relations...\n")
     for term_accession, v in quick_go_data_dict.items():
@@ -496,15 +498,15 @@ def create_publication_nodes(uniprot_data):
     :return:
     """
     pmid_set = set()
-    sys.stdout.write("\nCreating Publication and Author Nodes...\n")
+    sys.stdout.write("\nCreating Publication Nodes...\n")
     import time
     _start = time.time()
     df = read_csv(uniprot_data).fillna("")
 
     for entry in df.values:
-        locus_tag = entry[2].strip()
-        gene_name_prim = entry[7].strip()
-        genename = gene_name_prim if gene_name_prim is not '' else locus_tag
+        # locus_tag = entry[2].strip()
+        # gene_name_prim = entry[7].strip()
+        # genename = gene_name_prim if gene_name_prim is not '' else locus_tag
         # TODO: Try optimise
         # pmids = search_pubmed(genename)  # list
         # if pmids:
@@ -516,6 +518,8 @@ def create_publication_nodes(uniprot_data):
             uniprot_pmids = [p for p in entry[11].split(
                 "; ") if p is not '']
             pmid_set.update(uniprot_pmids)
+            sys.stdout.write("\n{} has {} publications.\n"
+                             .format(protein_entry, len(uniprot_pmids)))
         for p_id in pmid_set:
             pub = Publication()
             pub.pmid = p_id
@@ -532,7 +536,7 @@ def create_publication_nodes(uniprot_data):
         subset = list(pmid_set)[start:start + chunksize]
         records.extend(fetch_publication_list(subset))
     record_loaded_count = 0
-    for record in tqdm(records):
+    for record in records:
         if len(record) < 2:
             pm_id = record['id:'][0][record['id:'][0].find('able: ') + 6:]
             record = fetch_publication_list(pm_id, rettype='xml')
@@ -542,8 +546,9 @@ def create_publication_nodes(uniprot_data):
             pages = article['Pagination']['MedlinePgn']
             volume = article['Journal']['JournalIssue']['Volume']
             issue = article['Journal']['JournalIssue']['Issue']
-            date_of_pub = article['Journal']['JournalIssue']['PubDate']['Month'] + " " + \
-                          article['Journal']['JournalIssue']['PubDate']['Year']
+            date_of_pub = article['Journal']['JournalIssue']['PubDate'][
+                'Month'] + " " + \
+                article['Journal']['JournalIssue']['PubDate']['Year']
             pub_place = rec['MedlineCitation']['MedlineJournalInfo']['Country']
             publisher = None
             author = None
@@ -577,7 +582,7 @@ def create_publication_nodes(uniprot_data):
         create_author_nodes(publication, full_author)
         record_loaded_count += 1
     end = time.time()
-    sys.stdout.write("Done creating Publication and Author in {} seconds."
+    sys.stdout.write("Publications created in {} seconds."
                      .format(end - _start))
     return pmid_set
 
@@ -617,7 +622,7 @@ def create_drugbank_nodes():
             "_.entry_name='{}'".format(uniprot_entry))
         if protein_:
             for protein in protein_:
-                print(protein.entry_name, dbank_ids)
+                sys.stdout.write(protein.entry_name, dbank_ids)
                 drug_ids = [x for x in dbank_ids.split(';') if x is not '']
                 for _id in drug_ids:
                     drug_set.add(_id)
@@ -643,7 +648,7 @@ def create_drugbank_nodes():
         synonyms = entry[5]
         drug = Drug.select(graph, dbank_id).first()
         if drug:
-            print(drug.accession, dbank_id, commom_name)
+            sys.stdout.write(drug.accession, dbank_id, commom_name)
             drug.name = commom_name
             drug.synonyms = synonyms
             graph.push(drug)
@@ -721,7 +726,8 @@ def create_protein_nodes():
         protein.ontology_id = protein.so_id
         protein.seqlen = entry[16]
         protein.residues = entry[14]
-        # Catering for 'MT1076 MT1237 MT3197', 'MT0511/MT0512' and 'Rv0132c LH57_00740'
+        # Catering for 'MT1076 MT1237 MT3197', 'MT0511/MT0512'
+        # and 'Rv0132c LH57_00740'
         parent = split_gene_names(parent=entry[2])
         protein.parent = parent
         protein.family = entry[17]
@@ -739,7 +745,7 @@ def create_protein_nodes():
 
     build_protein_interaction_rels(protein_interaction_dict)
     end = time()
-    print("\nDone creating UniProt Nodes in ", end - start, "secs.")
+    sys.stdout.write("\nDone creating UniProt Nodes in ", end - start, "secs.")
 
 
 def map_gene_to_orthologs(locus_tags):
@@ -765,7 +771,7 @@ def map_gene_to_orthologs(locus_tags):
                             graph.push(gene)
                             graph.push(orthologous_gene)
     end = time()
-    print("\nDone mapping Orthologs", end - start, "secs.")
+    sys.stdout.write("\nDone mapping Orthologs", end - start, "secs.")
 
 
 def create_kegg_pathways_nodes():
@@ -825,16 +831,18 @@ def create_reactome_pathway_nodes():
                 for pathway_id in pathways:
                     path_res = reactome_old.query_by_id("Pathway", pathway_id)
                     if not isinstance(path_res, int):
-                        print(
-                            protein, "Pathway: {} - {}".format(pathway_id, path_res['displayName']))
+                        sys.stdout.write(protein, "Pathway: {} - {}"
+                              .format(pathway_id, path_res['displayName']))
                         pathway = Pathway()
                         pathway.accession = pathway_id
                         pathway._type = path_res['schemaClass']
                         pathway.species = path_res['speciesName']
                         pathway.name = path_res['displayName']
                         if path_res.get('compartment'):
-                            pathway.compartment = path_res['compartment'][0]['displayName']
-                        pathway.summation = path_res['summation'][0]['displayName']
+                            pathway.compartment = path_res['compartment'][0][
+                                'displayName']
+                        pathway.summation = path_res['summation'][0][
+                            'displayName']
                         graph.create(pathway)
                         _protein = Protein.select(graph, protein).first()
                         if _protein:
@@ -844,7 +852,8 @@ def create_reactome_pathway_nodes():
                             graph.push(pathway)
     end = time()
     sys.stdout.write(
-        "\nDone creating REACTOME Pathway Nodes in {} secs.".format(end - start))
+        "\nDone creating REACTOME Pathway Nodes in {} secs.".format(
+            end - start))
 
 
 def create_known_mutation_nodes(**kwargs):
@@ -867,8 +876,10 @@ def create_known_mutation_nodes(**kwargs):
     graph.create(call_set)
 
     variant = Variant(chrom=kwargs.get("chrom", ""), pos=kwargs.get("pos", ""),
-                      ref_allele=kwargs.get("ref_allele", ""), alt_allele=kwargs.get("alt_allele", ""),
-                      gene=kwargs.get("gene", ""), pk=kwargs.get("pk", ""), consequence=kwargs.get("consequence", ""))
+                      ref_allele=kwargs.get("ref_allele", ""),
+                      alt_allele=kwargs.get("alt_allele", ""),
+                      gene=kwargs.get("gene", ""), pk=kwargs.get("pk", ""),
+                      consequence=kwargs.get("consequence", ""))
     variant.loc_in_seq = kwargs.get("loc_in_seq")
     variant.promoter = kwargs.get("promoter")
     variant.biotype = kwargs.get("biotype")
@@ -910,7 +921,8 @@ def create_known_mutation_nodes(**kwargs):
         variant.occurs_in.add(gene)
     else:
         rna = RRna.select(graph).where(
-            "_.name=~'(?i).*{}.*'".format(str(kwargs.get("gene")).lower())).first()
+            "_.name=~'(?i).*{}.*'".format(
+                str(kwargs.get("gene")).lower())).first()
         if rna:
             variant.occurs_in_.add(rna)
 
@@ -980,7 +992,8 @@ def map_srna_to_mrna(text_file):
                     mrnas = mrna_name.split("-")
                 for name in mrnas:
                     gene = Gene.select(graph).where(
-                        "_.uniquename=~'(?i).*{}.*'".format(name.lower())).first()
+                        "_.uniquename=~'(?i).*{}.*'".format(
+                            name.lower())).first()
                     if gene:
                         ncrna.regulates_gene.add(gene)
                         graph.push(ncrna)

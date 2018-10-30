@@ -37,9 +37,9 @@ def fetch_publication_list(citations, rettype='medline'):
     :param citations:
     :return:
     """
-    print("=====================================")
-    print("Fetching {} publications from PubMed.".format(len(citations)))
-    print("=====================================")
+    sys.stdout.write("=====================================")
+    print("Fetching {} publications. rettype: {}."
+          .format(len(citations), rettype))
     citation_string = ','.join(citations)
     Entrez.email = 'support@sanbi.ac.za'
     retries = 5
@@ -68,7 +68,7 @@ def fetch_publication_list(citations, rettype='medline'):
 
 
 def get_fasta(strain):
-    Entrez.email = 'A.N.Other@example.com'
+    Entrez.email = 'support@sanbi.ac.za'
     if strain and strain == "h37rv":
         organism = 'Mycobacterium_tuberculosis_H37Rv'
         accession = "NC_000962.3"
@@ -96,4 +96,4 @@ def get_fasta(strain):
     if isinstance(residues, str):
         return residues
     else:
-        return None
+        return ''

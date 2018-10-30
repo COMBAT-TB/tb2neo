@@ -206,7 +206,7 @@ def load_drugbank_data():
             and check_csv(TARGET_PROTEIN_IDS) and check_csv(DRUG_VOCAB):
         create_drugbank_nodes()
     else:
-        sys.stderr.write("Unable to load Drugbank data!\n "
+        sys.stderr.write("Unable to load Drugbank data!\n"
                          "Check if CSV files are in place and that we have a database with Proteins.")
 
 
@@ -220,7 +220,7 @@ def load_go_terms():
         create_go_term_nodes()
     else:
         sys.stderr.write(
-            "Unable to create GOTerms !\n Check if CSV files are in place.")
+            "Unable to create GOTerms!\nKindly check if CSV files are in place.")
 
 
 @cli.command()
@@ -233,7 +233,7 @@ def load_publications():
         create_publication_nodes(uniprot_data=UNIPROT_DATA)
     else:
         sys.stderr.write(
-            "Unable to load Publications!\n Check if CSV files are in place")
+            "Unable to load Publications!\nKindly check if CSV files are in place.")
 
 
 @cli.command()
@@ -248,7 +248,7 @@ def load_kegg_pathways():
         create_kegg_pathways_nodes()
     else:
         sys.stderr.write(
-            "Unable to load KEGG Pathways!\n Check if we have a database with Proteins.")
+            "Unable to load KEGG Pathways!\nKindly check if we have a database with Proteins.")
 
 
 @cli.command()
@@ -263,7 +263,7 @@ def load_reactome_pathways():
         create_reactome_pathway_nodes()
     else:
         sys.stderr.write(
-            "Unable to load REACTOME Pathways!\n Check if we have a database with Proteins.")
+            "Unable to load REACTOME Pathways!\nKindly check if we have a database with Proteins.")
 
 
 @cli.command()
