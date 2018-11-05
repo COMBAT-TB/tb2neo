@@ -46,7 +46,7 @@ pytest-cov==2.5.1
 python-dateutil==2.6.1
 pytz==2017.2
 PyYAML==3.12
-requests==2.18.2
+requests==2.20.0
 requests-cache==0.4.13
 six==1.10.0
 suds-jurko==0.6
