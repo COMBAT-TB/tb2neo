@@ -547,8 +547,8 @@ def create_publication_nodes(uniprot_data):
             volume = article['Journal']['JournalIssue']['Volume']
             issue = article['Journal']['JournalIssue']['Issue']
             date_of_pub = article['Journal']['JournalIssue']['PubDate'][
-                'Month'] + " " + \
-                article['Journal']['JournalIssue']['PubDate']['Year']
+                              'Month'] + " " + \
+                          article['Journal']['JournalIssue']['PubDate']['Year']
             pub_place = rec['MedlineCitation']['MedlineJournalInfo']['Country']
             publisher = None
             author = None
@@ -622,7 +622,7 @@ def create_drugbank_nodes():
             "_.entry_name='{}'".format(uniprot_entry))
         if protein_:
             for protein in protein_:
-                sys.stdout.write(protein.entry_name, dbank_ids)
+                sys.stdout.write("{}:{}".format(protein.entry_name, dbank_ids))
                 drug_ids = [x for x in dbank_ids.split(';') if x is not '']
                 for _id in drug_ids:
                     drug_set.add(_id)
@@ -648,11 +648,11 @@ def create_drugbank_nodes():
         synonyms = entry[5]
         drug = Drug.select(graph, dbank_id).first()
         if drug:
-            sys.stdout.write(drug.accession, dbank_id, commom_name)
+            sys.stdout.write("{}:{}:{}"
+                             .format(drug.accession, dbank_id, commom_name))
             drug.name = commom_name
             drug.synonyms = synonyms
             graph.push(drug)
-
     sys.stdout.write("\nDone Creating DrugBank Nodes...\n")
 
 
@@ -745,7 +745,7 @@ def create_protein_nodes():
 
     build_protein_interaction_rels(protein_interaction_dict)
     end = time()
-    sys.stdout.write("\nDone creating UniProt Nodes in ", end - start, "secs.")
+    sys.stdout.write("\nCreated UniProt Nodes in {} secs.".format(end - start))
 
 
 def map_gene_to_orthologs(locus_tags):
@@ -771,7 +771,7 @@ def map_gene_to_orthologs(locus_tags):
                             graph.push(gene)
                             graph.push(orthologous_gene)
     end = time()
-    sys.stdout.write("\nDone mapping Orthologs", end - start, "secs.")
+    sys.stdout.write("\nMapped Orthologs in {}".format(end - start))
 
 
 def create_kegg_pathways_nodes():
@@ -812,7 +812,7 @@ def create_kegg_pathways_nodes():
                 sys.stderr.write("Data is: {}\n".format(data))
     end = time()
     sys.stdout.write(
-        "\nDone creating KEGG Pathway Nodes in {} secs.".format(end - start))
+        "\nCreated KEGG Pathway Nodes in {} secs.".format(end - start))
 
 
 def create_reactome_pathway_nodes():
@@ -832,7 +832,8 @@ def create_reactome_pathway_nodes():
                     path_res = reactome_old.query_by_id("Pathway", pathway_id)
                     if not isinstance(path_res, int):
                         sys.stdout.write(protein, "Pathway: {} - {}"
-                              .format(pathway_id, path_res['displayName']))
+                                         .format(pathway_id,
+                                                 path_res['displayName']))
                         pathway = Pathway()
                         pathway.accession = pathway_id
                         pathway._type = path_res['schemaClass']
@@ -851,9 +852,8 @@ def create_reactome_pathway_nodes():
                             pathway.protein.add(_protein)
                             graph.push(pathway)
     end = time()
-    sys.stdout.write(
-        "\nDone creating REACTOME Pathway Nodes in {} secs.".format(
-            end - start))
+    sys.stdout.write("\nCreated REACTOME Pathway Nodes in {} secs."
+                     .format(end - start))
 
 
 def create_known_mutation_nodes(**kwargs):

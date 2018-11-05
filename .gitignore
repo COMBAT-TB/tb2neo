@@ -117,3 +117,4 @@ data/drdata
 *.bz2
 backups/
 *test.yml
+.envrc

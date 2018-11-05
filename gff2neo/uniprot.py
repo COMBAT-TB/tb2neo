@@ -51,9 +51,12 @@ def write_to_csv(results):
     file_exists = os.path.isfile(UNIPROT_DATA)
     sys.stdout.write("\nWriting to csv...")
     fieldnames = [
-        'Entry', 'Entry_Name', 'Gene_Names_OL', 'Gene_Name', 'GO_IDs', 'InterPro', 'Interacts_With',
-        'Gene_Names_Prim', 'Domain_FT', 'Protein_Names', 'GO', 'PubMed', '3D', 'Function_CC', 'Sequence',
-        'Mass', 'Length', 'Protein_Families', 'GO_BP', 'GO_MF', 'GO_CC', 'Gene_SYN', 'Gene_Name_ORF',
+        'Entry', 'Entry_Name', 'Gene_Names_OL', 'Gene_Name', 'GO_IDs',
+        'InterPro', 'Interacts_With',
+        'Gene_Names_Prim', 'Domain_FT', 'Protein_Names', 'GO', 'PubMed', '3D',
+        'Function_CC', 'Sequence',
+        'Mass', 'Length', 'Protein_Families', 'GO_BP', 'GO_MF', 'GO_CC',
+        'Gene_SYN', 'Gene_Name_ORF',
         'SeqVersion'
     ]
     with open(UNIPROT_DATA, "a") as csv_file:
@@ -102,8 +105,8 @@ def query_uniprot(locus_tags, taxonomy, proteome):
         for entry in data:
             results.append(entry)
     end_time = time()
-    sys.stdout.write(
-        "\nDone fetching data from UniProt in {} secs.".format(end_time - start_time))
+    total_time = end_time - start_time
+    sys.stdout.write("Fetched UniProt data in {} secs.".format(total_time))
     if len(results) > 0:
         write_to_csv(results)
     return results

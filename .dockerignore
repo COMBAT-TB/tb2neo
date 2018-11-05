@@ -3,7 +3,7 @@
 .vscode
 #gff2neo/data/tbdtdb/*.txt
 #gff2neo/data/string/
-gff2neo/data/uniprot/uniprot_data.csv
+#gff2neo/data/uniprot/uniprot_data.csv
 #gff2neo.egg-info
 #data/images/*
 #*.gff

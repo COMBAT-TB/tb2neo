@@ -70,6 +70,23 @@ def delete():
 
 
 @cli.command()
+@click.argument('gff_files', type=click.Path(exists=True))
+def load_organism(gff_files):
+    """
+    Examine features from GFF file.
+    :param gff_files: GFF file directory
+    :return
+    """
+    if os.path.isdir(gff_files):
+        for root, dirs, files in os.walk(gff_files):
+            for gff_file in files:
+                gff_file = '/'.join([os.path.abspath(gff_files), gff_file])
+                if gff_file.endswith(".gff3"):
+                    click.secho("Examining: {}".format(gff_file), fg="green")
+                    create_organism_nodes(gff_file=gff_file)
+
+
+@cli.command()
 @click.argument('strain')
 def load_chromosome(strain):
     """
@@ -189,7 +206,8 @@ def load_uniprot_data(gff_files):
                         # TODO: When we have loaded the CDC1551 strain
                         # map_gene_to_orthologs(get_locus_tags(gff_file, 400))
                         query_uniprot(
-                            locus_tags=locus_tags, taxonomy=result['taxonomy'], proteome=result['proteome'])
+                            locus_tags=locus_tags, taxonomy=result['taxonomy'],
+                            proteome=result['proteome'])
                         # TODO: Need to refactor
                         create_protein_nodes()
 
@@ -206,8 +224,7 @@ def load_drugbank_data():
             and check_csv(TARGET_PROTEIN_IDS) and check_csv(DRUG_VOCAB):
         create_drugbank_nodes()
     else:
-        sys.stderr.write("Unable to load Drugbank data!\n"
-                         "Check if CSV files are in place and that we have a database with Proteins.")
+        sys.stderr.write("Unable to load Drugbank data!\n.")
 
 
 @cli.command()
@@ -220,7 +237,7 @@ def load_go_terms():
         create_go_term_nodes()
     else:
         sys.stderr.write(
-            "Unable to create GOTerms!\nKindly check if CSV files are in place.")
+            "Unable to create GOTerms!\nCould not find UniProt csv file.")
 
 
 @cli.command()
@@ -233,7 +250,7 @@ def load_publications():
         create_publication_nodes(uniprot_data=UNIPROT_DATA)
     else:
         sys.stderr.write(
-            "Unable to load Publications!\nKindly check if CSV files are in place.")
+            "Unable to load Publications!\nCould not find CSV file.")
 
 
 @cli.command()
@@ -248,7 +265,7 @@ def load_kegg_pathways():
         create_kegg_pathways_nodes()
     else:
         sys.stderr.write(
-            "Unable to load KEGG Pathways!\nKindly check if we have a database with Proteins.")
+            "Unable to load KEGG Pathways!\nNo Proteins nodes in database.")
 
 
 @cli.command()
@@ -263,7 +280,7 @@ def load_reactome_pathways():
         create_reactome_pathway_nodes()
     else:
         sys.stderr.write(
-            "Unable to load REACTOME Pathways!\nKindly check if we have a database with Proteins.")
+            "Unable to load REACTOME Pathways!\nNo Proteins nodes in database.")
 
 
 @cli.command()

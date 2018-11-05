@@ -7,6 +7,7 @@ MUTATIONS_DIR=gff2neo/data/mutations
 #gff2neo examine_gff "${GFF_FILES_DIR}"
 # Delete existing data
 gff2neo delete
+gff2neo load_organism "${GFF_FILES_DIR}"
 gff2neo load_chromosome h37rv
 gff2neo load_gff "${GFF_FILES_DIR}"
 # gff2neo load_operons "${OPERON_DIR}"
