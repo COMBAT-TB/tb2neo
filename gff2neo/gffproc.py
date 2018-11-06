@@ -10,6 +10,7 @@ from BCBio.GFF import GFFExaminer
 
 from gff2neo.dbconn import *
 
+CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 MYCO_GFF = os.path.join(
     CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
 
@@ -31,7 +32,8 @@ def parse_gff(gff_file):
     Parse GFF file
     :return:
     """
-    organism = create_organism_nodes(gff_file)
+    # organism = create_organism_nodes(gff_file)
+    organism = Organism.select(graph).first()
     # we are not interested in exons as this is a bacterial genome
     limits = [["mRNA"], ["gene", "CDS", "tRNA_gene",
                          "ncRNA_gene", "rRNA_gene", "rRNA"], ["pseudogene"]]
@@ -54,7 +56,8 @@ def get_locus_tags(gff_file, chunk):
     sys.stdout.write("Getting locus_tags from {}...\n".format(gff_file))
     count = 0
     locus_tags = []
-    for rec in GFF.parse(gff_file, limit_info=dict(gff_type=['gene', 'pseudogene'])):
+    for rec in GFF.parse(gff_file,
+                         limit_info=dict(gff_type=['gene', 'pseudogene'])):
         for gene in rec.features:
             locus_tag = gene.qualifiers.get("gene_id", " ")[0]
             count += 1
@@ -118,13 +121,15 @@ def map_functional_category(gff=None):
                 info = tab_split[8].split(";")
                 functional_category = info[-1].split("=")[-1].strip()
                 result = graph.run(
-                    "match(n)-[]-(l:Location) where l.fmax = {end} return n".format(end=end)).data()
+                    "match(n)-[]-(l:Location) where l.fmax = {end} return n".format(
+                        end=end)).data()
                 if result:
                     for item in result:
                         node = item['n']
                         node['category'] = functional_category
                         # update RNA nodes
-                        if node['biotype'] and 'rna' in str(node['biotype']).lower():
+                        if node['biotype'] and 'rna' in str(
+                                node['biotype']).lower():
                             node['description'] = info[3].replace(
                                 'Product=', '')
                         node.push()

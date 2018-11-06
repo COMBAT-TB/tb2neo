@@ -70,7 +70,8 @@ def _process_coll_mutations(in_file, cset_name):
         gene_cord = tab_split[4]
         codon_number = tab_split[5]
         # 'L/P' to ['Leu', 'Pro']
-        amino_change = [seq3(a, custom_map={"*": "Stop"}, undef_code='-') for a in tab_split[8].strip().split("/")]
+        amino_change = [seq3(a, custom_map={"*": "Stop"}, undef_code='-')
+                        for a in tab_split[8].strip().split("/")]
         if len(amino_change) > 1 and amino_change[0] == amino_change[1]:
             biotype = 'synonymous'
         elif len(amino_change) > 1 and amino_change[0] is not amino_change[1]:
@@ -81,7 +82,8 @@ def _process_coll_mutations(in_file, cset_name):
         # ['Leu', 'Pro'] to ['Leu', 123,'Pro']
         amino_change.insert(1, codon_number)
         # ['Leu', 123, 'Pro'] to 'Leu123Pro'
-        consequence = ''.join(amino_change) if biotype is not "indel" else ref_allele + gene_cord + alt_allele
+        consequence = ''.join(
+            amino_change) if biotype is not "indel" else ref_allele + gene_cord + alt_allele
         # some string manipulation kung-fu
         sources = tab_split[10].translate(None, "()").replace('"', '')
 
@@ -133,11 +135,11 @@ def _process_tbprofiler_mutations(in_file, cset_name):
         consequence = tab_split[5].strip()
         # Pro241Pro to ['Pro', '241', 'Pro']
         amino_change = re.split('(\d+)', consequence)
-        if amino_change[0] == amino_change[2] and consequence.isalnum() and any(c.islower() for c in consequence):
+        if amino_change[0] is amino_change[2] and consequence.isalnum() and any(c.islower() for c in consequence):
             biotype = "synonymous"
         elif amino_change[0] is not amino_change[2] and consequence.isalnum() and any(c.islower() for c in consequence):
             biotype = "non-synonymous"
-        elif consequence.isupper() and not any(c.islower() for c in consequence) and '-' not in consequence:
+        elif len(ref_allele) is not len(alt_allele) and consequence.isupper() and not any(c.islower() for c in consequence) and '-' not in consequence:
             biotype = "indel"
 
         create_known_mutation_nodes(chrom="Chr1", pos=variant_pos, ref_allele=str(ref_allele),
@@ -161,11 +163,10 @@ def process_mutation_file(in_file):
             next(in_file)
             cset_name = str(in_file.name).split('/')[-1]
             if 'coll' in cset_name:
-                # pass
                 _process_coll_mutations(in_file=in_file, cset_name=cset_name)
             elif 'drdb' in cset_name:
-                # pass
-                _process_tbprofiler_mutations(in_file=in_file, cset_name=cset_name)
+                _process_tbprofiler_mutations(
+                    in_file=in_file, cset_name=cset_name)
             elif 'phyresse' in cset_name:
                 pass
                 # _process_phyresse_mutations(in_file=in_file, cset_name=cset_name)

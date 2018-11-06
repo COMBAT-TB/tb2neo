@@ -4,7 +4,7 @@ Interface to Ensembl ftp
 from ftplib import FTP, all_errors
 from gzip import GzipFile
 from io import BytesIO
-
+import sys
 from gff2neo.ncbi import get_fasta
 
 FILE_PATH = '/pub/bacteria/release-39/fasta/bacteria_0_collection/mycobacterium_tuberculosis_h37rv/dna'
@@ -38,6 +38,7 @@ def get_nucleotides(strain):
     """
     try:
         nucleotides = get_fasta(strain=strain)
+        sys.stdout.write(nucleotides[:4])
     except IOError as e:
         raise e
         # fasta_zip = download_fasta(url=URL, file_path=FILE_PATH, fasta_file=FASTA_FILE)

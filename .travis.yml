@@ -16,7 +16,7 @@ services:
   - neo4j
 
 before_script:
-  - sleep 10
+  - sleep 30
 
 # command to install dependencies
 install:

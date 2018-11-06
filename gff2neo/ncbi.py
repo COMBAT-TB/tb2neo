@@ -24,8 +24,6 @@ def search_pubmed(genename):
     try:
         h = Entrez.esearch(db='pubmed', term=term)
         result = Entrez.read(h)
-        print('{pubs} publications contain: {term}\n'.format(
-            term=term, pubs=result['Count']))
         ids = result['IdList']
     except HTTPError as e:
         sys.stderr.write("{e}".format(e=e))
@@ -39,9 +37,9 @@ def fetch_publication_list(citations, rettype='medline'):
     :param citations:
     :return:
     """
-    print("=====================================")
-    print("Fetching {} publications from PubMed.".format(len(citations)))
-    print("=====================================")
+    sys.stdout.write("=====================================")
+    print("Fetching {} publications. rettype: {}."
+          .format(len(citations), rettype))
     citation_string = ','.join(citations)
     Entrez.email = 'support@sanbi.ac.za'
     retries = 5
@@ -70,7 +68,7 @@ def fetch_publication_list(citations, rettype='medline'):
 
 
 def get_fasta(strain):
-    Entrez.email = 'A.N.Other@example.com'
+    Entrez.email = 'support@sanbi.ac.za'
     if strain and strain == "h37rv":
         organism = 'Mycobacterium_tuberculosis_H37Rv'
         accession = "NC_000962.3"
@@ -98,4 +96,4 @@ def get_fasta(strain):
     if isinstance(residues, str):
         return residues
     else:
-        return None
+        return ''
