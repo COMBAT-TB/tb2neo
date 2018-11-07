@@ -65,8 +65,8 @@ def _process_coll_mutations(in_file, cset_name):
             bps = tab_split[6]
             bp_mid = len(bps.split("/")) / 2
             bps = bps.replace("/", "")
-            ref_allele = bps[:bp_mid]
-            alt_allele = bps[bp_mid:]
+            ref_allele = bps[:int(bp_mid)]
+            alt_allele = bps[int(bp_mid):]
 
             # amino acid change
             gene_cord = tab_split[4]
