@@ -504,10 +504,10 @@ def create_publication_nodes(uniprot_data):
     df = read_csv(uniprot_data).fillna("")
 
     for entry in df.values:
+        # TODO: Search for more publications
         # locus_tag = entry[2].strip()
         # gene_name_prim = entry[7].strip()
         # genename = gene_name_prim if gene_name_prim is not '' else locus_tag
-        # TODO: Try optimise
         # pmids = search_pubmed(genename)  # list
         # if pmids:
         #     pmid_set.update(pmids)
@@ -518,8 +518,6 @@ def create_publication_nodes(uniprot_data):
             uniprot_pmids = [p for p in entry[11].split(
                 "; ") if p is not '']
             pmid_set.update(uniprot_pmids)
-            sys.stdout.write("\n{} has {} publications.\n"
-                             .format(protein_entry, len(uniprot_pmids)))
         for p_id in pmid_set:
             pub = Publication()
             pub.pmid = p_id
@@ -622,7 +620,6 @@ def create_drugbank_nodes():
             "_.entry_name='{}'".format(uniprot_entry))
         if protein_:
             for protein in protein_:
-                sys.stdout.write("{}:{}".format(protein.entry_name, dbank_ids))
                 drug_ids = [x for x in dbank_ids.split(';') if x is not '']
                 for _id in drug_ids:
                     drug_set.add(_id)
@@ -648,8 +645,6 @@ def create_drugbank_nodes():
         synonyms = entry[5]
         drug = Drug.select(graph, dbank_id).first()
         if drug:
-            sys.stdout.write("{}:{}:{}"
-                             .format(drug.accession, dbank_id, commom_name))
             drug.name = commom_name
             drug.synonyms = synonyms
             graph.push(drug)
@@ -831,9 +826,6 @@ def create_reactome_pathway_nodes():
                 for pathway_id in pathways:
                     path_res = reactome_old.query_by_id("Pathway", pathway_id)
                     if not isinstance(path_res, int):
-                        sys.stdout.write(protein, "Pathway: {} - {}"
-                                         .format(pathway_id,
-                                                 path_res['displayName']))
                         pathway = Pathway()
                         pathway.accession = pathway_id
                         pathway._type = path_res['schemaClass']

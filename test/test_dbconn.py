@@ -3,7 +3,8 @@ Test dbconn module
 """
 import pytest
 
-from gff2neo.dbconn import graph, split_gene_names, create_chromosome_nodes, create_publication_nodes
+from gff2neo.dbconn import graph, split_gene_names, create_chromosome_nodes, \
+    create_publication_nodes
 from gff2neo.model.core import Gene, Chromosome
 from test_cli import UNIPROT_DATA
 
@@ -17,12 +18,12 @@ def test_create_chromosome_nodes():
 
 def test_db_nodes():
     result = graph.node_labels
+    assert "Organism" in result
     assert "Chromosome" in result
     assert "Gene" in result
     assert "MRna" in result
-    # assert "Transcript" in result
     assert "CDS" in result
-    # assert "Operon" in result
+    assert "Protein" in result
 
 
 def test_rv0001():
