@@ -14,7 +14,7 @@ pubmed_id_list = [p for p in pubmed_ids.split("; ") if p is not '']
 def test_search_pubmed():
     res = search_pubmed(genename="rmlA")
     assert isinstance(res, list)
-    assert len(res) is 9
+    assert len(res) is 10
 
 
 @pytest.mark.parametrize("test_input,expected", [

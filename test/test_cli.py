@@ -70,7 +70,7 @@ def test_load_operons(cli_runner):
     assert result.exit_code == 0
 
 
-@pytest.mark.skip(reason="no way of currently testing this")
+# @pytest.mark.skip(reason="no way of currently testing this")
 def test_load_known_mutations(cli_runner):
     result = cli_runner.invoke(load_known_mutations, [TEST_MUTATIONS_DIR])
     assert result.exit_code == 0
