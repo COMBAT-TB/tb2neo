@@ -72,9 +72,10 @@ def _process_coll_mutations(in_file, cset_name):
             gene_cord = tab_split[4]
             codon_number = tab_split[5]
             amino_change = tab_split[8].strip().split("/")
-            if amino_change[0] == amino_change[1]:
+            if len(amino_change) > 1 and amino_change[0] == amino_change[1]:
                 biotype = 'synonymous'
-            elif amino_change[0] is not amino_change[1]:
+            elif len(amino_change) > 1 and amino_change[0] is not \
+                    amino_change[1]:
                 biotype = 'non-synonymous'
             elif len(ref_allele) is not len(alt_allele):
                 biotype = "indel"
