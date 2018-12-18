@@ -1,4 +1,5 @@
 Chromosome	Chromosome coordinate	Locus	Locus Tag	Gene coordinate	Codon Number	BP_CHANGES	Codon_Change	Amino Acid Change	PhenoType/Resistance	Sources
+gi|444893469|emb|AL123456.3|	761033	rpoB	Rv0667	1227	409	G/C	CAG/CAC	Q/H	RIFAMPICIN	TBDreaMDB
 gi|444893469|emb|AL123456.3|	779027	Rv0678	Rv0678	38	-	A/AA	-	-	BEDAQUILINE	(Andries_et_al.,_2014)
 gi|444893469|emb|AL123456.3|	2156118	katG_promoter	-	-7	-	C/T	-	-	ISONIAZID	(Nebenzahl-Guimaraes,_Jacobson,_Farhat,_&_Murray,_2013)
 gi|444893469|emb|AL123456.3|	2155389	katG	Rv1908c	723	241	G/A	CCC/CCT	P/P	ISONIAZID	TBDreaMDB
