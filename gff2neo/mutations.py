@@ -4,7 +4,7 @@ Variant Processing
 import re
 import sys
 
-from Bio.SeqUtils import seq3
+from Bio.SeqUtils import seq1
 from bioservices import KEGG
 
 from gff2neo.dbconn import create_known_mutation_nodes
@@ -71,13 +71,11 @@ def _process_coll_mutations(in_file, cset_name):
             # amino acid change
             gene_cord = tab_split[4]
             codon_number = tab_split[5]
-            # 'L/P' to ['Leu', 'Pro']
-            amino_change = [seq3(a, custom_map={"*": "Stop"}, undef_code='-')
-                            for a in tab_split[8].strip().split("/")]
+            amino_change = tab_split[8].strip().split("/")
             if len(amino_change) > 1 and amino_change[0] == amino_change[1]:
                 biotype = 'synonymous'
-            elif len(amino_change) > 1 and amino_change[0] is not amino_change[
-                1]:
+            elif len(amino_change) > 1 and amino_change[0] is not \
+                    amino_change[1]:
                 biotype = 'non-synonymous'
             elif len(ref_allele) is not len(alt_allele):
                 biotype = "indel"
@@ -88,6 +86,7 @@ def _process_coll_mutations(in_file, cset_name):
             consequence = ''.join(amino_change) if biotype is not "indel" \
                 else ref_allele + gene_cord + alt_allele
             # some string manipulation kung-fu
+            # TODO: Python3 support
             sources = tab_split[10].translate(None, "()").replace('"', '')
 
             if "_promoter" in tab_split[2]:
@@ -146,16 +145,16 @@ def _process_tbprofiler_mutations(in_file, cset_name):
             consequence = tab_split[5].strip()
             # Pro241Pro to ['Pro', '241', 'Pro']
             amino_change = re.split('(\d+)', consequence)
-            if amino_change[0] is amino_change[2] and consequence.isalnum() \
-                    and any(c.islower() for c in consequence):
+            consequence = [seq1(a, custom_map={"*": "Stop"}, undef_code='-')
+                           for a in amino_change if not a.isdigit()]
+            consequence.insert(1, amino_change[1])
+            consequence = ''.join(consequence)
+            if amino_change[0] == amino_change[2]:
                 biotype = "synonymous"
-            elif amino_change[0] is not amino_change[
-                2] and consequence.isalnum() and any(
-                c.islower() for c in consequence):
+            elif amino_change[0] is not amino_change[2]:
                 biotype = "non-synonymous"
-            elif len(ref_allele) is not len(
-                    alt_allele) and consequence.isupper() and not any(
-                c.islower() for c in consequence) and '-' not in consequence:
+            elif len(ref_allele) is not len(alt_allele) \
+                    and '-' not in consequence:
                 biotype = "indel"
 
             create_known_mutation_nodes(chrom="Chr1", pos=variant_pos,
@@ -206,11 +205,16 @@ def _process_tgstb_mutations(in_file, cset_name):
             if 'found' not in consequence:
                 # Pro241Pro to ['Pro', '241', 'Pro']
                 amino_change = re.split('(\d+)', consequence)
+                consequence = [
+                    seq1(a, custom_map={"*": "Stop"}, undef_code='-')
+                    for a in amino_change if not a.isdigit()]
+                consequence.insert(1, amino_change[1])
+                consequence = ''.join(consequence)
                 if amino_change[0] is amino_change[2] and consequence.isalnum() \
                         and any(c.islower() for c in consequence):
                     biotype = "synonymous"
-                elif amino_change[0] is not amino_change[
-                    2] and consequence.isalnum() \
+                elif amino_change[0] is not amino_change[2] \
+                        and consequence.isalnum() \
                         and any(c.islower() for c in consequence):
                     biotype = "non-synonymous"
                 elif len(ref_allele) is not len(
