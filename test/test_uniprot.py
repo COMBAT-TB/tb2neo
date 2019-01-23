@@ -2,8 +2,8 @@ import types
 
 import pytest
 
-from gff2neo.gffproc import get_locus_tags
-from gff2neo.uniprot import query_uniprot, eu_mapping
+from tb2neo.gffproc import get_locus_tags
+from tb2neo.uniprot import query_uniprot, eu_mapping
 from test_cli import TEST_GFF
 
 

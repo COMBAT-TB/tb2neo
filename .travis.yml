@@ -21,10 +21,10 @@ before_script:
 # command to install dependencies
 install:
   - pip install -r requirements.txt
-  - pip install -e .
+  - python setup.py install
 
 script:
-  - travis_wait 30 pytest -v test/ --cov=gff2neo --cov-report term
+  - travis_wait 30 pytest -v test/ --cov=tb2neo --cov-report term
 
 after_success:
   coveralls

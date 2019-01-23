@@ -3,16 +3,17 @@ Cli
 """
 import click
 
-from gff2neo.gffproc import *
-from gff2neo.mutations import process_mutation_file
-from gff2neo.uniprot import UNIPROT_DATA
+from tb2neo.gffproc import *
+from tb2neo.mutations import process_mutation_file
+from tb2neo.uniprot import UNIPROT_DATA
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
 MYCO_GFF = os.path.join(
     CURR_DIR, "data/myco/Mycobacterium_tuberculosis_H37Rv.gff")
 OPERON_DATA = os.path.join(
-    CURR_DIR, "data/operon/mycobacterium_tuberculosis_h37rv_genome_summary.txt")
+    CURR_DIR,
+    "data/operon/mycobacterium_tuberculosis_h37rv_genome_summary.txt")
 SRNA_TXTFILE = os.path.join(
     CURR_DIR, "data/srna/")
 DR_DATA_DIR = os.path.join(CURR_DIR, 'data/mutations/')
@@ -96,7 +97,7 @@ def load_chromosome(strain):
     """
     supported_strains = ["h37rv", "cdc1551"]
 
-    error_mess = "Unable to create Chromosome for strain='{strain}'\nWe currently support {supported}".format(
+    error_mess = "We currently support {supported}.\nReceived {strain}".format(
         strain=strain, supported=supported_strains)
 
     if strain and str(strain).lower() in supported_strains:

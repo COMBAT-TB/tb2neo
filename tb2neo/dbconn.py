@@ -8,12 +8,12 @@ from pandas import read_csv
 from py2neo import Graph
 from tqdm import tqdm
 
-from gff2neo.ftpconn import get_nucleotides
-from gff2neo.model.vcfmodel import *
-from gff2neo.ncbi import fetch_publication_list
-from gff2neo.orthologs import fetch_ortholog
-from gff2neo.quickgo import query_quickgo
-from gff2neo.uniprot import *
+from tb2neo.ftpconn import get_nucleotides
+from tb2neo.model.vcfmodel import *
+from tb2neo.ncbi import fetch_publication_list
+from tb2neo.orthologs import fetch_ortholog
+from tb2neo.quickgo import query_quickgo
+from tb2neo.uniprot import *
 
 graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))

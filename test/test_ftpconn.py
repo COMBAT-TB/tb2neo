@@ -3,7 +3,7 @@ Testing ftpconn module
 """
 import pytest
 
-from gff2neo.ftpconn import get_nucleotides, download_fasta, FILE_PATH, \
+from tb2neo.ftpconn import get_nucleotides, download_fasta, FILE_PATH, \
     FASTA_FILE
 
 

@@ -3,9 +3,9 @@ Test dbconn module
 """
 import pytest
 
-from gff2neo.dbconn import graph, split_gene_names, create_chromosome_nodes, \
+from tb2neo.dbconn import graph, split_gene_names, create_chromosome_nodes, \
     create_publication_nodes
-from gff2neo.model.core import Gene, Chromosome
+from tb2neo.model.core import Gene, Chromosome
 from test_cli import UNIPROT_DATA
 
 

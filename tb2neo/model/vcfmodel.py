@@ -1,6 +1,6 @@
 import uuid
 
-from gff2neo.model.core import *
+from tb2neo.model.core import *
 
 
 # https://ga4gh-schemas.readthedocs.io/en/latest/api/variants.html

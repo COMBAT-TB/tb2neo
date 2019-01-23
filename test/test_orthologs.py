@@ -1,6 +1,6 @@
 import pytest
 
-from gff2neo.orthologs import fetch_ortholog
+from tb2neo.orthologs import fetch_ortholog
 
 
 def test_fetch_ortholog_error():
@@ -13,7 +13,7 @@ def test_fetch_ortholog_exception():
         fetch_ortholog(locus_tag="Rv0239", tuberculist_url=None)
 
 
-@pytest.mark.skip(reason="svitsrv8.epfl.ch is times out")
+@pytest.mark.skip(reason="svitsrv8.epfl.ch times out")
 def test_fetch_ortholog_result():
     result = fetch_ortholog(locus_tag="Rv0239")
     # assert isinstance(result, unicode) is True

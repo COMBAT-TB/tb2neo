@@ -1,6 +1,6 @@
 import pytest
 
-from gff2neo.mutations import get_drug_info
+from tb2neo.mutations import get_drug_info
 
 
 @pytest.mark.parametrize("test_input,expected", [

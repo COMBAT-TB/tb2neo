@@ -6,7 +6,7 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from gff2neo.cli import delete, examine_gff, load_gff, load_uniprot_data, \
+from tb2neo.cli import delete, examine_gff, load_gff, load_uniprot_data, \
     load_organism, \
     load_publications, load_reactome_pathways, load_go_terms, \
     load_drugbank_data, load_kegg_pathways, load_chromosome, \

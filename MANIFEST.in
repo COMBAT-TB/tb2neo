@@ -1,0 +1,7 @@
+graft tb2neo/data
+graft tb2neo/model
+
+recursive-include tb2neo/data *
+recursive-include tb2neo/model *
+
+global-exclude *.pyc

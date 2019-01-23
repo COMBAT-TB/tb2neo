@@ -5,7 +5,7 @@ import types
 
 import pytest
 
-from gff2neo.ncbi import fetch_publication_list, get_fasta, search_pubmed
+from tb2neo.ncbi import fetch_publication_list, get_fasta, search_pubmed
 
 pubmed_ids = "8733228; 9634230; 21969609; 21219854; 22545130; 26045430"
 pubmed_id_list = [p for p in pubmed_ids.split("; ") if p is not '']
