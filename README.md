@@ -32,7 +32,7 @@ $ docker run -d -p 7474:7474 -p 7687:7687 --name neo -e NEO4J_AUTH=none -v=$HOME
 $ virtualenv envname
 $ source envname/bin/activate
 $ pip install -r requirements.txt
-$ pip install -e .
+$ python setup.py install
 $ tb2neo --help
 $ tb2neo load_gff --gff_files data/gff_files
 ```
