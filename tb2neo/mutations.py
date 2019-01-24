@@ -7,7 +7,7 @@ import sys
 from Bio.SeqUtils import seq1
 from bioservices import KEGG
 
-from gff2neo.dbconn import create_known_mutation_nodes
+from tb2neo.dbconn import create_known_mutation_nodes
 
 kegg = KEGG(verbose=False)
 

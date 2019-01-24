@@ -3,7 +3,7 @@ import types
 
 import pytest
 
-from gff2neo.gffproc import parse_gff, get_locus_tags, map_functional_category
+from tb2neo.gffproc import parse_gff, get_locus_tags, map_functional_category
 from test_cli import TEST_GFF, MYCO_TEST_GFF
 
 

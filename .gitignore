@@ -110,11 +110,12 @@ data/databases
 data/elasticsearch
 data/gff_files
 data/*.gz
-gff2neo/data/string/
+tb2neo/data/string/
 data/operons
 *.gff3
 data/drdata
 *.bz2
 backups/
+scripts/*
 *test.yml
 .envrc

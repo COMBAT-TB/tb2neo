@@ -5,7 +5,7 @@ from ftplib import FTP, all_errors
 from gzip import GzipFile
 from io import BytesIO
 import sys
-from gff2neo.ncbi import get_fasta
+from tb2neo.ncbi import get_fasta
 
 FILE_PATH = '/pub/bacteria/release-39/fasta/bacteria_0_collection/mycobacterium_tuberculosis_h37rv/dna'
 FASTA_FILE = "Mycobacterium_tuberculosis_h37rv.ASM19595v2.dna_sm.chromosome.Chromosome.fa.gz"

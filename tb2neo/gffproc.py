@@ -8,7 +8,7 @@ import pprint
 from BCBio import GFF
 from BCBio.GFF import GFFExaminer
 
-from gff2neo.dbconn import *
+from tb2neo.dbconn import *
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 MYCO_GFF = os.path.join(

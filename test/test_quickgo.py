@@ -3,7 +3,7 @@ Testing quickgo module
 """
 import pytest
 
-from gff2neo.quickgo import query_quickgo
+from tb2neo.quickgo import query_quickgo
 
 
 # def test_fetch_quick_go_id():

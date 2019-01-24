@@ -1,8 +1,11 @@
-# gff2neo
+# tb2neo
 
 [![Build Status](https://travis-ci.org/COMBAT-TB/gff2neo.svg?branch=master)](https://travis-ci.org/COMBAT-TB/gff2neo) [![Coverage Status](https://coveralls.io/repos/github/COMBAT-TB/gff2neo/badge.svg?branch=master)](https://coveralls.io/github/COMBAT-TB/gff2neo?branch=master)
 
-Builds a graph database from GFF files.
+Parses *M.tuberculosis* annotation (GFF file) and builds a Neo4j graph 
+database storing the annotated features. *tb2neo* also aggregates and maps 
+these annotated features to external services such as UniProt, CheMBL, 
+DrugBank, KEGG, Reactome, QuickGo, etc.
 
 ## Up and running
 
@@ -29,9 +32,9 @@ $ docker run -d -p 7474:7474 -p 7687:7687 --name neo -e NEO4J_AUTH=none -v=$HOME
 $ virtualenv envname
 $ source envname/bin/activate
 $ pip install -r requirements.txt
-$ pip install -e .
-$ gff2neo --help
-$ gff2neo load_gff --gff_files data/gff_files
+$ python setup.py install
+$ tb2neo --help
+$ tb2neo load_gff --gff_files data/gff_files
 ```
 
 Point your browser to [localhost:7474](http://localhost:7474]) and run `call db.schema()`.

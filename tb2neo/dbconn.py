@@ -8,12 +8,12 @@ from pandas import read_csv
 from py2neo import Graph
 from tqdm import tqdm
 
-from gff2neo.ftpconn import get_nucleotides
-from gff2neo.model.vcfmodel import *
-from gff2neo.ncbi import fetch_publication_list
-from gff2neo.orthologs import fetch_ortholog
-from gff2neo.quickgo import query_quickgo
-from gff2neo.uniprot import *
+from tb2neo.ftpconn import get_nucleotides
+from tb2neo.model.vcfmodel import *
+from tb2neo.ncbi import fetch_publication_list
+from tb2neo.orthologs import fetch_ortholog
+from tb2neo.quickgo import query_quickgo
+from tb2neo.uniprot import *
 
 graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
@@ -52,7 +52,6 @@ def delete_db_data():
     Delete existing data.
     :return:
     """
-    # sys.stdout.write("Deleting all nodes and relationships in {}".format(graph))
     sys.stdout.write(
         "Deleting all nodes and relationships in {}\n".format(graph))
 
@@ -329,7 +328,8 @@ def map_to_location(feature):
     :param feature:
     :return:
     """
-    # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
+    # Find feature location with a srcfeature_id attr.
+    # matching this features uniquename and link them via
     # LOCATED_AT
     srcfeature_id = get_feature_name(feature).get("UniqueName")
     location = location_dict.get(srcfeature_id)
@@ -399,7 +399,8 @@ def create_go_term_nodes():
             if protein_entry is not '':
                 protein = Protein.select(graph, protein_entry).first()
             go_ids = [g for g in entry['GO_IDs'].split("; ") if
-                      g is not '' and g.startswith("GO:") and g is not 'GO_IDs']
+                      g is not '' and g.startswith(
+                          "GO:") and g is not 'GO_IDs']
             go_term_set.add(go_id for go_id in go_ids)
             terms = ','.join(go_ids)
             response = query_quickgo(terms)
