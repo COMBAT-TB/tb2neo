@@ -2,7 +2,10 @@
 
 [![Build Status](https://travis-ci.org/COMBAT-TB/gff2neo.svg?branch=master)](https://travis-ci.org/COMBAT-TB/gff2neo) [![Coverage Status](https://coveralls.io/repos/github/COMBAT-TB/gff2neo/badge.svg?branch=master)](https://coveralls.io/github/COMBAT-TB/gff2neo?branch=master)
 
-Builds a graph database from GFF files.
+Parses *M.tuberculosis* annotation (GFF file) and builds a Neo4j graph 
+database storing the annotated features. *tb2neo* also aggregates and maps 
+these annotated features to external services such as UniProt, CheMBL, 
+DrugBank, KEGG, Reactome, QuickGo, etc.
 
 ## Up and running
 

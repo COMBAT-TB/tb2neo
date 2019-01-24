@@ -55,7 +55,7 @@ def get_taxonomy_and_proteome(gff_file):
 @click.group()
 def cli():
     """
-    This script parses a GFF file and builds a Neo4j Graph database.
+    tb2neo parses an M.tb GFF file and builds a Neo4j Graph database.
     """
     pass
 

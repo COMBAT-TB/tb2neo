@@ -52,7 +52,6 @@ def delete_db_data():
     Delete existing data.
     :return:
     """
-    # sys.stdout.write("Deleting all nodes and relationships in {}".format(graph))
     sys.stdout.write(
         "Deleting all nodes and relationships in {}\n".format(graph))
 
@@ -329,7 +328,8 @@ def map_to_location(feature):
     :param feature:
     :return:
     """
-    # Find feature location with a srcfeature_id attr. matching this features uniquename and link them via
+    # Find feature location with a srcfeature_id attr.
+    # matching this features uniquename and link them via
     # LOCATED_AT
     srcfeature_id = get_feature_name(feature).get("UniqueName")
     location = location_dict.get(srcfeature_id)
@@ -399,7 +399,8 @@ def create_go_term_nodes():
             if protein_entry is not '':
                 protein = Protein.select(graph, protein_entry).first()
             go_ids = [g for g in entry['GO_IDs'].split("; ") if
-                      g is not '' and g.startswith("GO:") and g is not 'GO_IDs']
+                      g is not '' and g.startswith(
+                          "GO:") and g is not 'GO_IDs']
             go_term_set.add(go_id for go_id in go_ids)
             terms = ','.join(go_ids)
             response = query_quickgo(terms)
