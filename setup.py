@@ -21,6 +21,7 @@ setup(
     },
     install_requires=[
         'click',
+        'py2neo==3.1.2',
         'bioservices',
         'bcbio-gff',
         'biopython',
