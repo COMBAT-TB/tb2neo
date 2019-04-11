@@ -37,8 +37,3 @@ volumes:
   loader_data:
   db_data:
   es_data:
-
-#networks:
-#  default:
-#    external:
-#      name: network_name

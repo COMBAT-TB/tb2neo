@@ -1,4 +1,4 @@
-FROM python:2-slim
+FROM python:3-slim
 LABEL MAINTAINER="thoba@sanbi.ac.za"
 
 RUN apt-get update -y --fix-missing && \

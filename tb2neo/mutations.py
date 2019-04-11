@@ -83,11 +83,12 @@ def _process_coll_mutations(in_file, cset_name):
             # ['Leu', 'Pro'] to ['Leu', 123,'Pro']
             amino_change.insert(1, codon_number)
             # ['Leu', 123, 'Pro'] to 'Leu123Pro'
-            consequence = ''.join(amino_change) if biotype is not "indel" \
+            consequence = ''.join(amino_change) if biotype != "indel" \
                 else ref_allele + gene_cord + alt_allele
             # some string manipulation kung-fu
-            # TODO: Python3 support
-            sources = tab_split[10].translate(None, "()").replace('"', '')
+            # '(Jnawali_et_al.,_2013)' => 'Jnawali_et_al.,_2013'
+            table = str.maketrans(dict.fromkeys('()'))
+            sources = tab_split[10].translate(table)
 
             if "_promoter" in tab_split[2]:
                 promoter = tab_split[2]
@@ -210,7 +211,8 @@ def _process_tgstb_mutations(in_file, cset_name):
                     for a in amino_change if not a.isdigit()]
                 consequence.insert(1, amino_change[1])
                 consequence = ''.join(consequence)
-                if amino_change[0] is amino_change[2] and consequence.isalnum() \
+                if amino_change[0] is amino_change[2] \
+                    and consequence.isalnum() \
                         and any(c.islower() for c in consequence):
                     biotype = "synonymous"
                 elif amino_change[0] is not amino_change[2] \

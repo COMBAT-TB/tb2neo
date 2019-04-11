@@ -1,0 +1,22 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+flake8 = "*"
+pytest = "*"
+tb2neo = {path = ".",editable = true}
+autopep8 = "*"
+
+[packages]
+bioservices = "*"
+py2neo = "==3.1.2"
+biopython = "*"
+bcbio-gff = "*"
+beautifulsoup4 = "*"
+tqdm = "*"
+click = "*"
+
+[requires]
+python_version = "3.7"
