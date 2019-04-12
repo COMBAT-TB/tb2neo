@@ -19,6 +19,7 @@ setup(
         'tb2neo': ['data/drugbank/*.csv', 'data/string/*.txt',
                    'data/uniprot/*.csv', 'data/tbdtdb/*.txt'],
     },
+    python_requires='~=3.6',
     install_requires=[
         'click',
         'py2neo==3.1.2',
@@ -30,4 +31,10 @@ setup(
     entry_points={
         'console_scripts': ['tb2neo=tb2neo.cli:cli']
     },
+    classifiers=[
+        'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
+        'Programming Lavnguage :: Python',
+        'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
+    ],
 )

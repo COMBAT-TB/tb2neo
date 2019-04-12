@@ -1,6 +1,9 @@
 """
 Interface to the Neo4j Database
 """
+import csv
+import os
+import sys
 import zipfile
 
 from bioservices import KEGG, ChEMBL, QuickGO, reactome
@@ -9,11 +12,15 @@ from py2neo import Graph
 from tqdm import tqdm
 
 from tb2neo.ftpconn import get_nucleotides
-from tb2neo.model.vcfmodel import *
+from tb2neo.model.core import (CDS, Author, Chromosome, DbXref, Drug, Gene,
+                               GOTerm, InterProTerm, Location, MRna, NCRna,
+                               Operon, Organism, Pathway, Protein, PseudoGene,
+                               Publication, RRna, Transcript, TRna)
+from tb2neo.model.vcfmodel import CallSet, Variant, VariantSet
 from tb2neo.ncbi import fetch_publication_list
 from tb2neo.orthologs import fetch_ortholog
 from tb2neo.quickgo import query_quickgo
-from tb2neo.uniprot import *
+from tb2neo.uniprot import UNIPROT_DATA, eu_mapping
 
 graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
               password=os.environ.get("NEO4J_PASSWORD", ""))
@@ -148,7 +155,7 @@ def create_mrna_nodes(feature):
     mrna_dict[unique_name] = mrna
 
 
-def creat_transcript_nodes(feature):
+def create_transcript_nodes(feature):
     """
     Create Transcript Nodes
     :param feature:
@@ -390,17 +397,14 @@ def create_go_term_nodes():
     quick_go_data_dict = dict()
 
     with open(UNIPROT_DATA, 'r') as csv_file:
-        import time
-        start = time.time()
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in reader:
             protein_entry = entry['Entry']
             protein = None
-            if protein_entry is not '':
+            if protein_entry:
                 protein = Protein.select(graph, protein_entry).first()
             go_ids = [g for g in entry['GO_IDs'].split("; ") if
-                      g is not '' and g.startswith(
-                          "GO:") and g is not 'GO_IDs']
+                      g and g.startswith("GO:") and g != 'GO_IDs']
             go_term_set.add(go_id for go_id in go_ids)
             terms = ','.join(go_ids)
             response = query_quickgo(terms)
@@ -446,9 +450,7 @@ def create_go_term_nodes():
                         elif 'capable_of' in child_relation:
                             term.capable_of.add(child_go)
                     graph.push(term)
-    end = time.time()
-    sys.stdout.write("Created {} GoTerms in {} seconds.".format(
-        len(go_term_set), end - start))
+    sys.stdout.write("Created {} GoTerms.".format(len(go_term_set)))
 
 
 def create_interpro_term_nodes(protein, interpro_ids):
@@ -458,11 +460,11 @@ def create_interpro_term_nodes(protein, interpro_ids):
     :param interpro_ids:
     :return:
     """
+    import time
     # http://generic-model-organism-system-database.450254.n5.nabble.com/Re-GMOD-devel-Storing-Interpro-domains-in-Chado-td459778.html
     terms = [interpro_id for interpro_id in interpro_ids.split(
-        "; ") if interpro_id is not '']
+        "; ") if interpro_id]
     for interpro in terms:
-        import time
         dbxref = DbXref(db="InterPro", accession=interpro, version=time.time())
         graph.create(dbxref)
         protein.dbxref.add(dbxref)
@@ -500,8 +502,6 @@ def create_publication_nodes(uniprot_data):
     """
     pmid_set = set()
     sys.stdout.write("\nCreating Publication Nodes...\n")
-    import time
-    _start = time.time()
     df = read_csv(uniprot_data).fillna("")
 
     for entry in df.values:
@@ -514,10 +514,9 @@ def create_publication_nodes(uniprot_data):
         #     pmid_set.update(pmids)
         protein_entry = entry[0]
         protein = None
-        if protein_entry is not '':
+        if protein_entry:
             protein = Protein.select(graph, protein_entry).first()
-            uniprot_pmids = [p for p in entry[11].split(
-                "; ") if p is not '']
+            uniprot_pmids = [p for p in entry[11].split("; ") if p]
             pmid_set.update(uniprot_pmids)
         for p_id in pmid_set:
             pub = Publication()
@@ -545,12 +544,11 @@ def create_publication_nodes(uniprot_data):
             pages = article['Pagination']['MedlinePgn']
             volume = article['Journal']['JournalIssue']['Volume']
             issue = article['Journal']['JournalIssue']['Issue']
-            date_of_pub = article['Journal']['JournalIssue']['PubDate'][
-                              'Month'] + " " + \
-                          article['Journal']['JournalIssue']['PubDate']['Year']
+            date_of_pub = article['Journal']['JournalIssue']['PubDate']['Month'] + \
+                " " + article['Journal']['JournalIssue']['PubDate']['Year']
             pub_place = rec['MedlineCitation']['MedlineJournalInfo']['Country']
             publisher = None
-            author = None
+            # author = None
             # full_author = article['AuthorList']
             full_author = None
         else:
@@ -565,7 +563,7 @@ def create_publication_nodes(uniprot_data):
             date_of_pub = record.get('DP', None)
             pub_place = record.get('PL', None)
             publisher = record.get('SO', None)
-            author = record.get('AU', None)
+            # author = record.get('AU', None)
             full_author = record.get('FAU', None)
 
         # Publication.select(graph, pm_id).first()
@@ -580,9 +578,7 @@ def create_publication_nodes(uniprot_data):
         graph.push(publication)
         create_author_nodes(publication, full_author)
         record_loaded_count += 1
-    end = time.time()
-    sys.stdout.write("Publications created in {} seconds."
-                     .format(end - _start))
+    sys.stdout.write("Created Publications.")
     return pmid_set
 
 
@@ -621,7 +617,7 @@ def create_drugbank_nodes():
             "_.entry_name='{}'".format(uniprot_entry))
         if protein_:
             for protein in protein_:
-                drug_ids = [x for x in dbank_ids.split(';') if x is not '']
+                drug_ids = [x for x in dbank_ids.split(';') if x]
                 for _id in drug_ids:
                     drug_set.add(_id)
                     dbxref = DbXref(db="DrugBank", accession=_id)
@@ -703,7 +699,6 @@ def create_protein_nodes():
     :return:
     """
     sys.stdout.write("\nCreating Protein Nodes...\n")
-    start = time()
     protein_interaction_dict = dict()
 
     df = read_csv(UNIPROT_DATA).fillna("")
@@ -740,8 +735,7 @@ def create_protein_nodes():
         create_interpro_term_nodes(protein, entry[5])
 
     build_protein_interaction_rels(protein_interaction_dict)
-    end = time()
-    sys.stdout.write("\nCreated UniProt Nodes in {} secs.".format(end - start))
+    sys.stdout.write("\nCreated UniProt Nodes.")
 
 
 def map_gene_to_orthologs(locus_tags):
@@ -751,7 +745,6 @@ def map_gene_to_orthologs(locus_tags):
     :return:
     """
     sys.stdout.write("\nMapping Orthologs...\n")
-    start = time()
     for tag_list in locus_tags:
         for tag in tag_list:
             gene = Gene.select(graph, tag).first()
@@ -766,8 +759,7 @@ def map_gene_to_orthologs(locus_tags):
                             orthologous_gene.orthologous_to_.add(gene)
                             graph.push(gene)
                             graph.push(orthologous_gene)
-    end = time()
-    sys.stdout.write("\nMapped Orthologs in {}".format(end - start))
+    sys.stdout.write("\nMapped Orthologs")
 
 
 def create_kegg_pathways_nodes():
@@ -778,7 +770,6 @@ def create_kegg_pathways_nodes():
     sys.stdout.write("Creating KEGG Pathways...")
     # TODO: Add mtc
     organisms = ['mtu']
-    start = time()
     for organism in organisms:
         kegg.organism = organism
         pathway_ids = kegg.pathwayIds
@@ -806,9 +797,7 @@ def create_kegg_pathways_nodes():
                                 graph.push(pathway)
             else:
                 sys.stderr.write("Data is: {}\n".format(data))
-    end = time()
-    sys.stdout.write(
-        "\nCreated KEGG Pathway Nodes in {} secs.".format(end - start))
+    sys.stdout.write("\nCreated KEGG Pathway Nodes.")
 
 
 def create_reactome_pathway_nodes():
@@ -817,7 +806,6 @@ def create_reactome_pathway_nodes():
     :return:
     """
     sys.stdout.write("\nCreating REACTOME Pathways...\n")
-    start = time()
     with open(UNIPROT_DATA, 'r') as csv_file:
         reader = csv.DictReader(csv_file, delimiter=',')
         for entry in tqdm(reader):
@@ -844,9 +832,7 @@ def create_reactome_pathway_nodes():
                             graph.push(_protein)
                             pathway.protein.add(_protein)
                             graph.push(pathway)
-    end = time()
-    sys.stdout.write("\nCreated REACTOME Pathway Nodes in {} secs."
-                     .format(end - start))
+    sys.stdout.write("\nCreated REACTOME Pathway Nodes.")
 
 
 def create_known_mutation_nodes(**kwargs):
@@ -934,9 +920,9 @@ def create_operon_nodes(text_file=None):
         for line in text_file:
             if 'OPERON' in str(line):
                 tab_split = line.split('\t')
-                locus = tab_split[0]
-                gene_name = tab_split[1]
-                name_operon = tab_split[10]
+                # locus = tab_split[0]
+                # gene_name = tab_split[1]
+                # name_operon = tab_split[10]
                 locus_operon = tab_split[11]
                 description = tab_split[7]
                 operon = Operon()

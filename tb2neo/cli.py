@@ -1,11 +1,23 @@
 """
 Cli
 """
+import os
+import sys
+
 import click
 
-from tb2neo.gffproc import *
+from tb2neo.dbconn import (DRUG_VOCAB, TARGET_PROTEIN_IDS,
+                           build_gff_relationships, create_chromosome_nodes,
+                           create_drugbank_nodes, create_go_term_nodes,
+                           create_kegg_pathways_nodes, create_operon_nodes,
+                           create_organism_nodes, create_protein_nodes,
+                           create_publication_nodes,
+                           create_reactome_pathway_nodes, delete_db_data,
+                           graph, map_srna_to_mrna)
+from tb2neo.gffproc import (examine_gff_file, get_locus_tags,
+                            map_functional_category, parse_gff)
 from tb2neo.mutations import process_mutation_file
-from tb2neo.uniprot import UNIPROT_DATA
+from tb2neo.uniprot import UNIPROT_DATA, query_uniprot
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -281,7 +293,7 @@ def load_reactome_pathways():
         create_reactome_pathway_nodes()
     else:
         sys.stderr.write(
-            "Unable to load REACTOME Pathways!\nNo Proteins nodes in database.")
+            "Unable to load REACTOME Pathways!\nNo Proteins in database.")
 
 
 @cli.command()

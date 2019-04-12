@@ -13,8 +13,14 @@ RUN apk update \
 #     -P plugins/ \
 #     && ls plugins/
 RUN wget https://github.com/neo4j-contrib/neo4j-elasticsearch/releases/download/3.4.5/neo4j-elasticsearch-3.4.5.jar \
-    -P plugins/
+    -P plugins/ \
+    && wget https://github.com/neo4j-contrib/neo4j-graph-algorithms/releases/download/3.4.12.7/graph-algorithms-algo-3.4.12.7.jar \
+    -P plugins/ \
+    && wget https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/3.4.0.5/apoc-3.4.0.5-all.jar \
+    -P plugins/ 
 COPY neo4j.conf conf/
 
+ENV  NEO4J_dbms_security_procedures_unrestricted='apoc.*,algo.*'
+RUN echo 'browser.remote_content_hostname_whitelist=*' >> conf/neo4j.conf
 
 

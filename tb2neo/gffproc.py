@@ -3,12 +3,19 @@ Interface for GFF processing.
 """
 from __future__ import print_function
 
+import os
 import pprint
+import sys
 
 from BCBio import GFF
 from BCBio.GFF import GFFExaminer
+from tqdm import tqdm
 
-from tb2neo.dbconn import *
+from tb2neo.dbconn import (create_cds_nodes, create_featureloc_nodes,
+                           create_gene_nodes, create_mrna_nodes,
+                           create_pseudogene_nodes, create_rna_nodes,
+                           create_transcript_nodes, graph, map_to_location)
+from tb2neo.model.core import Organism
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 MYCO_GFF = os.path.join(
@@ -99,7 +106,7 @@ def load_gff_data(gff_file, limit, organism):
                 create_rna_nodes(feature)
                 map_to_location(feature)
             elif feature.type == 'transcript':
-                creat_transcript_nodes(feature)
+                create_transcript_nodes(feature)
                 map_to_location(feature)
 
     in_file.close()
@@ -116,13 +123,12 @@ def map_functional_category(gff=None):
         for line in myco_gff:
             if 'Functional_Category' in str(line):
                 tab_split = line.split('\t')
-                start = tab_split[3]
+                # start = tab_split[3]
                 end = int(tab_split[4])
                 info = tab_split[8].split(";")
                 functional_category = info[-1].split("=")[-1].strip()
                 result = graph.run(
-                    "match(n)-[]-(l:Location) where l.fmax = {end} return n".format(
-                        end=end)).data()
+                    f"match(n)-[]-(l:Location) where l.fmax = {end} return n").data()
                 if result:
                     for item in result:
                         node = item['n']

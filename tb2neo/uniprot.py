@@ -8,7 +8,6 @@ import csv
 import os
 import sys
 from io import StringIO
-from time import time
 
 from bioservices import UniProt
 
@@ -80,9 +79,7 @@ def query_uniprot(locus_tags, taxonomy, proteome):
     :param locus_tags:
     :return:
     """
-    print("Querying UniProt...")
     sys.stdout.write("\nQuerying UniProt...")
-    start_time = time()
     uniprot_data = []
     results = []
     columns = "id, entry name, genes(OLN), genes, go-id, interpro, " \
@@ -96,17 +93,15 @@ def query_uniprot(locus_tags, taxonomy, proteome):
     #     writer = csv.writer(csv_file)
     for tag_list in locus_tags:
         query = '(' + '+OR+'.join(['gene:' + name for name in tag_list]) + ')'
-        result = search_uniprot(
-            query, columns, taxonomy=taxonomy, proteome=proteome)
+        result = search_uniprot(query, columns, taxonomy=taxonomy,
+                                proteome=proteome)
         # writer.writerows(result)
         uniprot_data.append(result)
 
     for data in uniprot_data:
         for entry in data:
             results.append(entry)
-    end_time = time()
-    total_time = end_time - start_time
-    sys.stdout.write("Fetched UniProt data in {} secs.".format(total_time))
+    sys.stdout.write("Done: UniProt data.")
     if len(results) > 0:
         write_to_csv(results)
     return results

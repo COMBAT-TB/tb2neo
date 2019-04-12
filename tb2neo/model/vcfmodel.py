@@ -1,9 +1,11 @@
 import uuid
 
-from tb2neo.model.core import *
+from py2neo.ogm import GraphObject, Property, RelatedFrom, RelatedTo
 
+from tb2neo.model.core import Drug, Gene, Location, RRna
 
 # https://ga4gh-schemas.readthedocs.io/en/latest/api/variants.html
+
 
 class VariantSet(GraphObject):
     """
@@ -16,7 +18,6 @@ class VariantSet(GraphObject):
     vset_id = Property()
 
     has_variant = RelatedTo("Variant", "BELONGS_TO")
-    forms_tree = RelatedTo("FastTree", "FROM_VARIANT_SET")
     has_callsets = RelatedTo("CallSet", "CALL_SET")
 
     def __init__(self, name, owner, history_id=None, vset_id=None):
@@ -81,7 +82,8 @@ class Variant(GraphObject):
     belongs_to_cset = RelatedTo("CallSet", "HAS_VARIANT")
     resistant_to = RelatedTo("Drug", "RESISTANT_TO")
 
-    def __init__(self, chrom, pos, ref_allele, alt_allele, pk, impact=None, gene=None, consequence=None):
+    def __init__(self, chrom, pos, ref_allele, alt_allele, pk, impact=None,
+                 gene=None, consequence=None):
         self.chrom = chrom
         self.pos = pos
         self.ref_allele = ref_allele
@@ -90,20 +92,3 @@ class Variant(GraphObject):
         self.pk = pk
         self.impact = impact
         self.consequence = consequence
-
-
-class FastTree(GraphObject):
-    """
-    FastTree
-    """
-    __primarykey__ = 'name'
-    name = Property()
-    data = Property()
-    history_id = Property()
-
-    from_variant_set = RelatedTo("VariantSet", "FROM_VARIANT_SET")
-
-    def __init__(self, name, data, history_id):
-        self.name = name
-        self.data = data
-        self.history_id = history_id
