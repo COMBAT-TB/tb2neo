@@ -145,7 +145,7 @@ def _process_tbprofiler_mutations(in_file, cset_name):
             # amino acid change
             consequence = tab_split[5].strip()
             # Pro241Pro to ['Pro', '241', 'Pro']
-            amino_change = re.split('(\d+)', consequence)
+            amino_change = re.split(r"(\d+)", consequence)
             consequence = [seq1(a, custom_map={"*": "Stop"}, undef_code='-')
                            for a in amino_change if not a.isdigit()]
             consequence.insert(1, amino_change[1])
@@ -205,7 +205,7 @@ def _process_tgstb_mutations(in_file, cset_name):
             consequence = tab_split[5].strip()
             if 'found' not in consequence:
                 # Pro241Pro to ['Pro', '241', 'Pro']
-                amino_change = re.split('(\d+)', consequence)
+                amino_change = re.split(r"(\d+)", consequence)
                 consequence = [
                     seq1(a, custom_map={"*": "Stop"}, undef_code='-')
                     for a in amino_change if not a.isdigit()]
