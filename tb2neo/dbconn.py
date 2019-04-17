@@ -516,7 +516,7 @@ def create_publication_nodes(uniprot_data):
         protein = None
         if protein_entry:
             protein = Protein.select(graph, protein_entry).first()
-            uniprot_pmids = [p for p in entry[11].split("; ") if p]
+            uniprot_pmids = [p.strip() for p in entry[11].split("; ") if p]
             pmid_set.update(uniprot_pmids)
         for p_id in pmid_set:
             pub = Publication()
@@ -531,9 +531,11 @@ def create_publication_nodes(uniprot_data):
     chunksize = 500
     records = []
     for start in range(0, num_ids, chunksize):
-        subset = list(pmid_set)[start:start + chunksize]
+        subset = list(pmid_set)[start: start + chunksize]
+        # Remove pmid from subset if it exists in records.
+        [subset.pop(k) for k, v in enumerate(subset)
+            if [rec['PMID'] for rec in records if v == rec["PMID"]]]
         records.extend(fetch_publication_list(subset))
-    record_loaded_count = 0
     for record in records:
         if len(record) < 2:
             pm_id = record['id:'][0][record['id:'][0].find('able: ') + 6:]
@@ -577,7 +579,6 @@ def create_publication_nodes(uniprot_data):
         publication.publisher = publisher
         graph.push(publication)
         create_author_nodes(publication, full_author)
-        record_loaded_count += 1
     sys.stdout.write("Created Publications.")
     return pmid_set
 

@@ -1,0 +1,47 @@
+{% set version = "0.0.6" %}
+{% set sha256 = "49bc4f2cf76aa9d53d47064d75904e4d5939af3e175a5edd6f7de2ef9ecf9873" %}
+{% set py2neo = "3.1.2" %}
+
+package:
+  name: tb2neo
+  version: {{ version }}
+
+source:
+  url: https://github.com/COMBAT-TB/tb2neo/archive/{{ version }}.tar.gz
+  sha256: {{ sha256 }}
+
+build:
+  script: python -m pip install --no-deps --ignore-installed .
+  number: 0
+
+
+requirements:
+  host:
+    - python
+    - pip
+    - click
+    - py2neo {{ py2neo }}
+    - tqdm
+    - biopython
+    - bioservices
+    - bcbio-gff
+  run:
+    - python
+    - click
+    - py2neo {{ py2neo }}
+    - tqdm
+    - biopython
+    - bioservices
+    - bcbio-gff
+
+test:
+  imports:
+    - tb2neo
+  commands:
+    - tb2neo |& grep tb2neo
+
+about:
+  home: https://github.com/COMBAT-TB/tb2neo
+  license_file: LICENSE
+  summary: 'Parses M.tuberculosis annotation (GFF file) and builds a Neo4j graph database storing the annotated features.'
+  dev_url: https://github.com/COMBAT-TB/tb2neo

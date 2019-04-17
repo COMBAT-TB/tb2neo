@@ -6,11 +6,12 @@ import os
 import pytest
 from click.testing import CliRunner
 
-from tb2neo.cli import delete, examine_gff, load_gff, load_uniprot_data, \
-    load_organism, \
-    load_publications, load_reactome_pathways, load_go_terms, \
-    load_drugbank_data, load_kegg_pathways, load_chromosome, \
-    load_known_mutations, load_operons, load_srna_data, SRNA_TXTFILE
+from tb2neo.cli import (SRNA_TXTFILE, delete, examine_gff, load_chromosome,
+                        load_drugbank_data, load_gff, load_go_terms,
+                        load_kegg_pathways, load_known_mutations, load_operons,
+                        load_organism, load_publications,
+                        load_reactome_pathways, load_srna_data,
+                        load_uniprot_data)
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 TEST_GFF = os.path.join(CURR_DIR, "test_gff/h37rv-sample.gff3")
