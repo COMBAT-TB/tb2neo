@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -12,8 +12,8 @@ setup(
     long_description_content_type="text/markdown",
     keywords='tuberculosis, neo4j, bioservices, gff',
     license="MIT",
-    packages=['tb2neo'],
     py_modules=['tb2neo'],
+    packages=find_packages(),
     include_package_data=True,
     package_data={
         'tb2neo': ['data/drugbank/*.csv', 'data/string/*.txt',
