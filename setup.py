@@ -11,7 +11,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords='tuberculosis, neo4j, bioservices, gff',
-    license="MIT",
+    icense="GPLv3",
     py_modules=['tb2neo'],
     packages=find_packages(),
     include_package_data=True,
