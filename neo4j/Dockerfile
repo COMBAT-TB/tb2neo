@@ -20,7 +20,7 @@ RUN wget https://github.com/neo4j-contrib/neo4j-elasticsearch/releases/download/
     -P plugins/ 
 COPY neo4j.conf conf/
 
-ENV  NEO4J_dbms_security_procedures_unrestricted='apoc.*,algo.*'
-RUN echo 'browser.remote_content_hostname_whitelist=*' >> conf/neo4j.conf
+ENV NEO4J_dbms_security_procedures_unrestricted='apoc.*,algo.*' \
+    NEO4J_browser__remote_content_hostname_whitelist='*'
 
 
