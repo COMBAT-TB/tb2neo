@@ -3,9 +3,10 @@ services:
   loader:
     build: .
     environment:
-      DATABASE_URL: db
+      DATABASE_URL: "192.168.10.7"
     volumes:
       - loader_data:/code
+    network_mode: "bridge"
     depends_on:
       - db
       - es
@@ -22,6 +23,7 @@ services:
       - db_data:/data
     depends_on:
       - es
+    network_mode: "bridge"
     ports:
       - "7687:7687"
       - "7474:7474"
@@ -31,9 +33,17 @@ services:
     image: elasticsearch:2.4
     volumes:
       - es_data:/usr/share/elasticsearch/data
+    network_mode: "bridge"
     ports:
       - "9200:9200"
 volumes:
   loader_data:
   db_data:
   es_data:
+
+# https://docs.openstack.org/project-deploy-guide/kolla-ansible/ocata/quickstart.html#build-container-images
+networks:
+  default:
+    driver: bridge
+    driver_opts:
+      com.docker.network.driver.mtu: 1450
