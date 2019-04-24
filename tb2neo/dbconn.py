@@ -618,7 +618,7 @@ def create_drugbank_nodes():
             "_.entry_name='{}'".format(uniprot_entry))
         if protein_:
             for protein in protein_:
-                drug_ids = [x for x in dbank_ids.split(';') if x]
+                drug_ids = [x.strip() for x in dbank_ids.split(';') if x]
                 for _id in drug_ids:
                     drug_set.add(_id)
                     dbxref = DbXref(db="DrugBank", accession=_id)
@@ -638,7 +638,7 @@ def create_drugbank_nodes():
     zipped_dv = zipfile.ZipFile(DRUG_VOCAB)
     df = read_csv(zipped_dv.open("drugbank vocabulary.csv")).fillna("")
     for entry in df.values:
-        dbank_id = entry[0]
+        dbank_id = entry[0].strip()
         commom_name = entry[2]
         synonyms = entry[5]
         drug = Drug.select(graph, dbank_id).first()
@@ -890,7 +890,7 @@ def create_known_mutation_nodes(**kwargs):
         if drug:
             variant.resistant_to.add(drug)
         elif kwargs.get("drugbank_id") and kwargs.get("drug_name"):
-            drug = Drug(accession=kwargs.get("drugbank_id"),
+            drug = Drug(accession=kwargs.get("drugbank_id").strip(),
                         name=kwargs.get("drug_name").capitalize())
             graph.create(drug)
             variant.resistant_to.add(drug)
