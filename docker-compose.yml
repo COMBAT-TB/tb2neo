@@ -3,7 +3,7 @@ services:
   loader:
     build: .
     environment:
-      DATABASE_URL: "192.168.10.7"
+      DATABASE_URL: db
     volumes:
       - loader_data:/code
     network_mode: "bridge"
