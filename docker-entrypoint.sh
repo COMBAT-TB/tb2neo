@@ -12,6 +12,7 @@ tb2neo load-chromosome h37rv
 tb2neo load-gff "${GFF_FILES_DIR}"
 # tb2neo load-operons "${OPERON_DIR}"
 tb2neo load-uniprot-data "${GFF_FILES_DIR}"
+tb2neo load-ppi
 tb2neo load-drugbank-data
 tb2neo load-known-mutations "${MUTATIONS_DIR}"
 tb2neo load-go-terms

@@ -9,7 +9,7 @@ from click.testing import CliRunner
 from tb2neo.cli import (SRNA_TXTFILE, delete, examine_gff, load_chromosome,
                         load_drugbank_data, load_gff, load_go_terms,
                         load_kegg_pathways, load_known_mutations, load_operons,
-                        load_organism, load_publications,
+                        load_organism, load_ppi, load_publications,
                         load_reactome_pathways, load_srna_data,
                         load_uniprot_data)
 
@@ -79,6 +79,11 @@ def test_load_known_mutations(cli_runner):
 
 def test_load_uniprot_data(cli_runner):
     result = cli_runner.invoke(load_uniprot_data, [TEST_GFF_DIR])
+    assert result.exit_code == 0
+
+
+def test_load_ppi(cli_runner):
+    result = cli_runner.invoke(load_ppi)
     assert result.exit_code == 0
 
 

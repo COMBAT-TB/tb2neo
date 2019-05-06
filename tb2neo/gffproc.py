@@ -128,7 +128,8 @@ def map_functional_category(gff=None):
                 info = tab_split[8].split(";")
                 functional_category = info[-1].split("=")[-1].strip()
                 result = graph.run(
-                    f"match(n)-[]-(l:Location) where l.fmax = {end} return n").data()
+                    f"match(n)-[]-(l:Location) where l.fmax = {end} return n"
+                ).data()
                 if result:
                     for item in result:
                         node = item['n']
