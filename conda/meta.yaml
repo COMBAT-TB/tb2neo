@@ -1,5 +1,5 @@
-{% set version = "0.0.7" %}
-{% set sha256 = "73d10430863d05b4bcb31359a2469aa7e53d19c0b0a833011f36b76ea0ba00ca" %}
+{% set version = "0.0.8" %}
+{% set sha256 = "11014395b2c86958654b514e3e3a206bd03a2086d4209a3ba1b9aec7b2bac7e1" %}
 {% set py2neo = "3.1.2" %}
 
 package:
