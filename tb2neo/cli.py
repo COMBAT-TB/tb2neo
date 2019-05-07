@@ -17,6 +17,7 @@ from tb2neo.dbconn import (DRUG_VOCAB, TARGET_PROTEIN_IDS,
 from tb2neo.gffproc import (examine_gff_file, get_locus_tags,
                             map_functional_category, parse_gff)
 from tb2neo.mutations import process_mutation_file
+from tb2neo.stringstitch import load_string_data
 from tb2neo.uniprot import UNIPROT_DATA, query_uniprot
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -37,8 +38,12 @@ def check_csv(csvfile):
     :param csvfile:
     :return:
     """
-    _file = False
-    if os.path.exists(csvfile) and os.stat(csvfile).st_size > 0:
+    try:
+        csv_file = open(csvfile, 'r')
+    except OSError:
+        _file = False
+    else:
+        csv_file.close()
         _file = True
     return _file
 
@@ -223,6 +228,19 @@ def load_uniprot_data(gff_files):
                             proteome=result['proteome'])
                         # TODO: Need to refactor
                         create_protein_nodes()
+
+
+@cli.command()
+def load_ppi():
+    """
+    Load Protein-Protein Interactions from STRING-DB.
+    :return:
+    """
+    if check_csv(UNIPROT_DATA):
+        load_string_data()
+    else:
+        sys.stderr.write(
+            "Unable to create PPIs!\nCould not find UniProt csv file.")
 
 
 @cli.command()
