@@ -8,6 +8,9 @@ flake8 = "*"
 pytest = "*"
 tb2neo = {path = ".",editable = true}
 autopep8 = "*"
+coveralls = "*"
+pytest-cov = "*"
+coverage = "*"
 
 [packages]
 bioservices = "*"
