@@ -13,16 +13,18 @@ TAXON_ID = "83332"
 
 
 def create_ppi(rv_a, rv_b, score):
-    cypher_q = f"MATCH (ga)--(ap:Protein),(gb)--(bp:Protein) "
-    cypher_q += f"WHERE ga.uniquename = '{rv_a}' AND gb.uniquename = '{rv_b}' "
+    cypher_q = f"MATCH (ga {{ uniquename: '{rv_a}' }})--(ap:Protein),"
+    cypher_q += f"(gb {{ uniquename: '{rv_b}' }})--(bp:Protein) "
+    # cypher_q+= f"WHERE ga.uniquename = '{rv_a}' AND gb.uniquename = '{rv_b}'"
     cypher_q += f"CREATE (ap)-[r:INTERACTS_WITH {{ score: {score} }}]->(bp)"
-    print(cypher_q)
     data = graph.run(cypher_q).data()
     return data
 
 
 def fetch_string_data(gene, output_format='json', method='network',
                       taxon=TAXON_ID):
+    # This is interesting
+    # https://string-db.org/api/json/network?identifiers=None&species=83332
     request_url = STRING_API_URL + "/" + output_format + "/" + method + "?"
     request_url += f"identifiers={gene}"
     request_url += "&" + f"species={TAXON_ID}"
@@ -37,18 +39,23 @@ def fetch_string_data(gene, output_format='json', method='network',
         if response.status_code == 200:
             print(request_url)
             result = response.json()
-        return result
+    return result
 
 
 def load_string_data():
     df = read_csv(UNIPROT_DATA).fillna("")
     for entry in df.values:
-        gene = eu_mapping(from_=entry[0], to='TUBERCULIST_ID')[0]
-        # This is interesting
-        # https://string-db.org/api/json/network?identifiers=None&species=83332
-        data = fetch_string_data(gene=gene)
-        for ppi in data:
-            create_ppi(ppi["stringId_A"], ppi["stringId_B"], ppi["score"])
+        try:
+            gene = eu_mapping(from_=entry[0], to='TUBERCULIST_ID')[0]
+        except TypeError:
+            print(f"A TypeError occurred for: {entry[0]}")
+        else:
+            data = fetch_string_data(gene=gene) if gene else None
+            if data:
+                for ppi in data:
+                    create_ppi(
+                        ppi["stringId_A"], ppi["stringId_B"], ppi["score"]
+                    )
 
 
 def fetch_stitch_data():
