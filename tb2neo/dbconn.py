@@ -797,7 +797,8 @@ def create_kegg_pathways_nodes():
                                 pathway.protein.add(protein)
                                 graph.push(pathway)
             else:
-                sys.stderr.write("Data is: {}\n".format(data))
+                # TODO: What if not dict?
+                sys.stderr.write(f"\nData is: {type(data)}\n")
     sys.stdout.write("\nCreated KEGG Pathway Nodes.")
 
 
