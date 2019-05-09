@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='tb2neo',
-    version='0.0.8',
+    version='0.0.9',
     url='https://github.com/COMBAT-TB/tb2neo',
     description='Builds a M.tb annotation graph database from GFF files',
     long_description=long_description,
