@@ -45,17 +45,14 @@ def fetch_string_data(gene, output_format='json', method='network',
 def load_string_data():
     df = read_csv(UNIPROT_DATA).fillna("")
     for entry in df.values:
-        try:
-            gene = eu_mapping(from_=entry[0], to='TUBERCULIST_ID')[0]
-        except TypeError:
-            print(f"A TypeError occurred for: {entry[0]}")
+        rv_tag = eu_mapping(from_=entry[0], to='TUBERCULIST_ID')
+        gene = rv_tag[0] if rv_tag else None
+        data = fetch_string_data(gene=gene) if gene else None
+        if data:
+            for ppi in data:
+                create_ppi(ppi["stringId_A"], ppi["stringId_B"], ppi["score"])
         else:
-            data = fetch_string_data(gene=gene) if gene else None
-            if data:
-                for ppi in data:
-                    create_ppi(
-                        ppi["stringId_A"], ppi["stringId_B"], ppi["score"]
-                    )
+            print(f"Nothing was found for {gene} with entry: {entry[0]}")
 
 
 def fetch_stitch_data():

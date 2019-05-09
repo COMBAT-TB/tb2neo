@@ -3,9 +3,9 @@ Test dbconn module
 """
 import pytest
 
-from tb2neo.dbconn import graph, split_gene_names, create_chromosome_nodes, \
-    create_publication_nodes
-from tb2neo.model.core import Gene, Chromosome
+from tb2neo.dbconn import (create_chromosome_nodes, create_publication_nodes,
+                           graph, split_gene_names)
+from tb2neo.model.core import Chromosome, Gene
 from test_cli import UNIPROT_DATA
 
 
@@ -29,8 +29,8 @@ def test_db_nodes():
 def test_rv0001():
     gene = Gene.select(graph, "Rv0001").first()
     assert gene.name == "dnaA"
-    assert gene.category is not ""
-    assert gene.residues is not ""
+    assert gene.category != ""
+    assert gene.residues != ""
 
 
 @pytest.mark.parametrize("test_input,expected", [
@@ -58,3 +58,13 @@ def test_split_gene_name(test_input, expected):
 def test_create_publication_nodes():
     res = create_publication_nodes(uniprot_data=UNIPROT_DATA)
     assert isinstance(res, set)
+
+
+# @pytest.mark.skip(reason="")
+def test_ppi_score():
+    cypher_q = f"MATCH (pa:Protein {{ uniquename: 'P9WQD9' }})"
+    cypher_q += f"-[r:INTERACTS_WITH]->"
+    cypher_q += f"(pb:Protein {{ uniquename: 'P9WIE5' }}) "
+    cypher_q += f"RETURN r.score"
+    data = graph.run(cypher_q).data()[0]
+    assert data['r.score'] == 0.881

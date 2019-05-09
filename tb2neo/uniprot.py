@@ -120,5 +120,5 @@ def eu_mapping(from_, to):
         if len(_map) != 0:
             xref_id = _map[from_]
     else:
-        raise ValueError("Can't map {} to {}".format(from_, to))
+        print(f"Can't map {from_} to {to}!")
     return xref_id

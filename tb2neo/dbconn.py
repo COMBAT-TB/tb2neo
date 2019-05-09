@@ -6,7 +6,7 @@ import os
 import sys
 import zipfile
 
-from bioservices import KEGG, ChEMBL, QuickGO, reactome
+from bioservices import KEGG, ChEMBL, QuickGO, ReactomeOld
 from pandas import read_csv
 from py2neo import Graph
 from tqdm import tqdm
@@ -28,7 +28,7 @@ graph = Graph(host=os.environ.get("DATABASE_URL", "localhost"), bolt=True,
 chembl = ChEMBL(verbose=False)
 quick_go = QuickGO(verbose=False)
 quick_go.url = 'http://www.ebi.ac.uk/QuickGO-Old'
-reactome_old = reactome.ReactomeOld(verbose=False)
+reactome_old = ReactomeOld(verbose=False)
 kegg = KEGG(verbose=False)
 
 # watch("neo4j.bolt")
@@ -769,6 +769,20 @@ def create_kegg_pathways_nodes():
     :return:
     """
     sys.stdout.write("Creating KEGG Pathways...")
+
+    def map_pathway_to_proteins(pathway_genes, path):
+        for g_id in pathway_genes:
+            g_id = "Rv" + \
+                g_id.strip("RVBD_") if "RV" in g_id else g_id
+            # Protein parent is stored as an array
+            gene = Gene.select(graph, g_id).first()
+            if gene:
+                for protein in gene.encodes:
+                    protein.pathway.add(path)
+                    graph.push(protein)
+                    path.protein.add(protein)
+                    graph.push(path)
+
     # TODO: Add mtc
     organisms = ['mtu']
     for organism in organisms:
@@ -776,28 +790,42 @@ def create_kegg_pathways_nodes():
         pathway_ids = kegg.pathwayIds
         for path in tqdm(pathway_ids):
             data = kegg.parse(kegg.get(path))
+            accession = path[path.find(organism):].strip()
             if isinstance(data, dict) is True:
                 pathway = Pathway()
-                pathway.accession = path[path.find(organism):].strip()
+                pathway.accession = accession
                 pathway._class = data.get('CLASS')
                 pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
                 pathway.summation = data.get('DESCRIPTION')
                 pathway.species = data.get('ORGANISM')
                 graph.create(pathway)
                 if data.get('GENE'):
-                    for g_id in data['GENE'].keys():
-                        g_id = "Rv" + \
-                               g_id.strip("RVBD_") if "RV" in g_id else g_id
-                        # Protein parent is stored as an array
-                        gene = Gene.select(graph, g_id).first()
-                        if gene:
-                            for protein in gene.encodes:
-                                protein.pathway.add(pathway)
-                                graph.push(protein)
-                                pathway.protein.add(protein)
-                                graph.push(pathway)
+                    map_pathway_to_proteins(data['GENE'].keys(), pathway)
             else:
-                sys.stderr.write("Data is: {}\n".format(data))
+                res_split = data.split("\n")
+
+                # accession = res_split[0].split()[1]
+                name = res_split[1].split("-")[0].strip('NAME').strip()
+                summation = res_split[2].strip("DESCRIPTION").strip()
+                _class = res_split[3].strip("CLASS").strip()
+                # Create Pathway
+                pathway = Pathway()
+                pathway.accession = accession
+                pathway.name = name
+                pathway.summation = summation
+                pathway._class = _class
+                graph.create(pathway)
+
+                gene_str_list = [
+                    s.split() for s in res_split if
+                    "Rv" in s and 'Myco' not in s
+                ]
+                genes = {
+                    g for l in gene_str_list for g in l if
+                    str(g).isalnum() and 'Rv' in g
+                }
+
+                map_pathway_to_proteins(genes, pathway)
     sys.stdout.write("\nCreated KEGG Pathway Nodes.")
 
 

@@ -3,7 +3,7 @@ import types
 import pytest
 
 from tb2neo.gffproc import get_locus_tags
-from tb2neo.uniprot import query_uniprot, eu_mapping
+from tb2neo.uniprot import eu_mapping, query_uniprot
 from test_cli import TEST_GFF
 
 
@@ -21,8 +21,3 @@ def test_search_uniprot():
 ])
 def test_eu_mapping(test_input, expected):
     assert isinstance(test_input, expected) is True
-
-
-def test_eu_mapping_error():
-    with pytest.raises(ValueError):
-        eu_mapping(None, to="PDB_ID")
