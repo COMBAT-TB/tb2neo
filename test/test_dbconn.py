@@ -60,10 +60,11 @@ def test_create_publication_nodes():
     assert isinstance(res, set)
 
 
+# @pytest.mark.skip(reason="")
 def test_ppi_score():
-    cypher_q = f"MATCH (pa:Protein {{ uniquename: 'P9WHW5' }})"
+    cypher_q = f"MATCH (pa:Protein {{ uniquename: 'P9WQD9' }})"
     cypher_q += f"-[r:INTERACTS_WITH]->"
-    cypher_q += f"(pb:Protein {{ uniquename: 'P9WI83' }}) "
+    cypher_q += f"(pb:Protein {{ uniquename: 'P9WIE5' }}) "
     cypher_q += f"RETURN r.score"
     data = graph.run(cypher_q).data()[0]
-    assert data['r.score'] == 0.999
+    assert data['r.score'] == 0.881
