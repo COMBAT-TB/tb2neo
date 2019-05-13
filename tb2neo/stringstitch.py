@@ -32,9 +32,9 @@ def fetch_string_data(gene, output_format='json', method='network',
     try:
         response = requests.get(request_url)
     except (HTTPError, ConnectionError) as error:
-        print(f'An error occured: {error}')
+        print(f'An error occured for {gene}:\n{error}')
     except Exception as e:
-        print(f'{e}')
+        print(f'There was an exception for {gene}:\n{e}')
     else:
         if response.status_code == 200:
             print(request_url)
@@ -45,14 +45,15 @@ def fetch_string_data(gene, output_format='json', method='network',
 def load_string_data():
     df = read_csv(UNIPROT_DATA).fillna("")
     for entry in df.values:
-        rv_tag = eu_mapping(from_=entry[0], to='TUBERCULIST_ID')
+        uniprot_id = str(entry[0]).strip()
+        rv_tag = eu_mapping(from_=uniprot_id, to='TUBERCULIST_ID')
         gene = rv_tag[0] if rv_tag else None
         data = fetch_string_data(gene=gene) if gene else None
         if data:
             for ppi in data:
                 create_ppi(ppi["stringId_A"], ppi["stringId_B"], ppi["score"])
         else:
-            print(f"Nothing was found for {gene} with entry: {entry[0]}")
+            print(f"Nothing found for {rv_tag} with entry: {uniprot_id}")
 
 
 def fetch_stitch_data():

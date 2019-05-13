@@ -846,14 +846,16 @@ def create_reactome_pathway_nodes():
                     if not isinstance(path_res, int):
                         pathway = Pathway()
                         pathway.accession = pathway_id
-                        pathway._type = path_res['schemaClass']
-                        pathway.species = path_res['speciesName']
-                        pathway.name = path_res['displayName']
+                        pathway._type = path_res.get('schemaClass')
+                        pathway.species = path_res.get('speciesName')
+                        pathway.name = path_res.get('displayName')
                         if path_res.get('compartment'):
-                            pathway.compartment = path_res['compartment'][0][
-                                'displayName']
-                        pathway.summation = path_res['summation'][0][
-                            'displayName']
+                            compartment = path_res.get('compartment')
+                            pathway.compartment = compartment[0].get(
+                                'displayName') if compartment else None
+                        summation = path_res.get('summation')
+                        pathway.summation = summation[0].get(
+                            'displayName') if summation else None
                         graph.create(pathway)
                         _protein = Protein.select(graph, protein).first()
                         if _protein:

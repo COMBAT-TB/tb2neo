@@ -116,7 +116,7 @@ def eu_mapping(from_, to):
     """
     xref_id = None
     if from_ and to:
-        _map = uniprot_.mapping(fr='ID', to=to, query=from_)
+        _map = uniprot_.mapping(fr='ID', to=to, query=str(from_).strip())
         if len(_map) != 0:
             xref_id = _map[from_]
     else:
