@@ -3,6 +3,7 @@
 import requests
 from pandas import read_csv
 from requests.exceptions import ConnectionError, HTTPError
+from tqdm import tqdm
 
 from tb2neo.dbconn import graph
 from tb2neo.uniprot import UNIPROT_DATA, eu_mapping
@@ -15,8 +16,8 @@ TAXON_ID = "83332"
 def create_ppi(rv_a, rv_b, score):
     cypher_q = f"MATCH (ga {{ uniquename: '{rv_a}' }})--(ap:Protein),"
     cypher_q += f"(gb {{ uniquename: '{rv_b}' }})--(bp:Protein) "
-    # cypher_q+= f"WHERE ga.uniquename = '{rv_a}' AND gb.uniquename = '{rv_b}'"
-    cypher_q += f"CREATE (ap)-[r:INTERACTS_WITH {{ score: {score} }}]->(bp)"
+    cypher_q += f"CREATE UNIQUE "
+    cypher_q += f"(ap)-[r:INTERACTS_WITH {{ score: {score} }}]->(bp)"
     data = graph.run(cypher_q).data()
     return data
 
@@ -44,7 +45,7 @@ def fetch_string_data(gene, output_format='json', method='network',
 
 def load_string_data():
     df = read_csv(UNIPROT_DATA).fillna("")
-    for entry in df.values:
+    for entry in tqdm(df.values):
         uniprot_id = str(entry[0]).strip()
         rv_tag = eu_mapping(from_=uniprot_id, to='TUBERCULIST_ID')
         gene = rv_tag[0] if rv_tag else None
