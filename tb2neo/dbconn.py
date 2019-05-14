@@ -504,7 +504,7 @@ def create_publication_nodes(uniprot_data):
     sys.stdout.write("\nCreating Publication Nodes...\n")
     df = read_csv(uniprot_data).fillna("")
 
-    for entry in df.values:
+    for entry in tqdm(df.values):
         # TODO: Search for more publications
         # locus_tag = entry[2].strip()
         # gene_name_prim = entry[7].strip()
@@ -512,7 +512,7 @@ def create_publication_nodes(uniprot_data):
         # pmids = search_pubmed(genename)  # list
         # if pmids:
         #     pmid_set.update(pmids)
-        protein_entry = entry[0]
+        protein_entry = str(entry[0]).strip()
         protein = None
         if protein_entry:
             protein = Protein.select(graph, protein_entry).first()
@@ -527,7 +527,7 @@ def create_publication_nodes(uniprot_data):
                 graph.push(protein)
     # Let's build a set before calling API and DB
     num_ids = len(pmid_set)
-    sys.stdout.write("\nCreating {} Publications\n".format(num_ids))
+    sys.stdout.write(f"\nFetching data for {num_ids} publications\n")
     chunksize = 500
     records = []
     for start in range(0, num_ids, chunksize):
@@ -536,8 +536,22 @@ def create_publication_nodes(uniprot_data):
         [subset.pop(k) for k, v in enumerate(subset)
             if [rec['PMID'] for rec in records if v == rec["PMID"]]]
         records.extend(fetch_publication_list(subset))
-    for record in records:
-        if len(record) < 2:
+    for record in tqdm(records):
+        if isinstance(record, dict):
+            # https://www.nlm.nih.gov/bsd/mms/medlineelements.html
+            pm_id = record['PMID']
+            # there is internal caching so using a dictionary here doesn't
+            # actually seem to save any time - pvh
+            title = record.get('TI')
+            volume = record.get('VI')
+            issue = record.get('IP')
+            pages = record.get('PG')
+            date_of_pub = record.get('DP')
+            pub_place = record.get('PL')
+            publisher = record.get('SO')
+            # author = record.get('AU')
+            full_author = record.get('FAU')
+        else:
             pm_id = record['id:'][0][record['id:'][0].find('able: ') + 6:]
             record = fetch_publication_list(pm_id, rettype='xml')
             rec = next(record)
@@ -553,20 +567,6 @@ def create_publication_nodes(uniprot_data):
             # author = None
             # full_author = article['AuthorList']
             full_author = None
-        else:
-            # https://www.nlm.nih.gov/bsd/mms/medlineelements.html
-            pm_id = record['PMID']
-            # there is internal caching so using a dictionary here doesn't
-            # actually seem to save any time - pvh
-            title = record.get('TI', None)
-            volume = record.get('VI', None)
-            issue = record.get('IP', None)
-            pages = record.get('PG', None)
-            date_of_pub = record.get('DP', None)
-            pub_place = record.get('PL', None)
-            publisher = record.get('SO', None)
-            # author = record.get('AU', None)
-            full_author = record.get('FAU', None)
 
         # Publication.select(graph, pm_id).first()
         publication = Publication.select(graph, pm_id).first()
@@ -611,7 +611,7 @@ def create_drugbank_nodes():
     drug_set = set()
     zipped_tpi = zipfile.ZipFile(TARGET_PROTEIN_IDS)
     df = read_csv(zipped_tpi.open("all.csv")).fillna("")
-    for entry in df.values:
+    for entry in tqdm(df.values):
         uniprot_entry = entry[6]
         dbank_ids = entry[12]
         protein_ = Protein.select(graph).where(
@@ -637,7 +637,7 @@ def create_drugbank_nodes():
 
     zipped_dv = zipfile.ZipFile(DRUG_VOCAB)
     df = read_csv(zipped_dv.open("drugbank vocabulary.csv")).fillna("")
-    for entry in df.values:
+    for entry in tqdm(df.values):
         dbank_id = entry[0].strip()
         commom_name = entry[2]
         synonyms = entry[5]
@@ -666,7 +666,8 @@ def map_gene_and_cds_to_protein(protein):
                 protein.encoded_by.add(gene)
                 graph.push(protein)
     # ens_id = map_ue_to_ens_trs(entry['Entry'])[0]
-    ens_id = eu_mapping(str(protein.uniquename), 'ENSEMBLGENOME_TRS_ID')
+    protein_entry = str(protein.uniquename).strip()
+    ens_id = eu_mapping(protein_entry, 'ENSEMBLGENOME_TRS_ID')
     if ens_id is not None:
         cds = CDS.select(graph, ens_id[0]).first()
         if cds:
@@ -703,8 +704,8 @@ def create_protein_nodes():
     protein_interaction_dict = dict()
 
     df = read_csv(UNIPROT_DATA).fillna("")
-    for entry in df.values:
-        protein_interaction_dict[entry[0]] = entry[6]
+    for entry in tqdm(df.values):
+        protein_interaction_dict[str(entry[0]).strip()] = entry[6]
         dbxref = DbXref(db="UniProt", accession=entry[1], version=entry[0])
         graph.create(dbxref)
 

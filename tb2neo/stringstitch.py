@@ -38,7 +38,6 @@ def fetch_string_data(gene, output_format='json', method='network',
         print(f'There was an exception for {gene}:\n{e}')
     else:
         if response.status_code == 200:
-            print(request_url)
             result = response.json()
     return result
 

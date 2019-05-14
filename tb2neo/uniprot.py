@@ -115,10 +115,12 @@ def eu_mapping(from_, to):
     :return:
     """
     xref_id = None
+    from_ = str(from_).strip()
     if from_ and to:
-        _map = uniprot_.mapping(fr='ID', to=to, query=str(from_).strip())
-        if len(_map) != 0:
-            xref_id = _map[from_]
+        _map = uniprot_.mapping(fr='ID', to=to, query=from_)
+        print(f"{from_} mapped to: {_map}")
+        if len(_map) != 0 and isinstance(_map, dict):
+            xref_id = _map.get(from_)
     else:
         print(f"Can't map {from_} to {to}!")
     return xref_id
