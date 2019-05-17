@@ -84,7 +84,7 @@ def query_uniprot(locus_tags, taxonomy, proteome):
     results = []
     columns = "id, entry name, genes(OLN), genes, go-id, interpro, " \
               "interactor, genes(PREFERRED), feature(DOMAIN EXTENT), " \
-              "protein names, go, citationmapping, 3d, comment(FUNCTION), " \
+              "protein names, go, citation, 3d, comment(FUNCTION), " \
               "sequence, mass, length, families, go(biological process), " \
               "go(molecular function), go(cellular component), " \
               " genes(ALTERNATIVE), genes(ORF), version(sequence)"
