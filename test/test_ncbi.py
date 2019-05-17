@@ -8,13 +8,13 @@ import pytest
 from tb2neo.ncbi import fetch_publication_list, get_fasta, search_pubmed
 
 pubmed_ids = "8733228; 9634230; 21969609; 21219854; 22545130; 26045430"
-pubmed_id_list = [p for p in pubmed_ids.split("; ") if p is not '']
+pubmed_id_list = [p.strip() for p in pubmed_ids.split("; ") if p]
 
 
 def test_search_pubmed():
     res = search_pubmed(genename="rmlA")
     assert isinstance(res, list)
-    assert len(res) is 10
+    assert len(res) == 10
 
 
 @pytest.mark.parametrize("test_input,expected", [

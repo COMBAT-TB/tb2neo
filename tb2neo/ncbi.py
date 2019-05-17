@@ -4,13 +4,12 @@ Interface to NCBI.
 import sys
 import time
 
+from Bio import Entrez, Medline
+
 try:
     from urllib2 import HTTPError
 except ImportError:
     from urllib.error import HTTPError
-
-from Bio import Entrez
-from Bio import Medline
 
 
 def search_pubmed(genename):
@@ -19,14 +18,14 @@ def search_pubmed(genename):
     :param genename:
     :return:
     """
-    term = "{genename} AND tuberculosis".format(genename=genename)
+    term = f"{genename} AND tuberculosis"
     Entrez.email = 'support@sanbi.ac.za'
     try:
         h = Entrez.esearch(db='pubmed', term=term)
         result = Entrez.read(h)
         ids = result['IdList']
     except HTTPError as e:
-        sys.stderr.write("{e}".format(e=e))
+        sys.stderr.write(f"{e}")
     return ids
 
 
@@ -38,8 +37,7 @@ def fetch_publication_list(citations, rettype='medline'):
     :return:
     """
     sys.stdout.write("=====================================")
-    print("Fetching {} publications. rettype: {}."
-          .format(len(citations), rettype))
+    print(f"Fetching {len(citations)} publications. rettype: {rettype}.")
     citation_string = ','.join(citations)
     Entrez.email = 'support@sanbi.ac.za'
     retries = 5
@@ -57,7 +55,7 @@ def fetch_publication_list(citations, rettype='medline'):
             # we are not allowed to hit NCBI more than 3 times per second
             time.sleep(0.4)
     if failed:
-        print("Retrieval from PubMed failed")
+        print("Failed to retrieve data from PubMed")
         records = []
     else:
         if rettype == 'medline':
@@ -81,9 +79,7 @@ def get_fasta(strain):
     # gene_query = "{gene}[Gene] AND {organism}[Organism] " \
     #              "AND {accession}[Accession] AND RefSeq[Filter]" \
     #              "".format(gene="", organism=organism, accession=accession)
-    q = "{organism}[Organism] AND {accession}[Accession] " \
-        "AND RefSeq[Filter]".format(organism=organism,
-                                    accession=accession)
+    q = f"{organism}[Organism] AND {accession}[Accession] AND RefSeq[Filter]"
     handle = Entrez.esearch(db="nucleotide", term=q)
     record = Entrez.read(handle)
     ids = record[u'IdList']

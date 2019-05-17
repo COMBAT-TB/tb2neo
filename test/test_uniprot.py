@@ -16,8 +16,11 @@ def test_search_uniprot():
 
 
 @pytest.mark.parametrize("test_input,expected", [
-    (eu_mapping("P13029", to="PDB_ID"), list),
-    (eu_mapping("P9WNW3", to="PDB_ID"), type(None)),
+    (eu_mapping("P13029", to="PDB_ID")[0], "1U2J"),
+    (eu_mapping("P9WNW3", to="PDB_ID"), None),
+    (eu_mapping("P9WH13", to="TUBERCULIST_ID")[0], "Rv0334"),
+    (eu_mapping("P9WPD1", to="TUBERCULIST_ID")[0], "Rv0384c"),
+
 ])
 def test_eu_mapping(test_input, expected):
-    assert isinstance(test_input, expected) is True
+    assert test_input == expected

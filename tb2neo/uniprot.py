@@ -84,7 +84,7 @@ def query_uniprot(locus_tags, taxonomy, proteome):
     results = []
     columns = "id, entry name, genes(OLN), genes, go-id, interpro, " \
               "interactor, genes(PREFERRED), feature(DOMAIN EXTENT), " \
-              "protein names, go, citation, 3d, comment(FUNCTION), " \
+              "protein names, go, citationmapping, 3d, comment(FUNCTION), " \
               "sequence, mass, length, families, go(biological process), " \
               "go(molecular function), go(cellular component), " \
               " genes(ALTERNATIVE), genes(ORF), version(sequence)"
@@ -115,10 +115,12 @@ def eu_mapping(from_, to):
     :return:
     """
     xref_id = None
+    from_ = str(from_).strip()
     if from_ and to:
         _map = uniprot_.mapping(fr='ID', to=to, query=from_)
-        if len(_map) != 0:
-            xref_id = _map[from_]
+        print(f"{from_} mapped to: {_map}")
+        if len(_map) != 0 and isinstance(_map, dict):
+            xref_id = _map.get(from_)
     else:
         print(f"Can't map {from_} to {to}!")
     return xref_id
