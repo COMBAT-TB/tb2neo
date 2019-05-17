@@ -518,13 +518,13 @@ def create_publication_nodes(uniprot_data):
             protein = Protein.select(graph, protein_entry).first()
             uniprot_pmids = [p.strip() for p in entry[11].split("; ") if p]
             pmid_set.update(uniprot_pmids)
-        for p_id in pmid_set:
-            pub = Publication()
-            pub.pmid = p_id
-            graph.create(pub)
-            if protein:
-                protein.published_in.add(pub)
-                graph.push(protein)
+            for p_id in uniprot_pmids:
+                pub = Publication()
+                pub.pmid = p_id
+                graph.create(pub)
+                if protein:
+                    protein.published_in.add(pub)
+                    graph.push(protein)
     # Let's build a set before calling API and DB
     num_ids = len(pmid_set)
     sys.stdout.write(f"\nFetching data for {num_ids} publications\n")

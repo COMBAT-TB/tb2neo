@@ -102,7 +102,6 @@ def test_load_kegg_pathways(cli_runner):
     assert result.exit_code == 0
 
 
-# @pytest.mark.skip(reason="'NoneType' object is not subscriptable")
 def test_load_reactome_pathways(cli_runner):
     result = cli_runner.invoke(load_reactome_pathways)
     assert result.exit_code == 0
