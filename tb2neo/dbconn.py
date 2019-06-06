@@ -796,7 +796,8 @@ def create_kegg_pathways_nodes():
                 pathway = Pathway()
                 pathway.accession = accession
                 pathway._class = data.get('CLASS')
-                pathway.name = data['NAME'][0]
+                pathway.name = data['NAME'][0].replace(
+                    " - Mycobacterium tuberculosis H37Rv", "")
                 # pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
                 pathway.summation = data.get('DESCRIPTION')
                 pathway.species = data.get('ORGANISM')
@@ -807,7 +808,8 @@ def create_kegg_pathways_nodes():
                 res_split = data.split("\n")
 
                 # accession = res_split[0].split()[1]
-                name = res_split[1].strip('NAME').strip()
+                name = res_split[1].strip('NAME').strip().replace(
+                    " - Mycobacterium tuberculosis H37Rv", "")
                 summation = res_split[2].strip("DESCRIPTION").strip()
                 _class = res_split[3].strip("CLASS").strip()
                 # Create Pathway
