@@ -28,7 +28,11 @@ setup(
         'bioservices',
         'bcbio-gff',
         'biopython',
-        'beautifulsoup4'
+        'beautifulsoup4',
+        'combattbmodel'
+    ],
+    dependency_links=[
+        'https://test.pypi.org/simple/',
     ],
     entry_points={
         'console_scripts': ['tb2neo=tb2neo.cli:cli']

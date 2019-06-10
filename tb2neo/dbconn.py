@@ -12,11 +12,11 @@ from py2neo import Graph
 from tqdm import tqdm
 
 from tb2neo.ftpconn import get_nucleotides
-from tb2neo.model.core import (CDS, Author, Chromosome, DbXref, Drug, Gene,
-                               GOTerm, InterProTerm, Location, MRna, NCRna,
-                               Operon, Organism, Pathway, Protein, PseudoGene,
-                               Publication, RRna, Transcript, TRna)
-from tb2neo.model.vcfmodel import CallSet, Variant, VariantSet
+from combattbmodel.core import (CDS, Author, Chromosome, DbXref, Drug, Gene,
+                                GOTerm, InterProTerm, Location, MRna, NCRna,
+                                Operon, Organism, Pathway, Protein, PseudoGene,
+                                Publication, RRna, Transcript, TRna)
+from combattbmodel.vcfmodel import CallSet, Variant, VariantSet
 from tb2neo.ncbi import fetch_publication_list
 from tb2neo.orthologs import fetch_ortholog
 from tb2neo.quickgo import query_quickgo
