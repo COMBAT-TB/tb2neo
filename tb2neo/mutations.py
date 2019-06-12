@@ -6,10 +6,13 @@ import sys
 
 from Bio.SeqUtils import seq1
 from bioservices import KEGG
-
+from pandas import read_csv
+from tqdm import tqdm
 from tb2neo.dbconn import create_known_mutation_nodes
 
 kegg = KEGG(verbose=False)
+
+drug_groups = ["aminoglycosides", "fluoroquinolones"]
 
 
 def get_drug_info(drug_name):
@@ -18,25 +21,17 @@ def get_drug_info(drug_name):
     :param drug_name:
     :return:
     """
-    drug_groups = ["aminoglycosides", "fluoroquinolones"]
-    drugbank_dict, drugbank_id, drug_info = dict(), None, dict()
+    drugbank_id, drug_info = None, dict()
     if 'aminosalicylic_acid' in drug_name:
         drug_name = 'Aminosalicylic acid'
-    if drug_name not in drugbank_dict.values() or drug_groups:
+    if drug_name not in drug_groups:
         k_drug = kegg.find("drug", str(drug_name))
         drug_id = k_drug.split('\t')[0]
         drug_info = kegg.parse(kegg.get(drug_id))
         if not isinstance(drug_info, int):
-            dblinks = drug_info.get("DBLINKS", None)
+            dblinks = drug_info.get("DBLINKS")
             if dblinks:
-                drugbank_id = dblinks.get("DrugBank", None)
-                if drugbank_id:
-                    drugbank_dict[drugbank_id] = drug_name
-        else:
-            for drug_id, name in drugbank_dict.items():
-                if drug_name == name:
-                    drugbank_id = drug_id
-
+                drugbank_id = dblinks.get("DrugBank")
     return drugbank_id
 
 
@@ -122,17 +117,20 @@ def _process_tbprofiler_mutations(in_file, cset_name):
     :param cset_name:
     :return:
     """
-    sys.stdout.write("\nProcessing {cset}...\n".format(cset=cset_name))
-    drugbank_id, biotype = None, ''
+    sys.stdout.write(f"\nProcessing {cset_name}...\n")
+    drugbank_id, biotype, drugbank_dict, promoter = None, '', dict(), ''
     vset_name = "TBProfiler"
     vset_owner = "https://github.com/jodyphelan"
-    for line in in_file:
+    for line in tqdm(in_file):
         if not line.startswith("#"):
+            drugbank_ids = set()
             tab_split = line.split('\t')
             drug_name = tab_split[0].lower()
-            drugbank_id = get_drug_info(drug_name)
 
             variant_pos = tab_split[1]
+            variant_pos = variant_pos.split(
+                '/')[0] if '/' in variant_pos else variant_pos
+
             ref_allele = tab_split[2]
             alt_allele = tab_split[3]
             if "_promoter" in tab_split[4]:
@@ -146,10 +144,11 @@ def _process_tbprofiler_mutations(in_file, cset_name):
             consequence = tab_split[5].strip()
             # Pro241Pro to ['Pro', '241', 'Pro']
             amino_change = re.split(r"(\d+)", consequence)
-            consequence = [seq1(a, custom_map={"*": "Stop"}, undef_code='-')
-                           for a in amino_change if not a.isdigit()]
-            consequence.insert(1, amino_change[1])
-            consequence = ''.join(consequence)
+            # consequence = [seq1(a, custom_map={"*": "Stop"}, undef_code='-')
+            #                for a in amino_change if not a.isdigit()]
+            # consequence.insert(1, amino_change[1])
+            # consequence = ''.join(consequence)
+
             if amino_change[0] == amino_change[2]:
                 biotype = "synonymous"
             elif amino_change[0] is not amino_change[2]:
@@ -158,6 +157,17 @@ def _process_tbprofiler_mutations(in_file, cset_name):
                     and '-' not in consequence:
                 biotype = "indel"
 
+            if drug_name not in drugbank_dict.values() and drug_groups:
+                drugbank_id = get_drug_info(drug_name)
+                if drugbank_id:
+                    drugbank_dict[drugbank_id] = drug_name
+                    drugbank_ids.add(drugbank_id)
+            else:
+                for drug_id, name in drugbank_dict.items():
+                    if drug_name == name:
+                        drugbank_id = drug_id
+                        drugbank_ids.add(drugbank_id)
+
             create_known_mutation_nodes(chrom="Chr1", pos=variant_pos,
                                         ref_allele=str(ref_allele),
                                         alt_allele=str(alt_allele),
@@ -170,75 +180,119 @@ def _process_tbprofiler_mutations(in_file, cset_name):
                                         vset_name=vset_name,
                                         vset_owner=vset_owner,
                                         cset_name=cset_name,
-                                        drugbank_id=drugbank_id,
+                                        drugbank_id=drugbank_ids,
                                         drug_name=drug_name, biotype=biotype)
 
 
-def _process_tgstb_mutations(in_file, cset_name):
+def _process_tbprofiler_two_mutations(in_file, cset_name):
     """
-    Load TGS-TB mutation Library
+    Load TBProfiler mutation Library
     :param in_file:
     :param cset_name:
     :return:
     """
-    sys.stdout.write("\nProcessing {cset}...\n".format(cset=cset_name))
-    drugbank_id, biotype = None, 'non-synonymous'
-    vset_name = "TGS-TB"
-    vset_owner = "Sekizuka T, et al."
-    for line in in_file:
-        if not line.startswith("#"):
-            tab_split = line.split('\t')
-            drug_name = tab_split[0].lower()
-            drugbank_id = get_drug_info(drug_name)
-
-            variant_pos = tab_split[1]
-            ref_allele = tab_split[2]
-            alt_allele = tab_split[3]
-            if "_promoter" in tab_split[4]:
-                promoter = tab_split[4]
-                gene_name = tab_split[4].split("_")[0]
-                biotype = "promoter"
+    sys.stdout.write(f"\nProcessing {cset_name}...\n")
+    drugbank_id, biotype, drugbank_dict, promoter = None, '', dict(), ''
+    vset_name = "TBDB"
+    vset_owner = "https://github.com/jodyphelan"
+    df = read_csv(in_file).fillna("")
+    for entry in tqdm(df.values):
+        drugbank_ids = set()
+        gene_name = entry[0]
+        consequence = entry[1]
+        amino_change = consequence
+        variant_pos = consequence
+        ref_allele = alt_allele = consequence
+        if '.' in consequence:
+            consequence_split = consequence.split('.')
+            # Pro241Pro to ['Pro', '241', 'Pro']
+            amino_change = re.split(r"(\d+)", consequence_split[1])
+            variant_pos = amino_change[1]
+            if '>' in consequence:
+                ref_allele = amino_change[2].split('>')[0].upper()
+                alt_allele = amino_change[2].split('>')[1].upper()
             else:
-                gene_name = tab_split[4]
-                promoter = None
-            # amino acid change
-            consequence = tab_split[5].strip()
-            if 'found' not in consequence:
-                # Pro241Pro to ['Pro', '241', 'Pro']
-                amino_change = re.split(r"(\d+)", consequence)
-                consequence = [
-                    seq1(a, custom_map={"*": "Stop"}, undef_code='-')
-                    for a in amino_change if not a.isdigit()]
-                consequence.insert(1, amino_change[1])
-                consequence = ''.join(consequence)
-                if amino_change[0] is amino_change[2] \
-                    and consequence.isalnum() \
-                        and any(c.islower() for c in consequence):
-                    biotype = "synonymous"
-                elif amino_change[0] is not amino_change[2] \
-                        and consequence.isalnum() \
-                        and any(c.islower() for c in consequence):
-                    biotype = "non-synonymous"
-                elif len(ref_allele) is not len(
-                        alt_allele) and consequence.isupper() \
-                        and not any(c.islower() for c in consequence) \
-                        and '-' not in consequence:
-                    biotype = "indel"
+                ref_allele = amino_change[0]
+                alt_allele = amino_change[2]
 
-            create_known_mutation_nodes(chrom="Chr1", pos=variant_pos,
-                                        ref_allele=str(ref_allele),
-                                        alt_allele=str(alt_allele),
-                                        gene=gene_name,
-                                        promoter=promoter,
-                                        pk=str(drug_name + consequence
-                                               + variant_pos + ref_allele
-                                               + alt_allele).lower(),
-                                        consequence=consequence,
-                                        vset_name=vset_name,
-                                        vset_owner=vset_owner,
-                                        cset_name=cset_name,
-                                        drugbank_id=drugbank_id,
-                                        drug_name=drug_name, biotype=biotype)
+        drug_name = entry[2]
+        if drug_name not in drugbank_dict.values() and drug_groups:
+            drugbank_id = get_drug_info(drug_name)
+            if drugbank_id:
+                drugbank_dict[drugbank_id] = drug_name
+                drugbank_ids.add(drugbank_id)
+        else:
+            for drug_id, name in drugbank_dict.items():
+                if drug_name == name:
+                    drugbank_id = drug_id
+                    drugbank_ids.add(drugbank_id)
+
+        create_known_mutation_nodes(chrom="Chr1", pos=variant_pos,
+                                    ref_allele=str(ref_allele),
+                                    alt_allele=str(alt_allele),
+                                    gene=gene_name,
+                                    promoter=promoter,
+                                    pk=str(drug_name + consequence
+                                           + variant_pos + ref_allele
+                                           + alt_allele).lower(),
+                                    consequence=consequence,
+                                    vset_name=vset_name,
+                                    vset_owner=vset_owner,
+                                    cset_name=cset_name,
+                                    drugbank_id=drugbank_ids,
+                                    drug_name=drug_name, biotype=biotype)
+
+
+def _process_phyresse_mutations(in_file, cset_name):
+    """
+    Load PhyResSe mutation Library
+    :param in_file:
+    :param cset_name:
+    :return:
+    """
+    sys.stdout.write(f"\nProcessing {cset_name}...\n")
+    biotype, drugbank_dict, promoter = '', dict(), ''
+    vset_name = "PhyResSe"
+    vset_owner = "Feuerriegel S, Schleusener V, Beckert P, et al."
+    df = read_csv(in_file).fillna("")
+    for entry in tqdm(df.values):
+        drugbank_ids = set()
+        gene_name = entry[5]
+        consequence = entry[7]
+        amino_change = entry[0]
+        variant_pos = str(entry[0])
+        ref_allele = entry[1]
+        alt_allele = entry[2]
+        # TODO: 1473246,A,G,ribosomal,MTB000019,rrs,+,---,-,
+        # "amikacin, kanamycin, capreomycin",High confidence
+        drug = entry[9].replace(" ", "")
+        drugs = drug.split(',') if ',' in drug else drug.split()
+        for drug_name in drugs:
+            if drug_name not in drugbank_dict.values() and drug_groups:
+                drugbank_id = get_drug_info(drug_name)
+                if drugbank_id:
+                    drugbank_dict[drugbank_id] = drug_name
+                    drugbank_ids.add(drugbank_id)
+            else:
+                for drug_id, name in drugbank_dict.items():
+                    if drug_name == name:
+                        drugbank_id = drug_id
+                        drugbank_ids.add(drugbank_id)
+
+        create_known_mutation_nodes(chrom="Chr1", pos=variant_pos,
+                                    ref_allele=str(ref_allele),
+                                    alt_allele=str(alt_allele),
+                                    gene=gene_name,
+                                    promoter=promoter,
+                                    pk=str(drug + consequence
+                                           + variant_pos + ref_allele
+                                           + alt_allele).lower(),
+                                    consequence=consequence,
+                                    vset_name=vset_name,
+                                    vset_owner=vset_owner,
+                                    cset_name=cset_name,
+                                    drugbank_id=drugbank_ids,
+                                    drug_name=drug, biotype=biotype)
 
 
 def process_mutation_file(in_file):
@@ -248,17 +302,24 @@ def process_mutation_file(in_file):
     :return:
     """
 
-    if in_file and in_file.endswith(".txt"):
-        with open(in_file) as in_file:
-            next(in_file)
-            cset_name = str(in_file.name).split('/')[-1]
-            if 'coll' in cset_name:
+    if in_file:
+        if in_file.endswith(".txt"):
+            with open(in_file) as in_file:
+                next(in_file)
+                cset_name = str(in_file.name).split('/')[-1]
+                if 'coll' in cset_name:
+                    pass
+                    # _process_coll_mutations(
+                    #     in_file=in_file, cset_name=cset_name)
+                elif 'drdb' in cset_name:
+                    # pass
+                    _process_tbprofiler_mutations(in_file=in_file,
+                                                  cset_name=cset_name)
+        else:
+            cset_name = in_file.split('/')[-1]
+            if 'phyresse' in cset_name:
                 # pass
-                _process_coll_mutations(in_file=in_file, cset_name=cset_name)
-            elif 'drdb' in cset_name:
-                # pass
-                _process_tbprofiler_mutations(in_file=in_file,
-                                              cset_name=cset_name)
-            elif 'tgstb' in cset_name:
-                # pass
-                _process_tgstb_mutations(in_file=in_file, cset_name=cset_name)
+                _process_phyresse_mutations(in_file, cset_name)
+            if 'tbdb' in cset_name:
+                pass
+                # _process_tbprofiler_two_mutations(in_file, cset_name)

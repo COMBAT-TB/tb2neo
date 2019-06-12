@@ -12,11 +12,11 @@ from py2neo import Graph
 from tqdm import tqdm
 
 from tb2neo.ftpconn import get_nucleotides
-from tb2neo.model.core import (CDS, Author, Chromosome, DbXref, Drug, Gene,
-                               GOTerm, InterProTerm, Location, MRna, NCRna,
-                               Operon, Organism, Pathway, Protein, PseudoGene,
-                               Publication, RRna, Transcript, TRna)
-from tb2neo.model.vcfmodel import CallSet, Variant, VariantSet
+from combattbmodel.core import (CDS, Author, Chromosome, DbXref, Drug, Gene,
+                                GOTerm, InterProTerm, Location, MRna, NCRna,
+                                Operon, Organism, Pathway, Protein, PseudoGene,
+                                Publication, RRna, Transcript, TRna)
+from combattbmodel.vcfmodel import CallSet, Variant, VariantSet
 from tb2neo.ncbi import fetch_publication_list
 from tb2neo.orthologs import fetch_ortholog
 from tb2neo.quickgo import query_quickgo
@@ -796,7 +796,9 @@ def create_kegg_pathways_nodes():
                 pathway = Pathway()
                 pathway.accession = accession
                 pathway._class = data.get('CLASS')
-                pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
+                pathway.name = data['NAME'][0].replace(
+                    " - Mycobacterium tuberculosis H37Rv", "")
+                # pathway.name = data['PATHWAY_MAP'].get(path.strip("path:"))
                 pathway.summation = data.get('DESCRIPTION')
                 pathway.species = data.get('ORGANISM')
                 graph.create(pathway)
@@ -806,7 +808,8 @@ def create_kegg_pathways_nodes():
                 res_split = data.split("\n")
 
                 # accession = res_split[0].split()[1]
-                name = res_split[1].split("-")[0].strip('NAME').strip()
+                name = res_split[1].strip('NAME').strip().replace(
+                    " - Mycobacterium tuberculosis H37Rv", "")
                 summation = res_split[2].strip("DESCRIPTION").strip()
                 _class = res_split[3].strip("CLASS").strip()
                 # Create Pathway
@@ -849,7 +852,7 @@ def create_reactome_pathway_nodes():
                         pathway.accession = pathway_id
                         pathway._type = path_res.get('schemaClass')
                         pathway.species = path_res.get('speciesName')
-                        pathway.name = path_res.get('displayName')
+                        pathway.name = path_res.get('displayName', pathway_id)
                         if path_res.get('compartment'):
                             compartment = path_res.get('compartment')
                             pathway.compartment = compartment[0].get(
@@ -916,24 +919,24 @@ def create_known_mutation_nodes(**kwargs):
     elif kwargs.get("drug_name") == "fluoroquinolones":
         map_drug_class_to_variant(fluoroquinolones)
     else:
-        drug = Drug.select(graph, str(
-            kwargs.get("drugbank_id")).upper()).first()
-        if drug:
-            variant.resistant_to.add(drug)
-        elif kwargs.get("drugbank_id") and kwargs.get("drug_name"):
-            drug = Drug(accession=kwargs.get("drugbank_id").strip(),
-                        name=kwargs.get("drug_name").capitalize())
-            graph.create(drug)
-            variant.resistant_to.add(drug)
+        for drug_id in kwargs.get("drugbank_id"):
+            drug = Drug.select(graph, str(drug_id).upper()).first()
+            if drug:
+                variant.resistant_to.add(drug)
+            elif drug_id and kwargs.get("drug_name"):
+                drug = Drug(accession=drug_id.strip(),
+                            name=kwargs.get("drug_name").capitalize())
+                graph.create(drug)
+                variant.resistant_to.add(drug)
 
+    gene_name = str(kwargs.get("gene")).lower()
     gene = Gene.select(graph).where(
-        "_.name=~'(?i).*{}.*'".format(str(kwargs.get("gene")).lower())).first()
+        f"_.name=~'(?i).*{gene_name}.*' OR _.uniquename=~'(?i).*{gene_name}.*'").first()
     if gene:
         variant.occurs_in.add(gene)
     else:
         rna = RRna.select(graph).where(
-            "_.name=~'(?i).*{}.*'".format(
-                str(kwargs.get("gene")).lower())).first()
+            f"_.name=~'(?i).*{gene_name}.*' OR _.uniquename=~'(?i).*{gene_name}.*'").first()
         if rna:
             variant.occurs_in_.add(rna)
 

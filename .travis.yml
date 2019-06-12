@@ -16,7 +16,7 @@ services:
 install:
   - pip install -r requirements.txt
   # - python setup.py install
-  - pip install -e .
+  - pip install -e . --process-dependency-links --allow-all-external
 
 before_script:
   - sudo apt-get update

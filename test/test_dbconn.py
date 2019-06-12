@@ -5,7 +5,7 @@ import pytest
 
 from tb2neo.dbconn import (create_chromosome_nodes, create_publication_nodes,
                            graph, split_gene_names)
-from tb2neo.model.core import Chromosome, Gene
+from combattbmodel.core import Chromosome, Gene
 from test_cli import UNIPROT_DATA
 
 

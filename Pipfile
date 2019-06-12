@@ -3,6 +3,11 @@ name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
 
+[[source]]
+name = "testpypi"
+url = "https://test.pypi.org/simple/"
+verify_ssl = true
+
 [dev-packages]
 flake8 = "*"
 pytest = "*"
@@ -22,6 +27,7 @@ tqdm = "*"
 click = "*"
 urllib3 = ">=1.24.2"
 requests-cache = "*"
+combattbmodel = "*"
 
 [requires]
 python_version = "3.7"

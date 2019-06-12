@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 GFF_FILES_DIR=data/gff_files
 OPERON_DIR=data/operons

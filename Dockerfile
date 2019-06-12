@@ -1,11 +1,10 @@
-FROM python:3-slim
+FROM python:3-alpine
 LABEL MAINTAINER="thoba@sanbi.ac.za"
 
-RUN apt-get update -y --fix-missing && \
-    apt-get upgrade -y && \
-    apt-get install git -y && \
-    mkdir /code && \
-    pip install -U pip
+RUN apk update \
+    && apk upgrade \
+    && mkdir /code \
+    && apk add --no-cache py-pip git build-base libxml2-dev libxslt-dev
 
 COPY requirements.txt /code
 

@@ -15,7 +15,7 @@ from tb2neo.dbconn import (create_cds_nodes, create_featureloc_nodes,
                            create_gene_nodes, create_mrna_nodes,
                            create_pseudogene_nodes, create_rna_nodes,
                            create_transcript_nodes, graph, map_to_location)
-from tb2neo.model.core import Organism
+from combattbmodel.core import Organism
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 MYCO_GFF = os.path.join(
