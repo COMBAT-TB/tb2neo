@@ -9,7 +9,7 @@ bcbio-gff==0.6.6
 beautifulsoup4==4.7.1
 biopython==1.73
 bioservices==1.6.0
-certifi==2019.3.9
+certifi==2022.12.7
 chardet==3.0.4
 click==7.0
 colorama==0.4.1
